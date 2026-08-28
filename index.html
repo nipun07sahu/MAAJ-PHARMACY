@@ -1,0 +1,2791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAAJ PHARMACY — Complete Enterprise Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page-view { display: none; }
+        .page-view.active { display: block; }
+        .admin-tab { display: none; }
+        .admin-tab.active { display: block; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
+        #adminLoginModal { display: none; }
+        #adminLoginModal.active { display: flex; }
+
+        .nav-back-btn, .nav-home-btn { transition: all .15s ease; }
+        .nav-back-btn:disabled { opacity: .45; cursor: not-allowed; }
+    
+        @media print {
+            body * { visibility: hidden !important; }
+            #invoiceModal, #invoiceModal * { visibility: visible !important; }
+            #invoiceModal { position: static !important; display: block !important; background: white !important; padding: 0 !important; }
+            #invoiceModal > div { max-width: none !important; width: 100% !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; overflow: visible !important; }
+            #invoiceModal .no-print { display: none !important; }
+            #invoiceContent { font-size: 11px !important; }
+            @page { size: A4; margin: 10mm; }
+        }
+    </style>
+
+<style id="promo-fix-css">
+#homePromoSlider{display:block!important;min-height:180px;background:#047857;}
+#homePromoTrack{width:100%;height:100%;min-height:180px;display:flex;}
+.promo-slide{min-width:100%;min-height:180px;display:flex;align-items:center;justify-content:space-between;padding:28px 42px;color:white;box-sizing:border-box;}
+@media(max-width:640px){.promo-slide{padding:22px;min-height:160px;}.promo-slide h2{font-size:1.25rem!important}.promo-slide p{font-size:.8rem!important}}
+</style>
+<style id="cod-only-fix">#onlinePaymentOption,[data-payment="online"],.online-payment-option{display:none!important}</style></head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <!-- TOP ANNOUNCEMENT BAR -->
+    <div class="bg-emerald-800 text-white text-xs text-center py-2 px-4 font-medium flex justify-between items-center">
+        <span>⚡ Guaranteed 1-Day Delivery Within 10 KM Radius (Agalpur Region)</span>
+        <span class="hidden sm:inline">MAA JHARBANDHALIAN MEDICINE STORE | Lic: BOWZ-2860/R</span>
+        <span>Helpline: 6372556219</span>
+    </div>
+
+    <!-- MAIN NAVIGATION NAVBAR -->
+    <header class="bg-white shadow-md sticky top-0 z-40 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-md">
+                    <i class="fa-solid fa-capsules"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-slate-900 leading-none">MAAJ <span class="text-emerald-600">PHARMACY</span></h1>
+                    <p class="text-[10px] text-slate-500 font-bold tracking-tight">MAA JHARBANDHALIAN MEDICINE STORE</p>
+                </div>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-300 rounded-lg px-3 py-1 text-xs font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-compass text-emerald-600"></i>
+                <select id="pageSelector" onchange="navigateTo(this.value)" class="bg-transparent font-bold text-emerald-800 focus:outline-none cursor-pointer">
+                    <option value="home">1. Storefront Home</option>
+                    <option value="store">2. Medicine Catalog</option>
+                    <option value="cart">3. Shopping Cart</option>
+                    <option value="checkout">4. Checkout & Payment</option>
+                    <option value="orders">5. Customer My Orders</option>
+                    <option value="order-tracking">6. Order Tracking</option>
+                    <option value="upload-prescription">7. Upload Prescription (PDF/Img)</option>
+                    <option value="prescription-history">8. Prescription History</option>
+                    <option value="admin-dashboard">9. 🛡️ PROTECTED ADMIN PANEL</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="navBackBtn" onclick="goBackPage()" class="nav-back-btn bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-200" title="Go back to previous page">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                </button>
+                <button id="navHomeBtn" onclick="goHomePage()" class="nav-home-btn bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-100" title="Go to Home">
+                    <i class="fa-solid fa-house mr-1"></i> Home
+                </button>
+                <a href="https://wa.me/6372556219?text=Hello%20MAAJ%20Pharmacy,%20I%20want%20to%20order%20medicines" target="_blank" class="hidden sm:flex items-center gap-1.5 bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-600">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Order
+                </a>
+                <button onclick="navigateTo('upload-prescription')" class="hidden lg:flex items-center gap-2 bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100">
+                    <i class="fa-solid fa-file-pdf"></i> Upload Rx
+                </button>
+                <button onclick="navigateTo('cart')" class="relative text-slate-600 hover:text-emerald-600 p-2">
+                    <i class="fa-solid fa-cart-shopping text-lg"></i>
+                    <span id="cartBadgeCount" class="absolute -top-1 -right-1 bg-emerald-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                </button>
+                <button onclick="openAdminLogin()" class="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-user-shield mr-1"></i> Admin Panel
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+
+        <!-- 1. FULL RICH HOME PAGE VIEW -->
+        <section id="page-home" class="page-view active space-y-8">
+            <!-- Hero Section -->
+            <div class="bg-gradient-to-br from-emerald-800 via-teal-700 to-slate-900 rounded-3xl p-8 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden">
+                <div class="space-y-5 max-w-xl z-10">
+                    <span class="bg-emerald-500/30 text-emerald-200 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-400/30">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> Verified Licensed Pharmacy (BOWZ-2860/R)
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl font-black leading-tight">Your Trusted Local Pharmacy Delivered Fast.</h2>
+                    <p class="text-sm text-slate-200 leading-relaxed">Order 100% genuine medicines, upload doctor prescription PDFs, or get instant assistance for your family healthcare in Agalpur block and surrounding areas.</p>
+                    <div class="bg-white rounded-2xl p-1.5 shadow-xl flex flex-col sm:flex-row gap-2 max-w-2xl">
+                        <div class="flex items-center flex-1 px-3">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400 mr-2"></i>
+                            <input id="homeSearchInput" type="search" placeholder="Search medicine, brand or batch..." class="w-full py-3 text-sm text-slate-800 outline-none" onkeydown="if(event.key==='Enter') searchFromHome()">
+                        </div>
+                        <button type="button" onclick="searchFromHome()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm whitespace-nowrap">
+                            <i class="fa-solid fa-magnifying-glass mr-2"></i> Search
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="navigateTo('store')" class="bg-white text-emerald-900 font-bold px-6 py-3 rounded-xl text-xs shadow-lg hover:bg-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-store"></i> Browse Medicine Store
+                        </button>
+                        <button onclick="navigateTo('upload-prescription')" class="bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl text-xs border border-emerald-400 hover:bg-emerald-500 shadow-lg flex items-center gap-2">
+                            <i class="fa-solid fa-file-arrow-up"></i> Upload Prescription (PDF)
+                        </button>
+                    </div>
+                </div>
+                <div class="z-10 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-center space-y-3 min-w-[260px]">
+                    <i class="fa-solid fa-truck-medical text-4xl text-emerald-300"></i>
+                    <h3 class="font-bold text-base">Express Home Delivery</h3>
+                    <p class="text-xs text-emerald-100">Same-day delivery for all local pin codes.</p>
+                    <a href="tel:+919876543210" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xs px-4 py-2 rounded-lg w-full">
+                        <i class="fa-solid fa-phone mr-1"></i> Call Pharmacist Now
+                    </a>
+                </div>
+            </div>
+
+            <!-- PROMOTIONAL BANNER SLIDER -->
+            <div id="homePromoSlider" class="relative overflow-hidden rounded-2xl shadow-lg border border-slate-200 mb-6" style="display:block!important;">
+                <div id="homePromoTrack" class="flex transition-transform duration-700 ease-in-out"></div>
+                <button onclick="promoPrev()" class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow font-bold">‹</button>
+                <button onclick="promoNext()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 w-9 h-9 rounded-full shadow font-bold">›</button>
+                <div id="promoDots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5"></div>
+            </div>
+
+            <!-- Categories Grid -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-slate-800">Top Healthcare Categories</h3>
+                    <button onclick="navigateTo('store')" class="text-xs font-bold text-emerald-600 hover:underline">View All →</button>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div onclick="openCategory('Painkiller')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer text-center space-y-2">
+                        <div class="w-12 h-12 mx-auto bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-tablets"></i></div>
+                        <p class="font-bold text-xs text-slate-800">Pain & Fever</p>
+                        <p class="text-[10px] text-slate-400">Paracetamol, Painkillers</p>
+                    </div>
+                    <div onclick="openCategory('Antibiotics')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer text-center space-y-2">
+                        <div class="w-12 h-12 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-prescription-bottle-medical"></i></div>
+                        <p class="font-bold text-xs text-slate-800">Antibiotics</p>
+                        <p class="text-[10px] text-slate-400">Rx Medicines</p>
+                    </div>
+                    <div onclick="openCategory('Vitamins')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer text-center space-y-2">
+                        <div class="w-12 h-12 mx-auto bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-vial text-xl"></i></div>
+                        <p class="font-bold text-xs text-slate-800">Vitamins & Supps</p>
+                        <p class="text-[10px] text-slate-400">Daily Health Care</p>
+                    </div>
+                    <div onclick="openCategory('First Aid')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer text-center space-y-2">
+                        <div class="w-12 h-12 mx-auto bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-kit-medical"></i></div>
+                        <p class="font-bold text-xs text-slate-800">First Aid & Care</p>
+                        <p class="text-[10px] text-slate-400">Bandages, Antiseptics</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Medicines Showcase -->
+            <div class="space-y-4">
+                <h3 class="font-bold text-lg text-slate-800">Popular Medicines</h3>
+                <div id="homeFeaturedProducts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+            </div>
+
+            <!-- Trust Badges -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                <div class="bg-white p-5 rounded-xl border flex items-center gap-4">
+                    <i class="fa-solid fa-certificate text-3xl text-emerald-600"></i>
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-800">100% Certified Genuine</h4>
+                        <p class="text-[11px] text-slate-500">Directly sourced from verified pharma distributors.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border flex items-center gap-4">
+                    <i class="fa-solid fa-user-doctor text-3xl text-blue-600"></i>
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-800">Pharmacist Verification</h4>
+                        <p class="text-[11px] text-slate-500">Every prescription double-checked before packing.</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border flex items-center gap-4">
+                    <i class="fa-solid fa-hand-holding-hand text-3xl text-purple-600"></i>
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-800">Local Agalpur Support</h4>
+                        <p class="text-[11px] text-slate-500">Quick door pickup and local customer support.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. MEDICINE CATALOG VIEW -->
+        <section id="page-store" class="page-view space-y-4">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                <div>
+                    <h2 class="text-xl font-bold">Medicine Catalog</h2>
+                    <p class="text-[11px] text-slate-400 mt-1">Search by medicine, brand or batch</p>
+                </div>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <input type="text" id="catalogSearch" oninput="renderStoreCatalog()" onkeydown="if(event.key==='Enter') renderStoreCatalog()" placeholder="Search medicine or brand..." class="p-2.5 border rounded-lg text-xs flex-1 md:w-64">
+                    <button type="button" onclick="renderStoreCatalog()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700">
+                        <i class="fa-solid fa-magnifying-glass mr-1"></i> Search
+                    </button>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center bg-white p-3 rounded-xl border">
+                <span class="text-xs font-bold text-slate-500 mr-1">Category:</span>
+                <button type="button" onclick="openCategory('All')" data-cat="All" class="category-filter px-3 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white">All</button>
+                <button type="button" onclick="openCategory('Painkiller')" data-cat="Painkiller" class="category-filter px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">Painkiller</button>
+                <button type="button" onclick="openCategory('Antibiotics')" data-cat="Antibiotics" class="category-filter px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">Antibiotics</button>
+                <button type="button" onclick="openCategory('Vitamins')" data-cat="Vitamins" class="category-filter px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">Vitamins</button>
+                <button type="button" onclick="openCategory('First Aid')" data-cat="First Aid" class="category-filter px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">First Aid</button>
+            </div>
+            <div id="catalogResultInfo" class="text-[11px] text-slate-500 font-semibold"></div>
+            <div id="storeProductGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- 3. SHOPPING CART VIEW -->
+        <section id="page-cart" class="page-view space-y-4">
+            <h2 class="text-xl font-bold">Shopping Cart</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div id="cartItemsList" class="md:col-span-2 space-y-3"></div>
+                <div class="bg-white p-5 rounded-xl border h-fit space-y-4 shadow-sm">
+                    <h3 class="font-bold text-sm border-b pb-2">Order Summary</h3>
+                    <div class="space-y-2">
+                        
+                    </div>
+<button onclick="navigateTo(\'checkout\')" class="w-full bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl hover:bg-emerald-700 shadow">Confirm &amp; Place Order</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 4. CHECKOUT VIEW -->
+        <section id="page-checkout" class="page-view space-y-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900">Checkout</h2>
+                    <p class="text-xs text-slate-500 mt-1">Confirm your delivery details and place your COD order.</p>
+                </div>
+                <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full text-xs font-bold">
+                    <i class="fa-solid fa-money-bill-wave mr-1"></i> Cash on Delivery
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white rounded-2xl border shadow-sm p-5 space-y-5">
+                    <div>
+                        <h3 class="font-black text-sm border-b pb-3">Customer & Delivery Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Customer Name *</label>
+                                <input id="checkoutName" type="text" class="w-full p-3 border rounded-xl text-sm" placeholder="Full name">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Mobile Number *</label>
+                                <input id="checkoutPhone" type="tel" maxlength="10" class="w-full p-3 border rounded-xl text-sm" placeholder="10-digit mobile number">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold mb-1">PIN Code *</label>
+                                <input id="checkoutPincode" type="text" maxlength="6" class="w-full p-3 border rounded-xl text-sm" placeholder="PIN code">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold mb-1">Payment Method</label>
+                                <div class="w-full p-3 border rounded-xl bg-emerald-50 text-emerald-800 text-sm font-bold">
+                                    <i class="fa-solid fa-money-bill-wave mr-2"></i> Cash on Delivery (COD)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-xs font-bold mb-1">Delivery Address *</label>
+                            <textarea id="checkoutAddress" rows="4" class="w-full p-3 border rounded-xl text-sm resize-none" placeholder="House/Shop, Village/Street, Landmark, District..."></textarea>
+                        </div>
+                    </div>
+
+
+                    <div id="rxCheckoutBox" class="hidden bg-red-50 border border-red-200 rounded-xl p-4">
+                        <h4 class="font-black text-sm text-red-700 mb-2">
+                            <i class="fa-solid fa-file-prescription mr-1"></i> Prescription Required
+                        </h4>
+                        <p class="text-xs text-red-600 mb-3">
+                            Your cart contains one or more Prescription Required (Rx) medicines.
+                            Please upload a valid doctor prescription before placing the order.
+                        </p>
+                        <label class="block text-xs font-bold mb-1">Doctor Prescription (PDF / JPG / PNG) *</label>
+                        <input id="checkoutPrescription" type="file" accept=".pdf,.jpg,.jpeg,.png,image/jpeg,image/png,application/pdf"
+                               class="w-full p-3 border rounded-xl bg-white text-sm">
+                        <p id="checkoutPrescriptionStatus" class="text-xs text-slate-500 mt-2">No prescription uploaded.</p>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800">
+                        <i class="fa-solid fa-circle-info mr-1"></i>
+                        Please verify your name, mobile number, PIN code and address before placing the order.
+                    </div>
+
+                    <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow" type="button" onclick="finalPlaceCODOrder()">
+                        <i class="fa-solid fa-bag-shopping mr-2"></i> Confirm & Place COD Order
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-2xl border shadow-sm p-5 h-fit">
+                    <h3 class="font-black text-sm border-b pb-3">Order Summary</h3>
+                    <div id="checkoutItemsList" class="space-y-2 py-4 text-xs"></div>
+                    <div class="border-t pt-3 space-y-2 text-xs">
+                        <div class="flex justify-between"><span>Subtotal</span><b id="checkoutSubtotal">₹0.00</b></div>
+                        <div class="flex justify-between"><span>Discount</span><b id="checkoutDiscount">₹0.00</b></div>
+                        <div class="flex justify-between"><span>Delivery</span><b id="checkoutDelivery">₹0.00</b></div>
+                        <div class="flex justify-between"><span>Tax</span><b id="checkoutTax">₹0.00</b></div>
+                        <div class="flex justify-between border-t pt-3 text-base"><span class="font-black">Grand Total</span><b id="checkoutGrandTotal" class="text-emerald-700">₹0.00</b></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. ORDERS VIEW -->
+        <section id="page-orders" class="page-view space-y-4">
+            <h2 class="text-xl font-bold">My Orders & Order History</h2>
+            <div id="customerOrdersList" class="space-y-4"></div>
+        </section>
+
+        <!-- 6. ORDER TRACKING VIEW -->
+        <section id="page-order-tracking" class="page-view space-y-6">
+            <h2 class="text-xl font-bold">Live Order Tracking Pipeline</h2>
+            <div class="bg-white p-6 rounded-xl border space-y-6 shadow-sm">
+                <div class="flex justify-between items-center border-b pb-4">
+                    <div>
+                        <h3 class="font-bold text-sm" id="trackingOrderId">Order ID: Select an order</h3>
+                        <p class="text-xs text-slate-500" id="trackingOrderDate">Date: N/A</p>
+                    </div>
+                    <span id="trackingStatusBadge" class="text-xs font-bold px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full">Status: N/A</span>
+                </div>
+                <div id="trackingPipeline" class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs"></div>
+            </div>
+        </section>
+
+        <!-- 7. UPLOAD PRESCRIPTION PDF/IMAGE VIEW -->
+        <section id="page-upload-prescription" class="page-view space-y-4">
+            <h2 class="text-xl font-bold">Upload Doctor Prescription (PDF / Image)</h2>
+            <div class="bg-white p-6 rounded-xl border max-w-xl space-y-4 text-xs shadow-sm">
+                <div>
+                    <label class="block font-bold mb-1">Customer Name</label>
+                    <input type="text" id="rxCustName" value="Rajesh Sahu" class="w-full p-2 border rounded" placeholder="Customer full name">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Mobile Number</label>
+                    <input type="tel" id="rxCustPhone" value="9876543210" maxlength="10" class="w-full p-2 border rounded" placeholder="10-digit mobile number">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Delivery Address</label>
+                    <textarea id="rxCustAddress" class="w-full p-2 border rounded" rows="2" placeholder="Full delivery address">Agalpur Main Market</textarea>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Upload File (PDF / JPG / PNG)</label>
+                    <input type="file" id="rxFileInput" accept=".pdf,image/*" onchange="handlePrescriptionFile(event)" class="w-full p-2 border rounded">
+                    <p class="text-[10px] text-slate-400 mt-1">Upload doctor prescription PDF or clear photo.</p>
+                </div>
+                <div id="rxPdfPreviewContainer" class="hidden bg-slate-50 p-3 border rounded text-center">
+                    <i class="fa-solid fa-file-pdf text-red-500 text-3xl"></i>
+                    <p id="rxFileNameText" class="font-bold mt-1 text-xs text-slate-700"></p>
+                    <button onclick="previewSelectedPdf()" class="mt-2 text-[11px] bg-red-100 text-red-700 px-3 py-1 rounded font-bold hover:bg-red-200">
+                        <i class="fa-solid fa-eye mr-1"></i> Preview PDF Document
+                    </button>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Instructions / Notes for Pharmacist</label>
+                    <textarea id="rxNotes" placeholder="e.g. Please send 2 strips of Azithromycin 500mg" class="w-full p-2 border rounded" rows="3"></textarea>
+                </div>
+                <button onclick="submitPrescriptionUpload()" class="w-full bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-emerald-700 shadow">Submit Prescription Document</button>
+            </div>
+        </section>
+
+        <!-- 8. PRESCRIPTION HISTORY VIEW -->
+        <section id="page-prescription-history" class="page-view space-y-4">
+            <h2 class="text-xl font-bold">Prescription Review History & PDF Viewer</h2>
+            <div id="customerRxList" class="space-y-3"></div>
+        </section>
+
+        <!-- 9. PROTECTED ADMIN PANEL -->
+        <section id="page-admin-dashboard" class="page-view space-y-6">
+            <div class="bg-slate-900 text-white p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
+                <div>
+                    <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded tracking-wide uppercase">Protected Admin Console</span>
+                    <h2 class="text-2xl font-black">MAAJ PHARMACY Management Panel</h2>
+                    <p class="text-xs text-slate-400">Entity: MAA JHARBANDHALIAN MEDICINE STORE | License: BOWZ-2860/R</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="exportDataReport()" class="bg-slate-800 text-xs font-bold border border-slate-700 px-3 py-2 rounded-xl text-slate-200 hover:bg-slate-700">
+                        <i class="fa-solid fa-download mr-1"></i> Export CSV Report
+                    </button>
+                    <button onclick="adminLogout()" class="bg-red-600 text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-red-700">
+                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-slate-800">
+                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Total Sales</p>
+                    <p id="statTotalSales" class="text-lg font-black text-emerald-600">₹0.00</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Total Orders</p>
+                    <p id="statTotalOrders" class="text-lg font-black text-slate-800">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Pending Orders</p>
+                    <p id="statPendingOrders" class="text-lg font-black text-amber-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Total Medicines</p>
+                    <p id="statTotalMedicines" class="text-lg font-black text-slate-800">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Low-Stock Alert</p>
+                    <p id="statLowStock" class="text-lg font-black text-red-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Pending Rx PDFs</p>
+                    <p id="statPendingRx" class="text-lg font-black text-purple-600">0</p>
+                </div>
+            </div>
+
+            <!-- Sub Tabs -->
+            <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-2 text-xs font-bold">
+                <button onclick="switchAdminTab('products')" class="admin-tab-btn bg-slate-900 text-white px-3 py-2 rounded-lg">Products</button>
+                <button onclick="switchAdminTab('inventory')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Inventory</button>
+                <button onclick="switchAdminTab('orders')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Orders</button>
+                <button onclick="switchAdminTab('prescriptions')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Rx PDFs Review</button>
+                <button onclick="switchAdminTab('coupons')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Coupons</button>
+            </div>
+
+            <!-- TAB 1: PRODUCTS -->
+            <div id="admin-tab-products" class="admin-tab active space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-sm">Product Management</h3>
+                    <button onclick="openProductModal()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-emerald-700">+ Add Medicine</button>
+                </div>
+                <div class="bg-white rounded-xl border overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3">Medicine Info</th>
+                                <th class="p-3">Category/Brand</th>
+                                <th class="p-3">Batch & Expiry</th>
+                                <th class="p-3">Price</th>
+                                <th class="p-3">Stock</th>
+                                <th class="p-3 text-right">Actions</th>
+                                <th class="p-3">Oil</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsTable" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: INVENTORY -->
+            <div id="admin-tab-inventory" class="admin-tab space-y-4">
+                <h3 class="font-bold text-sm">Stock Management</h3>
+                <div class="bg-white rounded-xl border overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3">Medicine</th>
+                                <th class="p-3">Batch</th>
+                                <th class="p-3">Current Stock</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-right">Adjust Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminInventoryTable" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: ORDERS -->
+            <div id="admin-tab-orders" class="admin-tab space-y-4">
+                <h3 class="font-bold text-sm">Orders Processing</h3>
+                <div class="bg-white rounded-xl border overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3">Order Ref</th>
+                                <th class="p-3">Customer</th>
+                                <th class="p-3">Amount</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersTable" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: PRESCRIPTION PDF REVIEW -->
+            <div id="admin-tab-prescriptions" class="admin-tab space-y-4">
+                <h3 class="font-bold text-sm">Uploaded Doctor Prescriptions (PDF / Images)</h3>
+                <div class="bg-white rounded-xl border overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3">Rx Ref</th>
+                                <th class="p-3">Customer</th>
+                                <th class="p-3">Prescription Document</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-right">Verification</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminRxTable" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 5: COUPONS -->
+            <div id="admin-tab-coupons" class="admin-tab space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-sm">Coupons System</h3>
+                    <button onclick="openCouponModal()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg">+ Create Coupon</button>
+                </div>
+                <div class="bg-white rounded-xl border overflow-x-auto shadow-sm">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3">Code</th>
+                                <th class="p-3">Discount</th>
+                                <th class="p-3">Min Spend</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCouponsTable" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PDF & PRESCRIPTION VIEWER MODAL -->
+    <div id="pdfViewerModal" class="modal fixed inset-0 bg-black/70 z-50 items-center justify-center p-4">
+        <div class="bg-white max-w-3xl w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center p-4 border-b bg-slate-900 text-white">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                    <h3 id="pdfViewerTitle" class="font-bold text-sm">Doctor Prescription Viewer</h3>
+                </div>
+                <button onclick="closePdfModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="pdfViewerBody" class="p-4 flex-1 overflow-y-auto space-y-4 bg-slate-100 flex flex-col items-center justify-center min-h-[300px]">
+                <!-- Dynamic PDF or Preview Card -->
+            </div>
+            <div class="p-3 border-t bg-white flex justify-between items-center text-xs">
+                <span id="pdfViewerMeta" class="text-slate-500 font-medium">Doc Ref: RX-Document</span>
+                <button onclick="downloadActivePdf()" class="bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-bold hover:bg-emerald-700 flex items-center gap-1">
+                    <i class="fa-solid fa-download"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN-ONLY PROFESSIONAL INVOICE MODAL -->
+    <div id="invoiceModal" class="modal fixed inset-0 bg-black/70 z-50 items-center justify-center p-3 md:p-6">
+        <div class="bg-white max-w-4xl w-full rounded-xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+            <div class="no-print bg-slate-900 text-white px-5 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice text-emerald-400"></i>
+                    <div><h3 class="font-black text-sm">ADMIN — INVOICE GENERATOR</h3><p class="text-[10px] text-slate-300">Customer invoice is generated only by authorized admin</p></div>
+                </div>
+                <button onclick="closeInvoiceModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="invoiceContent" class="overflow-y-auto p-5 md:p-8 bg-white"></div>
+            <div class="no-print flex justify-end gap-2 p-3 border-t bg-slate-50">
+                <button onclick="closeInvoiceModal()" class="px-4 py-2 rounded-lg bg-white border font-bold text-xs">Close</button>
+                <button onclick="printAdminInvoice()" class="px-5 py-2 rounded-lg bg-emerald-600 text-white font-bold text-xs"><i class="fa-solid fa-print mr-1"></i> Print / Save PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCT ADD/EDIT MODAL -->
+    <div id="productModal" class="modal fixed inset-0 bg-black/60 z-50 items-center justify-center p-4">
+        <div class="bg-white max-w-2xl w-full rounded-2xl shadow-2xl overflow-hidden p-6 text-xs space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="productModalTitle" class="font-bold text-base">Add New Medicine</h3>
+                <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input type="hidden" id="pmId">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold mb-1">Medicine Name</label>
+                    <input type="text" id="pmName" placeholder="e.g. Paracetamol 650mg" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Brand / Manufacturer</label>
+                    <input type="text" id="pmBrand" placeholder="e.g. Cipla" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Category</label>
+                    <select id="pmCategory" class="w-full p-2 border rounded bg-white">
+                        <option value="Painkiller">Painkiller</option>
+                        <option value="Antibiotics">Antibiotics</option>
+                        <option value="Vitamins">Vitamins</option>
+                        <option value="First Aid">First Aid</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Batch Number</label>
+                    <input type="text" id="pmBatch" placeholder="e.g. B2026-11" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Expiry Date</label>
+                    <input type="text" id="pmExpiry" placeholder="e.g. 12/2027" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">MRP Price (₹)</label>
+                    <input type="number" id="pmMrp" placeholder="35" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Selling Price (₹)</label>
+                    <input type="number" id="pmPrice" placeholder="28" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Current Stock Quantity</label>
+                    <input type="number" id="pmStock" placeholder="100" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Minimum Stock Level</label>
+                    <input type="number" id="pmMinStock" placeholder="10" class="w-full p-2 border rounded">
+                </div>
+                <div class="flex items-center gap-2 pt-4">
+                    <input type="checkbox" id="pmRxReq" class="w-4 h-4 text-emerald-600 rounded">
+                    <label for="pmRxReq" class="font-bold">Prescription Required (Rx)</label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeProductModal()" class="px-4 py-2 bg-slate-200 rounded font-bold">Cancel</button>
+                <button onclick="saveProduct()" class="px-4 py-2 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700">Save Medicine</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COUPON MODAL -->
+    <div id="couponModal" class="modal fixed inset-0 bg-black/60 z-50 items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full rounded-2xl shadow-2xl overflow-hidden p-6 text-xs space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-base">Create Coupon</h3>
+                <button onclick="closeCouponModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block font-bold mb-1">Coupon Code</label>
+                    <input type="text" id="cmCode" placeholder="e.g. MAAJ20" class="w-full p-2 border rounded uppercase">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Discount Type</label>
+                    <select id="cmType" class="w-full p-2 border rounded bg-white">
+                        <option value="PERCENT">Percentage (%)</option>
+                        <option value="FLAT">Flat Amount (₹)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Discount Value</label>
+                    <input type="number" id="cmValue" placeholder="10" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block font-bold mb-1">Minimum Order Amount (₹)</label>
+                    <input type="number" id="cmMinSpend" placeholder="200" class="w-full p-2 border rounded">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeCouponModal()" class="px-4 py-2 bg-slate-200 rounded font-bold">Cancel</button>
+                <button onclick="saveCoupon()" class="px-4 py-2 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700">Save Coupon</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT CORE -->
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-slate-950/70 z-[100] items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-200">
+            <div class="text-center mb-5">
+                <div class="w-14 h-14 mx-auto bg-slate-900 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h2 class="text-xl font-black mt-3 text-slate-900">Admin Login</h2>
+                <p class="text-xs text-slate-500 mt-1">Authorized admin access only</p>
+            </div>
+            <form onsubmit="adminLogin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
+                    <input id="adminUsername" type="text" autocomplete="username" class="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Enter username" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <input id="adminPassword" type="password" autocomplete="current-password" class="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Enter password" required>
+                </div>
+                <p id="adminLoginError" class="hidden text-xs font-bold text-red-600 bg-red-50 border border-red-200 p-2 rounded-lg">Invalid username or password.</p>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeAdminLogin()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200">Cancel</button>
+                    <button type="submit" class="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA DEFAULTS & PERSISTENCE ---
+        const defaultProducts = [
+            { id: 101, name: "Paracetamol 650mg", brand: "Cipla", category: "Painkiller", batch: "B2026-11", expiry: "12/2027", mrp: 35, price: 28, stock: 120, minStock: 15, rx: false },
+            { id: 102, name: "Azithromycin 500mg", brand: "Sun Pharma", category: "Antibiotics", batch: "AZ-9981", expiry: "08/2026", mrp: 120, price: 95, stock: 8, minStock: 10, rx: true },
+            { id: 103, name: "Vitamin C Tablets", brand: "Abbott", category: "Vitamins", batch: "VTC-042", expiry: "05/2028", mrp: 80, price: 65, stock: 50, minStock: 5, rx: false },
+            { id: 104, name: "Antiseptic Bandages", brand: "Dettol", category: "First Aid", batch: "FA-330", expiry: "01/2029", mrp: 50, price: 40, stock: 200, minStock: 20, rx: false }
+        ];
+
+        const importedInvoiceMedicines = [
+            {
+                        "id": 2001,
+                        "name": "MACL ETOSAID 90MG TAB 10'S",
+                        "brand": "MACL",
+                        "category": "Painkiller",
+                        "batch": "18242029A",
+                        "expiry": "07/28",
+                        "mrp": 154,
+                        "price": 146.3,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2002,
+                        "name": "HEIN GLUCON - D POW 75 GM",
+                        "brand": "HEIN",
+                        "category": "Vitamins",
+                        "batch": "A0864N",
+                        "expiry": "01/27",
+                        "mrp": 40,
+                        "price": 38.0,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2003,
+                        "name": "INDO CYCLOPAM TAB 10'S",
+                        "brand": "INDO",
+                        "category": "Painkiller",
+                        "batch": "24070639",
+                        "expiry": "04/26",
+                        "mrp": 63.4,
+                        "price": 60.23,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2004,
+                        "name": "INDO CYCLOPAM SUSP 30ML",
+                        "brand": "INDO",
+                        "category": "Painkiller",
+                        "batch": "24330041",
+                        "expiry": "04/27",
+                        "mrp": 71.8,
+                        "price": 68.21,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2005,
+                        "name": "ALKE CLAVAM DROP 10 ML",
+                        "brand": "ALKE",
+                        "category": "Antibiotics",
+                        "batch": "24444520",
+                        "expiry": "11/26",
+                        "mrp": 121,
+                        "price": 114.95,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2006,
+                        "name": "ABBO PARAXIN 500MG CAP 10'S",
+                        "brand": "ABBO",
+                        "category": "Antibiotics",
+                        "batch": "PXC24006.",
+                        "expiry": "07/27",
+                        "mrp": 260.48,
+                        "price": 247.46,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2007,
+                        "name": "THE PILEX TAB 60'S",
+                        "brand": "THE",
+                        "category": "Vitamins",
+                        "batch": "111241607",
+                        "expiry": "10/27",
+                        "mrp": 230,
+                        "price": 218.5,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2008,
+                        "name": "AMRU ORS POW (ORG) 21.8GR",
+                        "brand": "AMRU",
+                        "category": "Vitamins",
+                        "batch": "BD725059",
+                        "expiry": "02/27",
+                        "mrp": 21.82,
+                        "price": 20.73,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2009,
+                        "name": "MICR DOLO MF SYP 30 ML",
+                        "brand": "MICR",
+                        "category": "Painkiller",
+                        "batch": "DMFS076",
+                        "expiry": "10/26",
+                        "mrp": 63,
+                        "price": 59.85,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2010,
+                        "name": "MACL MACPOD 100 DRY SYP 30ML",
+                        "brand": "MACL",
+                        "category": "Antibiotics",
+                        "batch": "18242534A",
+                        "expiry": "09/26",
+                        "mrp": 209,
+                        "price": 198.55,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": true
+            },
+            {
+                        "id": 2011,
+                        "name": "MANK VERTISTAR MD 16 TAB 10'S",
+                        "brand": "MANK",
+                        "category": "Vitamins",
+                        "batch": "F65X018",
+                        "expiry": "11/26",
+                        "mrp": 118.31,
+                        "price": 112.39,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2012,
+                        "name": "MANK VERTISTAR MD 8 TAB 10'S",
+                        "brand": "MANK",
+                        "category": "Vitamins",
+                        "batch": "F85X005",
+                        "expiry": "11/26",
+                        "mrp": 65.67,
+                        "price": 62.39,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2013,
+                        "name": "ABBO CEFI O 200MG TAB 10'S",
+                        "brand": "ABBO",
+                        "category": "Antibiotics",
+                        "batch": "HMK0118",
+                        "expiry": "08/26",
+                        "mrp": 234.98,
+                        "price": 223.23,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": true
+            },
+            {
+                        "id": 2014,
+                        "name": "MANK VOMIKIND MD 4 TAB 10'S",
+                        "brand": "MANK",
+                        "category": "Vitamins",
+                        "batch": "D45Y003",
+                        "expiry": "01/27",
+                        "mrp": 50.45,
+                        "price": 47.93,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2015,
+                        "name": "GLEN CANDID B LOTION 10 ML",
+                        "brand": "GLEN",
+                        "category": "First Aid",
+                        "batch": "11241260.",
+                        "expiry": "02/27",
+                        "mrp": 125,
+                        "price": 118.75,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2016,
+                        "name": "RECK DETTOL SOAP 50GR",
+                        "brand": "RECK",
+                        "category": "First Aid",
+                        "batch": "BC250208",
+                        "expiry": "02/27",
+                        "mrp": 10,
+                        "price": 9.5,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2017,
+                        "name": "THE LIV 52 DROPS 60ML",
+                        "brand": "THE",
+                        "category": "Vitamins",
+                        "batch": "252401048",
+                        "expiry": "11/27",
+                        "mrp": 140,
+                        "price": 133.0,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2018,
+                        "name": "SRI BR METHI MODAK 200GM",
+                        "brand": "SRI BR",
+                        "category": "Vitamins",
+                        "batch": "116*",
+                        "expiry": "02/28",
+                        "mrp": 140,
+                        "price": 133.0,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2019,
+                        "name": "HAMD SAFI 100ML",
+                        "brand": "HAMD",
+                        "category": "Vitamins",
+                        "batch": "24GSF351",
+                        "expiry": "09/27",
+                        "mrp": 68,
+                        "price": 64.6,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2020,
+                        "name": "MACL MACZONE + 1.5 INJ 1VIAL",
+                        "brand": "MACL",
+                        "category": "Antibiotics",
+                        "batch": "CSDP24195",
+                        "expiry": "11/26",
+                        "mrp": 220,
+                        "price": 209.0,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2021,
+                        "name": "RAPT NEOPEPTINE DROPS 15ML",
+                        "brand": "RAPT",
+                        "category": "Vitamins",
+                        "batch": "SP1024097",
+                        "expiry": "02/26",
+                        "mrp": 115,
+                        "price": 109.25,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2022,
+                        "name": "ABBO PANDIFF IV INJ VIAL",
+                        "brand": "ABBO",
+                        "category": "Antibiotics",
+                        "batch": "AQL0007",
+                        "expiry": "12/26",
+                        "mrp": 56.5,
+                        "price": 53.67,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2023,
+                        "name": "RECK DETTOL LIQ 550 ML",
+                        "brand": "RECK",
+                        "category": "First Aid",
+                        "batch": "TH174",
+                        "expiry": "08/28",
+                        "mrp": 259,
+                        "price": 246.05,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2024,
+                        "name": "RECK DETTOL LIQ 60ML",
+                        "brand": "RECK",
+                        "category": "First Aid",
+                        "batch": "GTG310",
+                        "expiry": "08/28",
+                        "mrp": 40.24,
+                        "price": 38.23,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2025,
+                        "name": "BLUE DICLOTAL INJ 3ML",
+                        "brand": "BLUE",
+                        "category": "Painkiller",
+                        "batch": "ZAEW24134",
+                        "expiry": "11/26",
+                        "mrp": 5.65,
+                        "price": 5.37,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2026,
+                        "name": "DABU MADHU (D) 50 GM",
+                        "brand": "DABU",
+                        "category": "Vitamins",
+                        "batch": "NP6590",
+                        "expiry": "09/26",
+                        "mrp": 45,
+                        "price": 42.75,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": true
+            },
+            {
+                        "id": 2027,
+                        "name": "RAPT LACTODEX - 1 1KG",
+                        "brand": "RAPT",
+                        "category": "Vitamins",
+                        "batch": "DG55250454",
+                        "expiry": "06/26",
+                        "mrp": 1020,
+                        "price": 969.0,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2028,
+                        "name": "RAPT LACTODEX - 3 POW 450GM",
+                        "brand": "RAPT",
+                        "category": "Vitamins",
+                        "batch": "DG35240283",
+                        "expiry": "01/26",
+                        "mrp": 540,
+                        "price": 513.0,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            },
+            {
+                        "id": 2029,
+                        "name": "AGLO AGLOZYME-C SYP 200 ML",
+                        "brand": "AGLO",
+                        "category": "Vitamins",
+                        "batch": "S192504",
+                        "expiry": "03/26",
+                        "mrp": 137.5,
+                        "price": 130.62,
+                        "stock": 99,
+                        "minStock": 5,
+                        "rx": false
+            }
+];
+
+        const defaultCoupons = [
+            { code: "MAAJ10", type: "PERCENT", value: 10, minSpend: 100, active: true },
+            { code: "FLAT50", type: "FLAT", value: 50, minSpend: 500, active: true }
+        ];
+
+        const defaultPrescriptions = [
+            { id: "RX-8891", customer: "Rajesh Sahu", file: "Dr_Sharma_Prescription.pdf", fileDataUrl: "", notes: "Please supply 2 strips of Azithromycin 500mg", status: "Verified & Approved", date: "28/08/2026" }
+        ];
+
+        function getDB(key, fallback) {
+            const data = localStorage.getItem("maaj_" + key);
+            return data ? JSON.parse(data) : fallback;
+        }
+
+        function setDB(key, data) {
+            localStorage.setItem("maaj_" + key, JSON.stringify(data));
+        }
+
+        let products = getDB("products", defaultProducts);
+        // Import medicines from the supplied purchase invoices once, while preserving existing admin data.
+        const existingProductKeys = new Set(products.map(p => String(p.name || "").trim().toLowerCase() + "|" + String(p.batch || "").trim().toLowerCase()));
+        importedInvoiceMedicines.forEach(p => {
+            const key = String(p.name || "").trim().toLowerCase() + "|" + String(p.batch || "").trim().toLowerCase();
+            if (!existingProductKeys.has(key)) {
+                products.push(p);
+                existingProductKeys.add(key);
+            }
+        });
+        setDB("products", products);
+        let coupons = getDB("coupons", defaultCoupons);
+        let cart = getDB("cart", []);
+        let orders = getDB("orders", []);
+        let prescriptions = getDB("prescriptions", defaultPrescriptions);
+        let activeCoupon = null;
+        let uploadedFileBase64 = "";
+        let uploadedFileName = "";
+        let activePdfToView = null;
+        let activeCategoryFilter = "All";
+
+        // --- ADMIN AUTHENTICATION (INDEX.HTML ONLY) ---
+        const ADMIN_USERNAME = "admin";
+        const ADMIN_PASSWORD = "MAAJ@Admin2026";
+        const ADMIN_AUTH_KEY = "maaj_admin_authenticated";
+
+        function isAdminAuthenticated() {
+            return localStorage.getItem(ADMIN_AUTH_KEY) === "true";
+        }
+
+        function openAdminLogin() {
+            if (isAdminAuthenticated()) {
+                navigateTo("admin-dashboard");
+                return;
+            }
+            document.getElementById("adminLoginModal").classList.add("active");
+            document.getElementById("adminUsername").value = "";
+            document.getElementById("adminPassword").value = "";
+            document.getElementById("adminLoginError").classList.add("hidden");
+            setTimeout(() => document.getElementById("adminUsername").focus(), 50);
+        }
+
+        function closeAdminLogin() {
+            document.getElementById("adminLoginModal").classList.remove("active");
+        }
+
+        function adminLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById("adminUsername").value.trim();
+            const password = document.getElementById("adminPassword").value;
+            const error = document.getElementById("adminLoginError");
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                localStorage.setItem(ADMIN_AUTH_KEY, "true");
+                error.classList.add("hidden");
+                closeAdminLogin();
+                navigateTo("admin-dashboard");
+                return;
+            }
+
+            error.textContent = "Invalid username or password.";
+            error.classList.remove("hidden");
+            document.getElementById("adminPassword").value = "";
+            document.getElementById("adminPassword").focus();
+        }
+
+        function adminLogout() {
+            localStorage.removeItem(ADMIN_AUTH_KEY);
+            pageHistory = ['home'];
+            history.replaceState({page:'home'}, '', '#home');
+            navigateTo("home", false);
+            updateNavigationButtons();
+            alert("Admin logged out successfully.");
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            currentPageId = 'home';
+            pageHistory = ['home'];
+            history.replaceState({page:'home'}, '', '#home');
+            updateNavigationButtons();
+            renderHomeFeatured();
+            renderStoreCatalog();
+            updateCartBadge();
+            renderAdminDashboard();
+        });
+
+        function fillPrescriptionCustomerDetails() {
+            const stored = getDB("currentUser", null);
+            if (!stored) return;
+            const nameEl = document.getElementById("rxCustName");
+            const phoneEl = document.getElementById("rxCustPhone");
+            const addressEl = document.getElementById("rxCustAddress");
+            if (nameEl && stored.name) nameEl.value = stored.name;
+            if (phoneEl && stored.phone) phoneEl.value = stored.phone;
+            if (addressEl && stored.address) addressEl.value = stored.address;
+        }
+
+        let currentPageId = 'home';
+        let pageHistory = ['home'];
+        let handlingPopState = false;
+
+        function updateNavigationButtons() {
+            const backBtn = document.getElementById('navBackBtn');
+            const homeBtn = document.getElementById('navHomeBtn');
+            if (backBtn) backBtn.disabled = currentPageId === 'home' || pageHistory.length <= 1;
+            if (homeBtn) homeBtn.disabled = currentPageId === 'home';
+        }
+
+        function goHomePage() {
+            if (currentPageId === 'admin-dashboard') {
+                localStorage.removeItem(ADMIN_AUTH_KEY);
+            }
+            pageHistory = ['home'];
+            history.replaceState({page:'home'}, '', '#home');
+            navigateTo('home', false);
+        }
+
+        function goBackPage() {
+            if (currentPageId === 'admin-dashboard') {
+                localStorage.removeItem(ADMIN_AUTH_KEY);
+                pageHistory = ['home'];
+                history.replaceState({page:'home'}, '', '#home');
+                navigateTo('home', false);
+                alert('Admin logged out because you went back.');
+                return;
+            }
+            if (pageHistory.length > 1) {
+                pageHistory.pop();
+                const previous = pageHistory[pageHistory.length - 1] || 'home';
+                history.replaceState({page: previous}, '', '#' + previous);
+                navigateTo(previous, false);
+            } else {
+                goHomePage();
+            }
+        }
+
+        window.addEventListener('popstate', function() {
+            if (currentPageId === 'admin-dashboard') {
+                localStorage.removeItem(ADMIN_AUTH_KEY);
+                pageHistory = ['home'];
+                history.replaceState({page:'home'}, '', '#home');
+                navigateTo('home', false);
+                return;
+            }
+            if (pageHistory.length > 1) {
+                pageHistory.pop();
+                navigateTo(pageHistory[pageHistory.length - 1] || 'home', false);
+            } else {
+                navigateTo('home', false);
+            }
+        });
+
+        function navigateTo(pageId, addHistory = true) {
+            // Admin page can ONLY be opened after successful admin authentication.
+            if (pageId === 'admin-dashboard' && !isAdminAuthenticated()) {
+                const selector = document.getElementById('pageSelector');
+                if (selector) selector.value = 'home';
+                openAdminLogin();
+                return;
+            }
+
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('page-' + pageId);
+            if (target) target.classList.add('active');
+
+            const selector = document.getElementById('pageSelector');
+            if (selector) selector.value = pageId;
+
+            if (addHistory && !handlingPopState && currentPageId !== pageId) {
+                pageHistory.push(pageId);
+                history.pushState({page: pageId}, '', '#' + pageId);
+            }
+            currentPageId = pageId;
+            updateNavigationButtons();
+
+            if (pageId === 'home') renderHomeFeatured();
+            if (pageId === 'store') renderStoreCatalog();
+            if (pageId === 'cart') renderCart();
+            if (pageId === 'orders') renderCustomerOrders();
+            if (pageId === 'upload-prescription') fillPrescriptionCustomerDetails();
+            if (pageId === 'prescription-history') renderCustomerPrescriptions();
+            if (pageId === 'admin-dashboard' && isAdminAuthenticated()) renderAdminDashboard();
+        }
+
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('admin-tab-' + tabName);
+            if (target) target.classList.add('active');
+
+            if (tabName === 'products') renderAdminProducts();
+            if (tabName === 'inventory') renderAdminInventory();
+            if (tabName === 'orders') renderAdminOrders();
+            if (tabName === 'prescriptions') renderAdminPrescriptions();
+            if (tabName === 'coupons') renderAdminCoupons();
+        }
+
+        // --- HOME PAGE RENDERING ---
+        function renderHomeFeatured() {
+            const grid = document.getElementById('homeFeaturedProducts');
+            grid.innerHTML = '';
+            products.slice(0, 4).forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl border flex flex-col justify-between shadow-sm hover:shadow transition";
+                card.innerHTML = `
+                    <div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">${p.category}</span>
+                        <h4 class="font-bold text-xs mt-2 text-slate-800">${p.name}</h4>
+                        <p class="text-[11px] text-slate-400">Brand: ${p.brand}</p>
+                    </div>
+                    <div class="mt-3 flex justify-between items-center border-t pt-2">
+                        <span class="font-bold text-sm text-emerald-600">₹${p.price}</span>
+                        <button onclick="addToCart(${p.id})" class="bg-emerald-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-700">Add</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- STORE CATALOG LOGIC ---
+
+        function searchFromHome() {
+            const input = document.getElementById('homeSearchInput');
+            const search = input ? input.value.trim() : '';
+            activeCategoryFilter = 'All';
+            navigateTo('store');
+            const catalog = document.getElementById('catalogSearch');
+            if (catalog) {
+                catalog.value = search;
+                catalog.focus();
+            }
+            renderStoreCatalog();
+        }
+
+        function openCategory(category) {
+            activeCategoryFilter = category || 'All';
+            navigateTo('store');
+            renderStoreCatalog();
+        }
+
+        function renderStoreCatalog() {
+            const grid = document.getElementById('storeProductGrid');
+            if (!grid) return;
+            const searchEl = document.getElementById('catalogSearch');
+            const search = (searchEl ? searchEl.value : '').trim().toLowerCase();
+            grid.innerHTML = '';
+
+            const filtered = products.filter(p => {
+                const name = String(p.name || '').toLowerCase();
+                const brand = String(p.brand || '').toLowerCase();
+                const batch = String(p.batch || '').toLowerCase();
+                const category = String(p.category || '');
+                const matchesSearch = !search || name.includes(search) || brand.includes(search) || batch.includes(search);
+                const matchesCategory = activeCategoryFilter === 'All' || category === activeCategoryFilter;
+                return matchesSearch && matchesCategory;
+            });
+
+            const info = document.getElementById('catalogResultInfo');
+            if (info) info.textContent = `${filtered.length} medicine${filtered.length === 1 ? '' : 's'} found • ${activeCategoryFilter === 'All' ? 'All Categories' : activeCategoryFilter}`;
+
+            document.querySelectorAll('.category-filter').forEach(btn => {
+                const active = btn.dataset.cat === activeCategoryFilter;
+                btn.className = 'category-filter px-3 py-1.5 rounded-full text-xs font-bold ' + (active ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700');
+            });
+
+            if (!filtered.length) {
+                grid.innerHTML = `<div class="col-span-full bg-white border rounded-xl p-10 text-center text-sm text-slate-500">
+                    <i class="fa-solid fa-magnifying-glass text-2xl mb-3 text-slate-300"></i>
+                    <p class="font-bold">No medicine found</p>
+                    <p class="text-xs mt-1">Try another medicine name, brand, batch or category.</p>
+                </div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white border rounded-xl p-4 shadow-sm space-y-3 flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2">
+                            <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded">${p.category}</span>
+                            ${p.rx ? '<span class="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded">Rx Required</span>' : ''}
+                        </div>
+                        <h3 class="font-bold text-sm text-slate-800 mt-2">${p.name}</h3>
+                        <p class="text-xs text-slate-400">Brand: ${p.brand} | Batch: ${p.batch}</p>
+                        <p class="text-xs text-slate-400">Exp: ${p.expiry}</p>
+                    </div>
+                    <div class="pt-2 border-t flex justify-between items-center">
+                        <div>
+                            <span class="text-xs line-through text-slate-400">₹${Number(p.mrp || 0).toFixed(2)}</span>
+                            <span class="text-sm font-black text-emerald-600 ml-1">₹${Number(p.price || 0).toFixed(2)}</span>
+                        </div>
+                        ${Number(p.stock) > 0
+                            ? `<button onclick="addToCart(${p.id})" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-700"><i class="fa-solid fa-plus mr-1"></i> Add</button>`
+                            : `<span class="text-xs text-red-500 font-bold">Out of Stock</span>`}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- CART SYSTEM ---
+        function addToCart(prodId) {
+            const prod = products.find(p => p.id === prodId);
+            if (!prod) return;
+
+            const existing = cart.find(c => c.id === prodId);
+            if (existing) {
+                if (existing.qty < prod.stock) existing.qty++;
+                else alert("Maximum available stock reached!");
+            } else {
+                cart.push({ ...prod, qty: 1 });
+            }
+            setDB('cart', cart);
+            updateCartBadge();
+            alert(`${prod.name} added to cart!`);
+        }
+
+        function updateCartBadge() {
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cartBadgeCount').innerText = count;
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartItemsList');
+            list.innerHTML = '';
+
+            if (cart.length === 0) {
+                list.innerHTML = `<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">Your cart is empty.</div>`;
+            } else {
+                cart.forEach((item, index) => {
+                    const row = document.createElement('div');
+                    row.className = "bg-white p-4 rounded-xl border flex justify-between items-center text-xs shadow-sm";
+                    row.innerHTML = `
+                        <div>
+                            <h4 class="font-bold text-slate-800">${item.name}</h4>
+                            <p class="text-slate-400">₹${item.price} x ${item.qty}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateQty(${index}, -1)" class="w-6 h-6 bg-slate-100 font-bold rounded">-</button>
+                            <span class="font-bold">${item.qty}</span>
+                            <button onclick="updateQty(${index}, 1)" class="w-6 h-6 bg-slate-100 font-bold rounded">+</button>
+                            <button onclick="removeItem(${index})" class="text-red-500 ml-2"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+            calculateTotals();
+        }
+
+        function updateQty(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) cart.splice(index, 1);
+            setDB('cart', cart);
+            updateCartBadge();
+            renderCart();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            setDB('cart', cart);
+            updateCartBadge();
+            renderCart();
+        }
+
+        function calculateTotals() {
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            let discount = 0;
+
+            if (activeCoupon) {
+                if (activeCoupon.type === 'PERCENT') discount = (subtotal * activeCoupon.value) / 100;
+                else discount = activeCoupon.value;
+            }
+
+            const tax = (subtotal - discount) * 0.05;
+            const grandTotal = Math.max(0, subtotal - discount + tax);
+
+            document.getElementById('cartSubtotal').innerText = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('cartDiscount').innerText = `-₹${discount.toFixed(2)}`;
+            document.getElementById('cartTax').innerText = `₹${tax.toFixed(2)}`;
+            document.getElementById('cartGrandTotal').innerText = `₹${grandTotal.toFixed(2)}`;
+        }
+
+        function applyCoupon() {
+            const code = document.getElementById('couponCodeInput').value.trim().toUpperCase();
+            const msg = document.getElementById('couponStatusMessage');
+            const found = coupons.find(c => c.code === code && c.active);
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+
+            if (!found) {
+                msg.className = "text-[11px] text-red-500 font-bold";
+                msg.innerText = "Invalid or inactive coupon code.";
+                return;
+            }
+
+            if (subtotal < found.minSpend) {
+                msg.className = "text-[11px] text-red-500 font-bold";
+                msg.innerText = `Minimum order spend ₹${found.minSpend} required.`;
+                return;
+            }
+
+            activeCoupon = found;
+            msg.className = "text-[11px] text-emerald-600 font-bold";
+            msg.innerText = `Coupon ${found.code} applied!`;
+            document.getElementById('removeCouponBtn').classList.remove('hidden');
+            calculateTotals();
+        }
+
+        function removeCoupon() {
+            activeCoupon = null;
+            document.getElementById('couponCodeInput').value = '';
+            document.getElementById('couponStatusMessage').innerText = '';
+            document.getElementById('removeCouponBtn').classList.add('hidden');
+            calculateTotals();
+        }
+
+        // --- CHECKOUT & ORDER ---
+        function togglePaymentMode(mode) {
+            const sim = document.getElementById('onlinePaymentSim');
+            if (mode === 'ONLINE') sim.classList.remove('hidden');
+            else sim.classList.add('hidden');
+        }
+
+        function processOrderCheckout() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            const name = document.getElementById('checkoutName').value.trim();
+            const phone = document.getElementById('checkoutPhone').value.trim();
+            const address = document.getElementById('checkoutAddress').value.trim();
+            const mode = 'COD';
+
+            if (!name || !phone || !address) {
+                alert("Please complete shipping details!");
+                return;
+            }
+
+            const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            const newOrder = {
+                id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+                date: new Date().toLocaleDateString(),
+                customer: name,
+                phone: phone,
+                address: address,
+                items: [...cart],
+                amount: subtotal,
+                paymentMode: mode,
+                status: 'Pending'
+            };
+
+            orders.unshift(newOrder);
+            setDB('orders', orders);
+
+            cart.forEach(c => {
+                const p = products.find(prod => prod.id === c.id);
+                if (p) p.stock = Math.max(0, p.stock - c.qty);
+            });
+            setDB('products', products);
+
+            cart = [];
+            setDB('cart', cart);
+            updateCartBadge();
+
+            alert(`Order placed successfully! Reference: ${newOrder.id}`);
+            navigateTo('orders');
+        }
+
+        // --- CUSTOMER ORDERS & TRACKING ---
+        function renderCustomerOrders() {
+            const list = document.getElementById('customerOrdersList');
+            list.innerHTML = '';
+
+            if (orders.length === 0) {
+                list.innerHTML = `<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No previous orders found.</div>`;
+                return;
+            }
+
+            orders.forEach(o => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-xl border space-y-3 text-xs shadow-sm";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div>
+                            <span class="font-bold text-slate-800">${o.id}</span>
+                            <span class="text-slate-400 ml-2">(${o.date})</span>
+                        </div>
+                        <span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">${o.status}</span>
+                    </div>
+                    <div class="space-y-1">
+                        ${o.items.map(i => `<p class="text-slate-600">${i.name} x ${i.qty} — ₹${i.price * i.qty}</p>`).join('')}
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t">
+                        <span class="font-black text-slate-800">Total: ₹${o.amount} (${o.paymentMode})</span>
+                        <div class="flex gap-2">
+                            <button onclick="trackOrder('${o.id}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded hover:bg-emerald-700">Track</button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function trackOrder(orderId) {
+            const o = orders.find(item => item.id === orderId);
+            if (!o) return;
+
+            document.getElementById('trackingOrderId').innerText = `Order ID: ${o.id}`;
+            document.getElementById('trackingOrderDate').innerText = `Date: ${o.date}`;
+            document.getElementById('trackingStatusBadge').innerText = `Status: ${o.status}`;
+
+            const stages = ['Pending', 'Confirmed', 'Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
+            const pipeline = document.getElementById('trackingPipeline');
+            pipeline.innerHTML = '';
+
+            const currentIdx = stages.indexOf(o.status);
+
+            stages.forEach((st, idx) => {
+                const step = document.createElement('div');
+                const isPassed = idx <= currentIdx;
+                step.className = `p-3 rounded-lg border font-bold ${isPassed ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-50 text-slate-400'}`;
+                step.innerText = `${idx + 1}. ${st}`;
+                pipeline.appendChild(step);
+            });
+
+            navigateTo('order-tracking');
+        }
+
+        // --- PRESCRIPTION PDF UPLOAD & VIEWER LOGIC ---
+        function handlePrescriptionFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            uploadedFileName = file.name;
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                uploadedFileBase64 = e.target.result;
+                document.getElementById('rxFileNameText').innerText = file.name;
+                document.getElementById('rxPdfPreviewContainer').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function previewSelectedPdf() {
+            if (!uploadedFileBase64) return;
+            openPdfModal(uploadedFileName, uploadedFileBase64);
+        }
+
+        function submitPrescriptionUpload() {
+            const name = document.getElementById('rxCustName').value.trim();
+            const phone = document.getElementById('rxCustPhone').value.trim();
+            const address = document.getElementById('rxCustAddress').value.trim();
+            const notes = document.getElementById('rxNotes').value.trim();
+
+            if (!name || !phone || !address) {
+                alert("Please enter customer name, mobile number and delivery address!");
+                return;
+            }
+            if (!/^[0-9]{10}$/.test(phone)) {
+                alert("Please enter a valid 10-digit mobile number!");
+                return;
+            }
+
+            const rx = {
+                id: 'RX-' + Math.floor(1000 + Math.random() * 9000),
+                customer: name,
+                phone: phone,
+                address: address,
+                file: uploadedFileName || 'Prescription_Document.pdf',
+                fileDataUrl: uploadedFileBase64 || '',
+                notes: notes || 'No special notes',
+                status: 'Pending Verification',
+                date: new Date().toLocaleDateString()
+            };
+
+            prescriptions.unshift(rx);
+            setDB('prescriptions', prescriptions);
+            alert("Prescription PDF uploaded successfully for pharmacist verification!");
+            
+            // Reset fields
+            document.getElementById('rxPdfPreviewContainer').classList.add('hidden');
+            document.getElementById('rxFileInput').value = '';
+            uploadedFileBase64 = "";
+            uploadedFileName = "";
+
+            navigateTo('prescription-history');
+        }
+
+        function renderCustomerPrescriptions() {
+            const list = document.getElementById('customerRxList');
+            list.innerHTML = '';
+
+            if (prescriptions.length === 0) {
+                list.innerHTML = `<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No prescriptions uploaded yet.</div>`;
+                return;
+            }
+
+            prescriptions.forEach(r => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs shadow-sm gap-3";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                            <h4 class="font-bold text-slate-800">${r.id} — ${r.file}</h4>
+                        </div>
+                        <p class="text-slate-400 text-[11px] mt-1">Uploaded Date: ${r.date || 'N/A'}</p>
+                        <p class="text-slate-500">Notes: ${r.notes}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded-full text-[11px]">${r.status}</span>
+                        <button onclick="viewRxPdf('${r.id}')" class="bg-slate-900 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-slate-800">
+                            <i class="fa-solid fa-eye mr-1"></i> View PDF
+                        </button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function viewRxPdf(rxId) {
+            const rx = prescriptions.find(item => item.id === rxId);
+            if (!rx) return;
+            openPdfModal(rx.file, rx.fileDataUrl, rx.id);
+        }
+
+        function openPdfModal(fileName, fileDataUrl, rxId = 'RX-DOC') {
+            document.getElementById('pdfViewerTitle').innerText = fileName || "Doctor Prescription Document";
+            document.getElementById('pdfViewerMeta').innerText = `Document Ref: ${rxId}`;
+            const body = document.getElementById('pdfViewerBody');
+
+            activePdfToView = fileDataUrl;
+
+            if (fileDataUrl && fileDataUrl.startsWith("data:application/pdf")) {
+                body.innerHTML = `<embed src="${fileDataUrl}" type="application/pdf" class="w-full h-[500px] rounded-lg border" />`;
+            } else if (fileDataUrl && fileDataUrl.startsWith("data:image")) {
+                body.innerHTML = `<img src="${fileDataUrl}" class="max-h-[500px] rounded-lg shadow border object-contain" />`;
+            } else {
+                body.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl border text-center space-y-4 max-w-md w-full shadow-lg">
+                        <i class="fa-solid fa-file-pdf text-red-500 text-6xl"></i>
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-800">${fileName}</h4>
+                            <p class="text-xs text-slate-400 mt-1">Prescription PDF file loaded into secure viewer.</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-lg border text-left text-xs space-y-1">
+                            <p class="font-bold text-emerald-800">Verified Pharmacist Check:</p>
+                            <p class="text-slate-600">✓ Patient Name Verified</p>
+                            <p class="text-slate-600">✓ Doctor Registration Stamp Present</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('pdfViewerModal').classList.add('active');
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdfViewerModal').classList.remove('active');
+        }
+
+        function downloadActivePdf() {
+            if (!activePdfToView) {
+                alert("Sample Prescription PDF file ready for download.");
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = activePdfToView;
+            link.download = "MAAJ_Pharmacy_Prescription.pdf";
+            link.click();
+        }
+
+        // --- ADMIN DASHBOARD & METRICS ---
+        function renderAdminDashboard() {
+            if (!isAdminAuthenticated()) {
+                openAdminLogin();
+                return;
+            }
+            const totalSales = orders.reduce((sum, o) => sum + (o.status !== 'Cancelled' ? o.amount : 0), 0);
+            const totalOrders = orders.length;
+            const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+            const lowStock = products.filter(p => p.stock <= p.minStock).length;
+            const pendingRx = prescriptions.filter(r => r.status.includes('Pending')).length;
+
+            document.getElementById('statTotalSales').innerText = `₹${totalSales.toFixed(2)}`;
+            document.getElementById('statTotalOrders').innerText = totalOrders;
+            document.getElementById('statPendingOrders').innerText = pendingOrders;
+            document.getElementById('statTotalMedicines').innerText = products.length;
+            document.getElementById('statLowStock').innerText = lowStock;
+            document.getElementById('statPendingRx').innerText = pendingRx;
+
+            renderAdminProducts();
+        }
+
+        function renderAdminProducts() {
+            const tbody = document.getElementById('adminProductsTable');
+            tbody.innerHTML = '';
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-800">${p.name}</td>
+                    <td class="p-3">${p.category} / ${p.brand}</td>
+                    <td class="p-3">${p.batch} (Exp: ${p.expiry})</td>
+                    <td class="p-3">₹${p.mrp} / <span class="text-emerald-600 font-bold">₹${p.price}</span></td>
+                    <td class="p-3 font-bold ${p.stock <= p.minStock ? 'text-red-500' : 'text-slate-700'}">${p.stock}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="editProduct(${p.id})" class="text-blue-600 font-bold mr-2">Edit</button>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-600 font-bold">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openProductModal(prod = null) {
+            document.getElementById('pmId').value = prod ? prod.id : '';
+            document.getElementById('pmName').value = prod ? prod.name : '';
+            document.getElementById('pmBrand').value = prod ? prod.brand : '';
+            document.getElementById('pmCategory').value = prod ? prod.category : 'Painkiller';
+            document.getElementById('pmBatch').value = prod ? prod.batch : '';
+            document.getElementById('pmExpiry').value = prod ? prod.expiry : '';
+            document.getElementById('pmMrp').value = prod ? prod.mrp : '';
+            document.getElementById('pmPrice').value = prod ? prod.price : '';
+            document.getElementById('pmStock').value = prod ? prod.stock : '';
+            document.getElementById('pmMinStock').value = prod ? prod.minStock : '';
+            document.getElementById('pmRxReq').checked = prod ? prod.rx : false;
+
+            document.getElementById('productModalTitle').innerText = prod ? 'Edit Medicine' : 'Add New Medicine';
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        function saveProduct() {
+            const id = document.getElementById('pmId').value;
+            const name = document.getElementById('pmName').value.trim();
+            const brand = document.getElementById('pmBrand').value.trim();
+            const category = document.getElementById('pmCategory').value;
+            const batch = document.getElementById('pmBatch').value.trim();
+            const expiry = document.getElementById('pmExpiry').value.trim();
+            const mrp = parseFloat(document.getElementById('pmMrp').value) || 0;
+            const price = parseFloat(document.getElementById('pmPrice').value) || 0;
+            const stock = parseInt(document.getElementById('pmStock').value) || 0;
+            const minStock = parseInt(document.getElementById('pmMinStock').value) || 0;
+            const rx = document.getElementById('pmRxReq').checked;
+
+            if (!name || !price) {
+                alert("Please fill in Medicine Name and Price!");
+                return;
+            }
+
+            if (id) {
+                const idx = products.findIndex(p => p.id == id);
+                if (idx !== -1) {
+                    products[idx] = { id: parseInt(id), name, brand, category, batch, expiry, mrp, price, stock, minStock, rx };
+                }
+            } else {
+                products.push({ id: Date.now(), name, brand, category, batch, expiry, mrp, price, stock, minStock, rx });
+            }
+
+            setDB('products', products);
+            closeProductModal();
+            renderAdminProducts();
+        }
+
+        function editProduct(id) {
+            const p = products.find(item => item.id === id);
+            if (p) openProductModal(p);
+        }
+
+        function deleteProduct(id) {
+            if (confirm("Are you sure you want to delete this medicine?")) {
+                products = products.filter(p => p.id !== id);
+                setDB('products', products);
+                renderAdminProducts();
+            }
+        }
+
+        function renderAdminInventory() {
+            const tbody = document.getElementById('adminInventoryTable');
+            tbody.innerHTML = '';
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-800">${p.name}</td>
+                    <td class="p-3">${p.batch}</td>
+                    <td class="p-3 font-bold">${p.stock}</td>
+                    <td class="p-3">${p.stock <= p.minStock ? '<span class="bg-red-100 text-red-600 px-2 py-0.5 rounded font-bold">Low Stock</span>' : '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold">Sufficient</span>'}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="adjustStock(${p.id}, 10)" class="bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded font-bold mr-1">+10</button>
+                        <button onclick="adjustStock(${p.id}, -10)" class="bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded font-bold">-10</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function adjustStock(id, delta) {
+            const p = products.find(item => item.id === id);
+            if (p) {
+                p.stock = Math.max(0, p.stock + delta);
+                setDB('products', products);
+                renderAdminInventory();
+            }
+        }
+
+        function renderAdminOrders() {
+            const tbody = document.getElementById('adminOrdersTable');
+            tbody.innerHTML = '';
+
+            orders.forEach(o => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-800">${o.id}</td>
+                    <td class="p-3">${o.customer}</td>
+                    <td class="p-3 font-bold">₹${o.amount}</td>
+                    <td class="p-3">
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" class="p-1 border rounded bg-white font-bold">
+                            ${['Pending', 'Confirmed', 'Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="viewInvoice('${o.id}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-emerald-700"><i class="fa-solid fa-file-invoice mr-1"></i> Generate Invoice</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const o = orders.find(item => item.id === orderId);
+            if (o) {
+                o.status = newStatus;
+                setDB('orders', orders);
+                alert(`Order status updated to ${newStatus}`);
+            }
+        }
+
+        function renderAdminPrescriptions() {
+            const tbody = document.getElementById('adminRxTable');
+            tbody.innerHTML = '';
+
+            prescriptions.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${r.id}</td>
+                    <td class="p-3">${r.customer}</td>
+                    <td class="p-3">
+                        <button onclick="viewRxPdf('${r.id}')" class="text-blue-600 font-bold underline">
+                            <i class="fa-solid fa-file-pdf mr-1"></i>${r.file}
+                        </button>
+                    </td>
+                    <td class="p-3 font-bold text-purple-600">${r.status}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="verifyRx('${r.id}', 'Approved')" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold mr-1">Approve</button>
+                        <button onclick="verifyRx('${r.id}', 'Rejected')" class="bg-red-600 text-white px-2 py-1 rounded font-bold">Reject</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function verifyRx(id, status) {
+            const r = prescriptions.find(item => item.id === id);
+            if (r) {
+                r.status = status;
+                setDB('prescriptions', prescriptions);
+                renderAdminPrescriptions();
+            }
+        }
+
+        function renderAdminCoupons() {
+            const tbody = document.getElementById('adminCouponsTable');
+            tbody.innerHTML = '';
+
+            coupons.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${c.code}</td>
+                    <td class="p-3">${c.value}${c.type === 'PERCENT' ? '%' : '₹'}</td>
+                    <td class="p-3">₹${c.minSpend}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="toggleCoupon('${c.code}')" class="text-blue-600 font-bold">Toggle</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openCouponModal() {
+            document.getElementById('couponModal').classList.add('active');
+        }
+
+        function closeCouponModal() {
+            document.getElementById('couponModal').classList.remove('active');
+        }
+
+        function saveCoupon() {
+            const code = document.getElementById('cmCode').value.trim().toUpperCase();
+            const type = document.getElementById('cmType').value;
+            const value = parseFloat(document.getElementById('cmValue').value) || 0;
+            const minSpend = parseFloat(document.getElementById('cmMinSpend').value) || 0;
+
+            if (!code || !value) {
+                alert("Please enter coupon code and discount value!");
+                return;
+            }
+
+            coupons.push({ code, type, value, minSpend, active: true });
+            setDB('coupons', coupons);
+            closeCouponModal();
+            renderAdminCoupons();
+        }
+
+        function toggleCoupon(code) {
+            const c = coupons.find(item => item.code === code);
+            if (c) {
+                c.active = !c.active;
+                setDB('coupons', coupons);
+                renderAdminCoupons();
+            }
+        }
+
+        function viewInvoice(orderId) {
+            if (localStorage.getItem(ADMIN_AUTH_KEY) !== "true") {
+                alert("Admin login required to generate invoices.");
+                openAdminLogin();
+                return;
+            }
+            const o = orders.find(item => item.id === orderId);
+            if (!o) return;
+            const content = document.getElementById('invoiceContent');
+            const invoiceNo = 'INV-' + String(o.id).replace(/[^0-9A-Z-]/gi,'');
+            const items = (o.items || []).map((i, idx) => {
+                const prod = products.find(p => p.id === i.id) || {};
+                const mrp = Number(i.mrp ?? prod.mrp ?? i.price ?? 0);
+                const rate = Number(i.price ?? prod.price ?? 0);
+                const qty = Number(i.qty || 0);
+                const gst = Number(i.gst ?? prod.gst ?? 0);
+                return {i, prod, mrp, rate, qty, gst, total: rate*qty, no: idx+1};
+            });
+            const subtotal = Number(o.subtotal ?? items.reduce((a,x)=>a+x.total,0));
+            const discount = Number(o.discount || 0);
+            const tax = Number(o.tax || 0);
+            const delivery = Number(o.delivery || 0);
+            const grand = Number(o.amount || Math.max(0, subtotal-discount+tax+delivery));
+            const itemRows = items.map(x => `<tr class="border-b border-slate-200">
+                <td class="p-2 text-center">${x.no}</td>
+                <td class="p-2"><div class="font-bold text-slate-900">${x.i.name}</div><div class="text-[9px] text-slate-500">${x.prod.brand||''} ${x.i.rx||x.prod.rx?'• Rx':''}</div></td>
+                <td class="p-2 text-center">${x.prod.batch||'—'}</td>
+                <td class="p-2 text-center">${x.prod.expiry||'—'}</td>
+                <td class="p-2 text-center">₹${x.mrp.toFixed(2)}</td>
+                <td class="p-2 text-center">${x.qty}</td>
+                <td class="p-2 text-right">₹${x.rate.toFixed(2)}</td>
+                <td class="p-2 text-right font-bold">₹${x.total.toFixed(2)}</td>
+            </tr>`).join('');
+            content.innerHTML = `
+                <div id="printableInvoice" class="text-[10px] text-slate-800">
+                    <div class="border-2 border-emerald-700 rounded-lg overflow-hidden">
+                        <div class="bg-emerald-700 text-white p-5 flex justify-between gap-4">
+                            <div><div class="text-xl font-black tracking-wide">MAA JHARBANDLI</div><div class="text-sm font-bold">AND MEDICINE STORE</div><div class="text-[10px] mt-1 opacity-90">PHATAMUNDA • LOISINGHA, ODISHA</div></div>
+                            <div class="text-right"><div class="text-lg font-black">TAX INVOICE</div><div class="text-[10px]">Invoice No: <b>${invoiceNo}</b></div><div class="text-[10px]">Order ID: <b>${o.id}</b></div><div class="text-[10px]">Date: ${o.date}</div></div>
+                        </div>
+                        <div class="grid md:grid-cols-2 border-b">
+                            <div class="p-4 border-b md:border-b-0 md:border-r"><div class="font-black text-emerald-700 mb-1">BILL FROM</div><div class="font-bold">MAA JHARBANDLI AND MEDICINE STORE</div><div>Drug Licence: BOWZ 2860 R, 2861 RC, 2862 R</div><div>PAN: NMOPS6945B</div><div>Phone: 6372556219</div></div>
+                            <div class="p-4"><div class="font-black text-emerald-700 mb-1">BILL TO</div><div class="font-bold text-sm">${o.customer || 'Customer'}</div><div>Mobile: ${o.phone || '—'}</div><div>Address: ${o.address || '—'}</div><div>PIN: ${o.pincode || '—'}</div></div>
+                        </div>
+                        <div class="p-3 overflow-x-auto"><table class="w-full border-collapse"><thead><tr class="bg-slate-100 border-y border-slate-300"><th class="p-2">#</th><th class="p-2 text-left">Medicine</th><th class="p-2">Batch</th><th class="p-2">Expiry</th><th class="p-2">MRP</th><th class="p-2">Qty</th><th class="p-2">Rate</th><th class="p-2 text-right">Amount</th></tr></thead><tbody>${itemRows}</tbody></table></div>
+                        <div class="grid md:grid-cols-2 border-t">
+                            <div class="p-4"><div class="font-black text-emerald-700 mb-2">PAYMENT</div><div>Mode: <b>${o.paymentMode || '—'}</b></div><div>Status: <b>${o.status || '—'}</b></div>${o.coupon?`<div>Coupon: <b>${o.coupon}</b></div>`:''}<div class="mt-3 text-[9px] text-slate-500">Computer generated invoice. Please verify medicine, quantity and customer details before dispatch.</div></div>
+                            <div class="p-4 bg-slate-50"><div class="flex justify-between py-1"><span>Subtotal</span><b>₹${subtotal.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Discount</span><b>− ₹${discount.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Tax / GST</span><b>₹${tax.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Delivery</span><b>${delivery?`₹${delivery.toFixed(2)}`:'FREE'}</b></div><div class="flex justify-between mt-2 pt-2 border-t-2 border-emerald-700 text-base font-black text-emerald-700"><span>GRAND TOTAL</span><span>₹${grand.toFixed(2)}</span></div></div>
+                        </div>
+                        <div class="p-4 border-t"><div class="font-black text-emerald-700 mb-1">TERMS & CONDITIONS</div><div class="grid md:grid-cols-2 gap-2 text-[9px] text-slate-600"><div>• Prescription medicines are supplied only after prescription verification where required.<br>• Goods once sold should be checked at delivery.</div><div class="text-right mt-3 md:mt-0"><div class="font-bold text-slate-800">Authorized Signatory</div><div class="mt-6">MAA JHARBANDLI AND MEDICINE STORE</div></div></div></div>
+                        <div class="bg-slate-100 text-center p-2 text-[9px] font-bold text-slate-500">Thank you for choosing MAA JHARBANDLI AND MEDICINE STORE</div>
+                    </div>
+                </div>`;
+            document.getElementById('invoiceModal').classList.add('active');
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById('invoiceModal').classList.remove('active');
+        }
+
+        function printAdminInvoice() {
+            if (localStorage.getItem(ADMIN_AUTH_KEY) !== "true") { alert("Admin login required."); return; }
+            window.print();
+        }
+
+        function exportDataReport() {
+            let csv = "Order ID,Customer,Amount,Payment Mode,Status\n";
+            orders.forEach(o => {
+                csv += `${o.id},${o.customer},${o.amount},${o.paymentMode},${o.status}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'MAAJ_Pharmacy_Report.csv');
+            a.click();
+        }
+    </script>
+
+<script id="promo-fix-js">
+(function(){
+ const promos=[
+  {title:'FIRST ORDER OFFER',text:'Get 10% OFF on your first order',button:'SHOP NOW',bg:'linear-gradient(135deg,#047857,#10b981)'},
+  {title:'FREE DELIVERY',text:'Order above ₹499 and get FREE delivery',button:'ORDER NOW',bg:'linear-gradient(135deg,#0369a1,#06b6d4)'},
+  {title:'HEALTHCARE AT YOUR DOOR',text:'Quality medicines with fast local delivery',button:'SHOP MEDICINES',bg:'linear-gradient(135deg,#7c3aed,#a855f7)'},
+  {title:'SAVE MORE ON MEDICINES',text:'Great prices on everyday healthcare essentials',button:'VIEW STORE',bg:'linear-gradient(135deg,#b45309,#f59e0b)'},
+  {title:'PRESCRIPTION SERVICE',text:'Upload your prescription and order easily',button:'UPLOAD PRESCRIPTION',bg:'linear-gradient(135deg,#be123c,#f43f5e)'}
+ ];
+ let i=0,timer;
+ function render(){const track=document.getElementById('homePromoTrack'),dots=document.getElementById('promoDots');if(!track)return;track.innerHTML=promos.map((p,n)=>`<div class="promo-slide" style="background:${p.bg}"><div><div style="font-size:11px;font-weight:800;letter-spacing:1px;opacity:.9">MAAJ PHARMACY</div><h2 style="font-size:28px;font-weight:900;margin:5px 0">${p.title}</h2><p style="font-size:15px;margin:0 0 14px">${p.text}</p><button onclick="promoAction(${n})" style="background:white;color:#064e3b;border:0;padding:9px 16px;border-radius:9px;font-weight:800;font-size:12px">${p.button}</button></div><div style="font-size:58px;opacity:.18">💊</div></div>`).join('');dots.innerHTML=promos.map((_,n)=>`<button onclick="promoGo(${n})" style="width:8px;height:8px;border-radius:50%;border:0;padding:0;background:${n===i?'white':'rgba(255,255,255,.45)'}"></button>`).join('');track.style.transform=`translateX(-${i*100}%)`;track.style.width=`${promos.length*100}%`;track.style.transition='transform .6s ease';}
+ function go(n){i=(n+promos.length)%promos.length;render();clearInterval(timer);timer=setInterval(()=>go(i+1),5000)}
+ window.promoNext=()=>go(i+1);window.promoPrev=()=>go(i-1);window.promoGo=n=>go(n);
+ window.promoAction=function(n){if(n===4){navigateTo('prescription');}else{navigateTo('store');}};
+ document.addEventListener('DOMContentLoaded',()=>{render();timer=setInterval(()=>go(i+1),5000)});
+})();
+</script>
+
+<script id="customer-checkout-cart-fix-v2">
+(function(){
+  function getCU(){
+    try{
+      if(typeof currentCustomer!=='undefined' && currentCustomer) return currentCustomer;
+    }catch(e){}
+    try{return JSON.parse(localStorage.getItem('maaj_current_customer')||'null');}catch(e){return null;}
+  }
+  function fill(){
+    var u=getCU(); if(!u)return;
+    var map={
+      checkoutName:u.name||'',
+      checkoutPhone:u.mobile||u.phone||'',
+      checkoutPincode:u.pincode||'',
+      checkoutAddress:u.address||''
+    };
+    Object.keys(map).forEach(function(id){
+      var el=document.getElementById(id);
+      if(el && !el.value) el.value=map[id];
+    });
+    if(typeof renderCheckoutSummary==='function') renderCheckoutSummary();
+  }
+  var oldNav=window.navigateTo;
+  if(typeof oldNav==='function' && !oldNav.__checkoutFixed){
+    function nav(pageId){
+      var r=oldNav.apply(this,arguments);
+      if(pageId==='checkout') setTimeout(fill,60);
+      return r;
+    }
+    nav.__checkoutFixed=true;
+    window.navigateTo=nav;
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(fill,100);});
+})();
+</script>
+
+
+<script id="working-checkout-fix">
+(function(){
+  window.openCheckoutFromCart = function(){
+    try{
+      if(typeof cart !== 'undefined' && (!cart || cart.length===0)){
+        alert('Your cart is empty!');
+        return;
+      }
+    }catch(e){}
+    var user = null;
+    try{
+      if(typeof currentCustomer !== 'undefined' && currentCustomer) user=currentCustomer;
+    }catch(e){}
+    if(!user){
+      try{ user=JSON.parse(localStorage.getItem('maaj_current_customer')||'null'); }catch(e){}
+    }
+    if(!user){
+      alert('Please login to your customer account first.');
+      try{ if(typeof openCustomerAuth==='function') openCustomerAuth('login'); }catch(e){}
+      return;
+    }
+    if(typeof window.navigateTo==='function'){
+      window.navigateTo('checkout');
+      setTimeout(function(){
+        var vals={
+          checkoutName:user.name||'',
+          checkoutPhone:user.mobile||user.phone||'',
+          checkoutPincode:user.pincode||'',
+          checkoutAddress:user.address||''
+        };
+        Object.keys(vals).forEach(function(id){
+          var el=document.getElementById(id);
+          if(el) el.value=vals[id];
+        });
+        try{ if(typeof renderCheckoutSummary==='function') renderCheckoutSummary(); }catch(e){}
+        var page=document.getElementById('page-checkout');
+        if(page) page.scrollIntoView({behavior:'smooth',block:'start'});
+      },80);
+    } else {
+      alert('Checkout page is unavailable. Please refresh the page.');
+    }
+  };
+
+  // Ensure any remaining cart "Confirm & Place Order" button opens checkout.
+  document.addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('button').forEach(function(btn){
+      var t=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+      if(t.includes('confirm') && t.includes('place order') && !btn.closest('#page-checkout')){
+        btn.setAttribute('onclick','openCheckoutFromCart()');
+        btn.type='button';
+      }
+    });
+  });
+})();
+</script>
+
+
+<script id="final-cod-order-handler">
+(function(){
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+  function getUser(){
+    try{ if(typeof currentCustomer!=='undefined' && currentCustomer) return currentCustomer; }catch(e){}
+    try{ return JSON.parse(localStorage.getItem('maaj_current_customer')||'null'); }catch(e){ return null; }
+  }
+  function getArray(key, fallback){
+    try{
+      var raw=localStorage.getItem(key);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return fallback;
+  }
+  function saveArray(key, value){
+    try{localStorage.setItem(key, JSON.stringify(value));}catch(e){}
+    try{if(typeof setDB==='function') setDB(key,value);}catch(e){}
+  }
+
+  
+  /* RX PRESCRIPTION REQUIRED FIX */
+  function hasRxMedicine(items){
+    return (items||[]).some(function(i){
+      return i && (
+        i.prescriptionRequired===true || i.rxRequired===true ||
+        i.rx===true ||
+        i.isRx===true ||
+        String(i.prescription||'').toLowerCase()==='required' ||
+        String(i.prescriptionRequired||'').toLowerCase()==='true' ||
+        String(i.category||'').toLowerCase().includes('prescription')
+      );
+    });
+  }
+  function updateRxBox(){
+    var box=document.getElementById('rxCheckoutBox');
+    var input=document.getElementById('checkoutPrescription');
+    var items=[];
+    try{items=(typeof cart!=='undefined' && Array.isArray(cart))?cart:[];}catch(e){}
+    var required=hasRxMedicine(items);
+    if(box) box.classList.toggle('hidden',!required);
+    if(input) input.required=required;
+    return required;
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(updateRxBox,150);
+    var input=document.getElementById('checkoutPrescription');
+    if(input) input.addEventListener('change',function(){
+      var st=document.getElementById('checkoutPrescriptionStatus');
+      if(st) st.textContent=this.files && this.files.length ? ('Selected: '+this.files[0].name) : 'No prescription uploaded.';
+    });
+  });
+
+
+  window.finalPlaceCODOrder=function(){
+    var u=getUser();
+    if(!u){
+      alert('Please login to your customer account first.');
+      try{if(typeof openCustomerAuth==='function')openCustomerAuth('login');}catch(e){}
+      return false;
+    }
+
+    var name=(document.getElementById('checkoutName')||{}).value;
+    var phone=(document.getElementById('checkoutPhone')||{}).value;
+    var pin=(document.getElementById('checkoutPincode')||{}).value;
+    var address=(document.getElementById('checkoutAddress')||{}).value;
+
+    name=String(name||'').trim();
+    phone=String(phone||'').replace(/\D/g,'');
+    pin=String(pin||'').replace(/\D/g,'');
+    address=String(address||'').trim();
+
+    if(!name){alert('Please enter Customer Name.');return false;}
+    if(!/^\d{10}$/.test(phone)){alert('Please enter a valid 10-digit Mobile Number.');return false;}
+    if(!/^\d{6}$/.test(pin)){alert('Please enter a valid 6-digit PIN Code.');return false;}
+    if(!address){alert('Please enter complete Delivery Address.');return false;}
+
+    var items=[];
+    try{items=(typeof cart!=='undefined' && Array.isArray(cart))?cart:[];}catch(e){items=[];}
+    if(!items.length){alert('Your cart is empty.');return false;}
+    var rxRequired=hasRxMedicine(items);
+    var rxInput=document.getElementById('checkoutPrescription');
+    if(rxRequired && (!rxInput || !rxInput.files || !rxInput.files.length)){
+      var rxBox=document.getElementById('rxCheckoutBox');
+      if(rxBox) rxBox.classList.remove('hidden');
+      alert('Prescription required: your cart contains Rx medicine. Please upload the doctor prescription before placing the order.');
+      if(rxInput) rxInput.focus();
+      return false;
+    }
+    var prescriptionMeta=null;
+    if(rxRequired && rxInput && rxInput.files && rxInput.files.length){
+      var f=rxInput.files[0];
+      var allowed=['application/pdf','image/jpeg','image/png'];
+      var ext=(f.name.split('.').pop()||'').toLowerCase();
+      if(allowed.indexOf(f.type)<0 && ['pdf','jpg','jpeg','png'].indexOf(ext)<0){
+        alert('Please upload prescription as PDF, JPG or PNG.');
+        return false;
+      }
+      if(f.size>5*1024*1024){
+        alert('Prescription file must be 5 MB or smaller.');
+        return false;
+      }
+      prescriptionMeta={name:f.name,type:f.type,size:f.size,uploadedAt:new Date().toISOString()};
+    }
+
+
+    var subtotal=items.reduce(function(sum,i){return sum+Number(i.price||0)*Number(i.qty||0);},0);
+    var discount=0;
+    try{
+      if(typeof activeCoupon!=='undefined' && activeCoupon){
+        discount=activeCoupon.type==='PERCENT'
+          ? subtotal*Number(activeCoupon.value||0)/100
+          : Number(activeCoupon.value||0);
+        discount=Math.min(discount,subtotal);
+      }
+    }catch(e){}
+    var delivery=0;
+    try{
+      var freeAt=Number((typeof storeSettings!=='undefined' && storeSettings && storeSettings.freeDelivery)||499);
+      var deliveryFee=Number((typeof storeSettings!=='undefined' && storeSettings && storeSettings.delivery)||0);
+      delivery=(subtotal-discount)>=freeAt?0:deliveryFee;
+    }catch(e){}
+    var total=Math.max(0,subtotal-discount+delivery);
+
+    var orders=getArray('orders',[]);
+    if(!Array.isArray(orders))orders=[];
+
+    var order={
+      id:'ORD-'+Date.now().toString().slice(-8),
+      date:new Date().toLocaleString('en-IN'),
+      customer:name,
+      phone:phone,
+      pincode:pin,
+      address:address,
+      customerId:u.id || u.mobile || phone,
+      customerMobile:u.mobile || phone,
+      items:JSON.parse(JSON.stringify(items)),
+      subtotal:subtotal,
+      discount:discount,
+      delivery:delivery,
+      tax:0,
+      amount:total,
+      paymentMode:'COD',
+      paymentStatus:'COD - Pay on Delivery',
+      prescriptionRequired:rxRequired,
+      prescription:prescriptionMeta,
+      status:rxRequired?'Prescription Pending Review':'Pending'
+    };
+
+    orders.unshift(order);
+    saveArray('orders',orders);
+
+    // Update stock if product data exists.
+    try{
+      if(typeof products!=='undefined' && Array.isArray(products)){
+        items.forEach(function(ci){
+          var p=products.find(function(x){return String(x.id)===String(ci.id);});
+          if(p)p.stock=Math.max(0,Number(p.stock||0)-Number(ci.qty||0));
+        });
+        saveArray('products',products);
+      }
+    }catch(e){}
+
+    // Save latest customer delivery details.
+    try{
+      var accounts=getArray('customerAccounts',[]);
+      if(Array.isArray(accounts)){
+        var uid=u.id||u.mobile||phone;
+        var ai=accounts.findIndex(function(a){return String(a.id||a.mobile)===String(uid);});
+        if(ai<0) ai=accounts.findIndex(function(a){return String(a.mobile)===String(u.mobile||phone);});
+        if(ai>=0){
+          accounts[ai].name=name;
+          accounts[ai].mobile=accounts[ai].mobile||phone;
+          accounts[ai].pincode=pin;
+          accounts[ai].address=address;
+          saveArray('customerAccounts',accounts);
+        }
+      }
+      try{u.name=name;u.mobile=u.mobile||phone;u.pincode=pin;u.address=address;localStorage.setItem('maaj_current_customer',JSON.stringify(u));}catch(e){}
+    }catch(e){}
+
+    try{cart=[];localStorage.setItem('cart','[]');}catch(e){}
+    try{if(typeof activeCoupon!=='undefined')activeCoupon=null;}catch(e){}
+    try{if(typeof updateCartBadge==='function')updateCartBadge();}catch(e){}
+
+    alert('Order placed successfully!\\nOrder ID: '+order.id+'\\nPayment: Cash on Delivery (COD)\\nTotal: ₹'+total.toFixed(2));
+
+    try{
+      if(typeof navigateTo==='function')navigateTo('orders');
+      else window.location.hash='#orders';
+    }catch(e){window.location.hash='#orders';}
+
+    return false;
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var btns=document.querySelectorAll('button');
+    btns.forEach(function(btn){
+      var t=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+      if(t.indexOf('confirm')>=0 && t.indexOf('place cod order')>=0){
+        btn.type='button';
+        btn.onclick=window.finalPlaceCODOrder;
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html><script>
+
+/* CUSTOMER CHECKOUT DETAILS FIX — SINGLE INDEX.HTML */
+(function(){
+  function esc2(v){
+    return String(v ?? '').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});
+  }
+  function getCustomerForCheckout(){
+    try {
+      if (typeof currentCustomer !== 'undefined' && currentCustomer) return currentCustomer;
+    } catch(e){}
+    try { return JSON.parse(localStorage.getItem('maaj_current_customer') || 'null'); } catch(e){ return null; }
+  }
+  function syncCheckoutFields(){
+    const u = getCustomerForCheckout();
+    if(!u) return;
+    const name = document.getElementById('checkoutName');
+    const phone = document.getElementById('checkoutPhone');
+    const pin = document.getElementById('checkoutPincode');
+    const addr = document.getElementById('checkoutAddress');
+    if(name) name.value = u.name || '';
+    if(phone) phone.value = u.mobile || u.phone || '';
+    if(pin) pin.value = u.pincode || '';
+    if(addr) addr.value = u.address || '';
+  }
+  function renderCheckoutSummary(){
+    const list = document.getElementById('checkoutItemsList');
+    if(!list || typeof cart === 'undefined') return;
+    if(!cart.length){
+      list.innerHTML='<div class="text-slate-400 text-center py-5">Your cart is empty.</div>';
+      ['checkoutSubtotal','checkoutDiscount','checkoutDelivery','checkoutTax','checkoutGrandTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='₹0.00';});
+      return;
+    }
+    list.innerHTML = cart.map(i => `
+      <div class="flex justify-between gap-3">
+        <span>${esc2(i.name)} × ${Number(i.qty||0)}</span>
+        <b>₹${(Number(i.price||0)*Number(i.qty||0)).toFixed(2)}</b>
+      </div>`).join('');
+    const subtotal = cart.reduce((a,i)=>a+Number(i.price||0)*Number(i.qty||0),0);
+    let discount = 0;
+    try{
+      if(typeof activeCoupon !== 'undefined' && activeCoupon){
+        discount = activeCoupon.type === 'PERCENT'
+          ? subtotal*Number(activeCoupon.value||0)/100
+          : Number(activeCoupon.value||0);
+        discount = Math.min(discount, subtotal);
+      }
+    }catch(e){}
+    let delivery = 0;
+    try { delivery = subtotal-discount >= Number(storeSettings?.freeDelivery||0) ? 0 : Number(storeSettings?.delivery||0); } catch(e){}
+    const tax = 0;
+    const total = Math.max(0, subtotal-discount+delivery+tax);
+    const vals = {
+      checkoutSubtotal: `₹${subtotal.toFixed(2)}`,
+      checkoutDiscount: `-₹${discount.toFixed(2)}`,
+      checkoutDelivery: delivery===0 ? 'FREE' : `₹${delivery.toFixed(2)}`,
+      checkoutTax: `₹${tax.toFixed(2)}`,
+      checkoutGrandTotal: `₹${total.toFixed(2)}`
+    };
+    Object.entries(vals).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=v;});
+  }
+
+  window.renderCheckoutPage=function(){
+    syncCheckoutFields();
+    renderCheckoutSummary();
+  };
+
+  window.processOrderCheckout=function(){
+    const u = getCustomerForCheckout();
+    if(!u){
+      if(typeof openCustomerAuth==='function') openCustomerAuth('login');
+      else alert('Please login to your customer account first.');
+      return;
+    }
+    if(typeof cart==='undefined' || !cart.length){ alert('Your cart is empty!'); return; }
+
+    const name=(document.getElementById('checkoutName')?.value||'').trim();
+    const phone=(document.getElementById('checkoutPhone')?.value||'').trim();
+    const pincode=(document.getElementById('checkoutPincode')?.value||'').trim();
+    const address=(document.getElementById('checkoutAddress')?.value||'').trim();
+
+    if(!name || !/^\d{10}$/.test(phone) || !/^\d{6}$/.test(pincode) || !address){
+      alert('Please enter valid Customer Name, 10-digit Mobile Number, 6-digit PIN Code and complete Delivery Address.');
+      return;
+    }
+
+    let subtotal=cart.reduce((a,i)=>a+Number(i.price||0)*Number(i.qty||0),0);
+    let discount=0;
+    try{
+      if(typeof activeCoupon!=='undefined' && activeCoupon){
+        discount=activeCoupon.type==='PERCENT' ? subtotal*Number(activeCoupon.value||0)/100 : Number(activeCoupon.value||0);
+        discount=Math.min(discount,subtotal);
+      }
+    }catch(e){}
+    let delivery=0;
+    try { delivery=subtotal-discount>=Number(storeSettings?.freeDelivery||0)?0:Number(storeSettings?.delivery||0); } catch(e){}
+    const amount=Math.max(0,subtotal-discount+delivery);
+
+    const order={
+      id:'ORD-'+Math.floor(100000+Math.random()*900000),
+      date:new Date().toLocaleDateString(),
+      customer:name,
+      phone:phone,
+      pincode:pincode,
+      address:address,
+      customerId:u.id,
+      customerMobile:u.mobile || phone,
+      items:JSON.parse(JSON.stringify(cart)),
+      subtotal:subtotal,
+      discount:discount,
+      delivery:delivery,
+      tax:0,
+      amount:amount,
+      paymentMode:'COD',
+      status:'Pending'
+    };
+
+    // Use the app's existing orders array and persist it.
+    orders.unshift(order);
+    setDB('orders',orders);
+
+    cart.forEach(c=>{
+      const prod=products.find(p=>p.id===c.id);
+      if(prod) prod.stock=Math.max(0,Number(prod.stock||0)-Number(c.qty||0));
+    });
+    setDB('products',products);
+
+    // Keep the registered customer's latest delivery details.
+    try{
+      const idx=customerAccounts.findIndex(x=>x.id===u.id);
+      if(idx>=0){
+        customerAccounts[idx].name=name;
+        customerAccounts[idx].address=address;
+        customerAccounts[idx].pincode=pincode;
+        customerAccounts[idx].mobile=customerAccounts[idx].mobile || phone;
+        saveAccounts();
+      }
+    }catch(e){}
+
+    cart=[];
+    setDB('cart',cart);
+    if(typeof activeCoupon!=='undefined') activeCoupon=null;
+    if(typeof updateCartBadge==='function') updateCartBadge();
+
+    alert('Order placed successfully! Reference: '+order.id+'\nPayment Method: Cash on Delivery\nCustomer: '+name);
+    navigateTo('orders');
+  };
+
+  // Replace customer order renderer with a strict account-owner filter.
+  window.renderCustomerOrders=function(){
+    const list=document.getElementById('customerOrdersList');
+    if(!list)return;
+    const u=getCustomerForCheckout();
+    list.innerHTML='';
+    if(!u){
+      list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">Please login to view your orders.</div>';
+      return;
+    }
+    const mine=orders.filter(o=>o.customerId===u.id);
+    if(!mine.length){
+      list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No orders found for your account.</div>';
+      return;
+    }
+    mine.forEach(o=>{
+      const card=document.createElement('div');
+      card.className='bg-white p-5 rounded-xl border space-y-3 text-xs shadow-sm';
+      card.innerHTML=`
+        <div class="flex justify-between items-center border-b pb-2">
+          <div><span class="font-bold">${esc2(o.id)}</span><span class="text-slate-400 ml-2">(${esc2(o.date)})</span></div>
+          <span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">${esc2(o.status)}</span>
+        </div>
+        <div class="text-slate-600 space-y-1">
+          ${(o.items||[]).map(i=>`<p>${esc2(i.name)} × ${Number(i.qty||0)} — ₹${(Number(i.price||0)*Number(i.qty||0)).toFixed(2)}</p>`).join('')}
+        </div>
+        <div class="border-t pt-3 grid grid-cols-1 md:grid-cols-2 gap-1 text-slate-500">
+          <div><b>Customer:</b> ${esc2(o.customer)}</div>
+          <div><b>Mobile:</b> ${esc2(o.phone)}</div>
+          <div class="md:col-span-2"><b>Address:</b> ${esc2(o.address)} ${o.pincode?`(${esc2(o.pincode)})`:''}</div>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t">
+          <span class="font-black text-slate-800">Total: ₹${Number(o.amount||0).toFixed(2)} — COD</span>
+          <button onclick="trackOrder('${String(o.id).replace(/'/g,"\\'")}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded">Track</button>
+        </div>`;
+      list.appendChild(card);
+    });
+  };
+
+  // Populate checkout whenever checkout page is opened.
+  const nav0=window.navigateTo;
+  window.navigateTo=function(pageId){
+    const result=nav0.apply(this,arguments);
+    if(pageId==='checkout') setTimeout(renderCheckoutPage,50);
+    if(pageId==='orders') setTimeout(()=>window.renderCustomerOrders(),50);
+    return result;
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){syncCheckoutFields();renderCheckoutSummary();},100);
+  });
+})();
+
+/* CUSTOMER ACCOUNT SECURITY + OWNER-ONLY ORDERS + ADMIN CUSTOMER EXPORT
+   Single-file implementation for index.html. */
+(function(){
+  const CUSTOMER_KEY='maaj_customer_accounts';
+  const CURRENT_CUSTOMER_KEY='maaj_current_customer';
+  let customerAccounts = JSON.parse(localStorage.getItem(CUSTOMER_KEY)||'[]');
+  let currentCustomer = JSON.parse(localStorage.getItem(CURRENT_CUSTOMER_KEY)||'null');
+
+  function saveAccounts(){ localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customerAccounts)); }
+  function saveCurrent(){ if(currentCustomer) localStorage.setItem(CURRENT_CUSTOMER_KEY,JSON.stringify(currentCustomer)); else localStorage.removeItem(CURRENT_CUSTOMER_KEY); }
+  function validMobile(v){ return /^\d{10}$/.test(v); }
+  function esc(v){ return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  window.isCustomerLoggedIn=()=>!!currentCustomer;
+
+  function addCustomerModal(){
+    if(document.getElementById('customerAuthModal')) return;
+    const el=document.createElement('div'); el.id='customerAuthModal'; el.className='fixed inset-0 bg-slate-950/70 z-[120] hidden items-center justify-center p-4';
+    el.innerHTML=`<div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+      <button onclick="closeCustomerAuth()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
+      <div class="text-center mb-5"><div class="w-12 h-12 mx-auto bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-user"></i></div><h2 id="customerAuthTitle" class="text-xl font-black mt-2">Customer Login</h2><p class="text-xs text-slate-500">Use your mobile number and password</p></div>
+      <div id="customerLoginBox" class="space-y-3">
+        <input id="customerLoginMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="10-digit mobile number">
+        <input id="customerLoginPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="Password">
+        <button onclick="customerLogin()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Login</button>
+        <div class="flex justify-between text-xs"><button onclick="showCustomerSignup()" class="text-emerald-700 font-bold">Create account</button><button onclick="showForgotPassword()" class="text-red-600 font-bold">Forgot password?</button></div>
+        <p id="customerLoginMsg" class="hidden text-xs font-bold p-2 rounded"></p>
+      </div>
+      <div id="customerSignupBox" class="hidden space-y-3">
+        <input id="customerSignupName" class="w-full p-3 border rounded-xl" placeholder="Full name">
+        <input id="customerSignupMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="10-digit mobile number">
+        <input id="customerSignupPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="Create password (min 6 characters)">
+        <input id="customerSignupPassword2" type="password" class="w-full p-3 border rounded-xl" placeholder="Confirm password">
+        <button onclick="customerSignup()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Create Account</button>
+        <button onclick="showCustomerLogin()" class="w-full text-xs text-slate-600 font-bold">Already have an account? Login</button>
+        <p id="customerSignupMsg" class="hidden text-xs font-bold p-2 rounded"></p>
+      </div>
+      <div id="customerForgotBox" class="hidden space-y-3">
+        <input id="customerForgotMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="Registered mobile number">
+        <input id="customerNewPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="New password (min 6 characters)">
+        <input id="customerNewPassword2" type="password" class="w-full p-3 border rounded-xl" placeholder="Confirm new password">
+        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded-lg">Single-file mode: password reset is local. No real SMS/OTP is sent.</p>
+        <button onclick="resetCustomerPassword()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold">Reset Password</button>
+        <button onclick="showCustomerLogin()" class="w-full text-xs text-slate-600 font-bold">Back to Login</button>
+        <p id="customerForgotMsg" class="hidden text-xs font-bold p-2 rounded"></p>
+      </div>
+    </div>`;
+    document.body.appendChild(el);
+  }
+  window.openCustomerAuth=function(mode='login'){ addCustomerModal(); showCustomerLogin(); document.getElementById('customerAuthModal').classList.remove('hidden'); document.getElementById('customerAuthModal').classList.add('flex'); if(mode==='signup')showCustomerSignup(); if(mode==='forgot')showForgotPassword(); };
+  window.closeCustomerAuth=function(){ const m=document.getElementById('customerAuthModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');} };
+  function hideBoxes(){ ['customerLoginBox','customerSignupBox','customerForgotBox'].forEach(id=>document.getElementById(id)?.classList.add('hidden')); }
+  window.showCustomerLogin=function(){hideBoxes();document.getElementById('customerLoginBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Customer Login';};
+  window.showCustomerSignup=function(){hideBoxes();document.getElementById('customerSignupBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Create Customer Account';};
+  window.showForgotPassword=function(){hideBoxes();document.getElementById('customerForgotBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Forgot Password';};
+  function msg(id,text,ok=false){const e=document.getElementById(id); if(!e)return; e.innerText=text; e.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200');}
+
+  window.customerSignup=function(){
+    const name=document.getElementById('customerSignupName').value.trim(), mobile=document.getElementById('customerSignupMobile').value.trim(), pass=document.getElementById('customerSignupPassword').value, pass2=document.getElementById('customerSignupPassword2').value;
+    if(!name || !validMobile(mobile)) return msg('customerSignupMsg','Enter a valid name and 10-digit mobile number.');
+    if(pass.length<6) return msg('customerSignupMsg','Password must be at least 6 characters.');
+    if(pass!==pass2) return msg('customerSignupMsg','Passwords do not match.');
+    if(customerAccounts.some(u=>u.mobile===mobile)) return msg('customerSignupMsg','This mobile number already has an account. Please login.');
+    const user={id:'CUS-'+Date.now(),name,mobile,password:pass,createdAt:new Date().toLocaleString(),address:'',pincode:''};
+    customerAccounts.push(user); saveAccounts(); currentCustomer={id:user.id,name:user.name,mobile:user.mobile,address:'',pincode:''}; saveCurrent();
+    // Also keep the existing app's currentUser in sync when available.
+    if(typeof setDB==='function') setDB('currentUser',currentCustomer);
+    msg('customerSignupMsg','Account created successfully. You are now logged in.',true); updateCustomerNav(); setTimeout(()=>{closeCustomerAuth(); if(typeof navigateTo==='function')navigateTo('home');},500);
+  };
+  window.customerLogin=function(){
+    const mobile=document.getElementById('customerLoginMobile').value.trim(), pass=document.getElementById('customerLoginPassword').value;
+    const user=customerAccounts.find(u=>u.mobile===mobile);
+    if(!user) return msg('customerLoginMsg','Invalid mobile number or password.');
+    if(user.password!==pass) return msg('customerLoginMsg','Invalid password. Please try again or use Forgot Password.');
+    currentCustomer={id:user.id,name:user.name,mobile:user.mobile,address:user.address||'',pincode:user.pincode||''}; saveCurrent(); if(typeof setDB==='function')setDB('currentUser',currentCustomer); updateCustomerNav(); closeCustomerAuth();
+    if(typeof navigateTo==='function')navigateTo('home');
+  };
+  window.resetCustomerPassword=function(){
+    const mobile=document.getElementById('customerForgotMobile').value.trim(), p=document.getElementById('customerNewPassword').value, p2=document.getElementById('customerNewPassword2').value;
+    const i=customerAccounts.findIndex(u=>u.mobile===mobile);
+    if(i<0)return msg('customerForgotMsg','Mobile number not found.');
+    if(p.length<6)return msg('customerForgotMsg','New password must be at least 6 characters.');
+    if(p!==p2)return msg('customerForgotMsg','Passwords do not match.');
+    customerAccounts[i].password=p; saveAccounts(); msg('customerForgotMsg','Password reset successfully. Please login.',true); setTimeout(showCustomerLogin,700);
+  };
+  window.customerLogout=function(){currentCustomer=null;saveCurrent();if(typeof setDB==='function')setDB('currentUser',null);updateCustomerNav();if(typeof navigateTo==='function')navigateTo('home');};
+
+  function updateCustomerNav(){
+    let b=document.getElementById('customerAccountBtn');
+    if(!b){ const adminBtn=[...document.querySelectorAll('button')].find(x=>x.innerText.includes('Admin Panel')); if(adminBtn){b=document.createElement('button');b.id='customerAccountBtn';adminBtn.parentNode.insertBefore(b,adminBtn);} }
+    if(!b)return;
+    if(currentCustomer){b.className='bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg';b.innerHTML='<i class="fa-solid fa-user mr-1"></i>'+esc(currentCustomer.name.split(' ')[0]);b.onclick=()=>{ if(confirm('Logout from customer account?'))customerLogout();}; b.title='Click to logout';}
+    else {b.className='bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg';b.innerHTML='<i class="fa-solid fa-user mr-1"></i> Customer Login';b.onclick=()=>openCustomerAuth('login');}
+  }
+
+  // Require a customer account before entering My Orders, checkout, tracking or prescription upload/history.
+  const oldNavigate=window.navigateTo;
+  window.navigateTo=function(pageId,addHistory=true){
+    if(['orders','checkout','order-tracking','upload-prescription','prescription-history'].includes(pageId) && !currentCustomer){openCustomerAuth('login');return;}
+    return oldNavigate.apply(this,arguments);
+  };
+  // Customer checkout/order ownership is handled by the CUSTOMER CHECKOUT DETAILS FIX above.
+
+  window.renderCustomerOrders=function(){
+    const list=document.getElementById('customerOrdersList'); if(!list)return; list.innerHTML='';
+    if(!currentCustomer){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">Please login to view your orders.</div>';return;}
+    let allOrders=JSON.parse(localStorage.getItem('maaj_orders')||'[]');
+    const mine=allOrders.filter(o=>o.customerId===currentCustomer.id || (o.customerMobile===currentCustomer.mobile && o.customerId===currentCustomer.id));
+    if(!mine.length){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No orders found for your account.</div>';return;}
+    mine.forEach(o=>{const card=document.createElement('div');card.className='bg-white p-5 rounded-xl border space-y-3 text-xs shadow-sm';card.innerHTML=`<div class="flex justify-between items-center border-b pb-2"><div><span class="font-bold">${esc(o.id)}</span><span class="text-slate-400 ml-2">(${esc(o.date)})</span></div><span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">${esc(o.status)}</span></div><div class="space-y-1">${(o.items||[]).map(i=>`<p class="text-slate-600">${esc(i.name)} x ${i.qty} — ₹${Number(i.price||0)*Number(i.qty||0)}</p>`).join('')}</div><div class="flex justify-between items-center pt-2 border-t"><span class="font-black">Total: ₹${Number(o.amount||0).toFixed(2)} (${esc(o.paymentMode||'COD')})</span><button onclick="trackOrder('${String(o.id).replace(/'/g,"\\'")}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded">Track</button></div>`;list.appendChild(card);});
+  };
+
+  // Admin customer accounts tab + Excel-compatible CSV export.
+  function ensureAdminCustomerTab(){
+    const panel=document.getElementById('page-admin-dashboard') || document.getElementById('admin-dashboard'); if(!panel || document.getElementById('admin-tab-customers'))return;
+    const buttons=panel.querySelector('.admin-tab-btn')?.parentElement;
+    if(buttons){const btn=document.createElement('button');btn.className='admin-tab-btn bg-white border px-3 py-2 rounded-lg';btn.innerText='Customers';btn.onclick=()=>switchAdminTab('customers');buttons.appendChild(btn);}
+    const tabs=panel.querySelector('#admin-tab-coupons')?.parentElement; if(!tabs)return;
+    const div=document.createElement('div');div.id='admin-tab-customers';div.className='admin-tab space-y-4';div.innerHTML=`<div class="bg-white rounded-xl border shadow-sm overflow-hidden"><div class="p-4 flex flex-wrap gap-2 justify-between items-center border-b"><div><h3 class="font-black">Customer Accounts</h3><p class="text-[11px] text-slate-500">Registered customer name and mobile number</p></div><button onclick="exportCustomersExcel()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel (CSV)</button></div><div class="overflow-auto"><table class="w-full text-xs"><thead class="bg-slate-50"><tr><th class="p-3 text-left">Name</th><th class="p-3 text-left">Mobile Number</th><th class="p-3 text-left">Created</th><th class="p-3 text-left">Orders</th></tr></thead><tbody id="adminCustomersTable"></tbody></table></div></div>`;tabs.appendChild(div);
+  }
+  window.renderAdminCustomers=function(){ensureAdminCustomerTab();const t=document.getElementById('adminCustomersTable');if(!t)return;const os=JSON.parse(localStorage.getItem('maaj_orders')||'[]');t.innerHTML='';customerAccounts.forEach(u=>{const count=os.filter(o=>o.customerId===u.id).length;const tr=document.createElement('tr');tr.className='border-t';tr.innerHTML=`<td class="p-3 font-bold">${esc(u.name)}</td><td class="p-3">${esc(u.mobile)}</td><td class="p-3">${esc(u.createdAt)}</td><td class="p-3 font-bold">${count}</td>`;t.appendChild(tr);});if(!customerAccounts.length)t.innerHTML='<tr><td colspan="4" class="p-5 text-center text-slate-400">No customer accounts registered yet.</td></tr>';};
+  window.exportCustomersExcel=function(){
+    if(!isAdminAuthenticated || !isAdminAuthenticated())return alert('Admin login required.');
+    const rows=[['Customer Name','Mobile Number','Created At','Customer ID']].concat(customerAccounts.map(u=>[u.name,u.mobile,u.createdAt,u.id]));
+    const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob), a=document.createElement('a');a.href=url;a.download='MAAJ_Customer_Accounts.csv';a.click();URL.revokeObjectURL(url);
+  };
+  const oldSwitch=window.switchAdminTab;
+  window.switchAdminTab=function(tab){oldSwitch.apply(this,arguments);if(tab==='customers')renderAdminCustomers();};
+
+  // If an old currentUser exists but customer accounts are empty, do NOT expose old orders to a new account.
+  document.addEventListener('DOMContentLoaded',()=>{ensureAdminCustomerTab();updateCustomerNav();});
+})();
+</script>
