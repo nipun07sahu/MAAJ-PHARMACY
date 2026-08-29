@@ -132,7 +132,7 @@
                     <i class="fa-solid fa-truck-medical text-4xl text-emerald-300"></i>
                     <h3 class="font-bold text-base">Express Home Delivery</h3>
                     <p class="text-xs text-emerald-100">Same-day delivery for all local pin codes.</p>
-                    <a href="tel:+919876543210" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xs px-4 py-2 rounded-lg w-full">
+                    <a href="tel:+916372556219" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xs px-4 py-2 rounded-lg w-full">
                         <i class="fa-solid fa-phone mr-1"></i> Call Pharmacist Now
                     </a>
                 </div>
@@ -617,7 +617,7 @@
                         <option value="Antibiotics">Antibiotics</option>
                         <option value="Vitamins">Vitamins</option>
                         <option value="First Aid">First Aid</option>
-                    </select>
+                    <option value="Power">Power</option><option value="Cream">Cream</option><option value="Ointment">Ointment</option><option value="Belt">Belt</option><option value="Syrup">Syrup</option><option value="Pain Oil">Pain Oil</option><option value="Balm">Balm</option><option value="Condom">Condom</option></select>
                 </div>
                 <div>
                     <label class="block font-bold mb-1">Batch Number</label>
@@ -2451,6 +2451,15 @@
       }
     });
   });
+})();
+</script>
+
+
+<script id="admin-extra-medicine-categories">
+(function(){
+  window.EXTRA_MEDICINE_CATEGORIES=['Power','Cream','Ointment','Belt','Syrup','Pain Oil','Balm','Condom'];
+  // These categories are for Admin medicine entry/filtering only.
+  // The Home page continues to show only its existing four healthcare category cards.
 })();
 </script>
 
