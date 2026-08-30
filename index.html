@@ -1366,7 +1366,9 @@ html>
         }
 
         let products = getDB("products", defaultProducts);
-const MAAJ_API = "http://localhost:5000/api/medicines";
+const SUPABASE_URL = "https://fywzoptldcgxatyydyec.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk";
+const MAAJ_API = SUPABASE_URL + "/rest/v1/medicines";
 let maajApiReady = false;
 
 function maajMapApiMedicine(m) {
@@ -1390,8 +1392,15 @@ function maajMapApiMedicine(m) {
 
 async function maajLoadMedicinesFromAPI() {
     try {
-        const r = await fetch(MAAJ_API, {cache:"no-store"});
-        if (!r.ok) throw new Error("API " + r.status);
+        const r = await fetch(MAAJ_API + "?select=*&order=created_at.desc", {
+            cache:"no-store",
+            headers:{
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+                "Accept": "application/json"
+            }
+        });
+        if (!r.ok) throw new Error("Supabase API " + r.status);
         const data = await r.json();
         if (!Array.isArray(data)) throw new Error("Invalid medicine data");
         products = data.map(maajMapApiMedicine);
@@ -1408,6 +1417,11 @@ async function maajLoadMedicinesFromAPI() {
         return false;
     }
 }
+
+        // Load the shared online medicine catalogue on GitHub Pages.
+        document.addEventListener("DOMContentLoaded", function(){
+            maajLoadMedicinesFromAPI();
+        });
 
         // Import medicines from the supplied purchase invoices once, while preserving existing admin data.
         const existingProductKeys = new Set(products.map(p => String(p.name || "").trim().toLowerCase() + "|" + String(p.batch || "").trim().toLowerCase()));
