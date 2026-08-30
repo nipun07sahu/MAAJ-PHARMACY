@@ -4,148 +4,66 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MAAJ PHARMACY — Medicine Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#0f172a}
-header{background:#047857;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:15px}
-header h1{margin:0;font-size:20px}header span{font-size:12px;opacity:.9}
-.wrap{max-width:1250px;margin:20px auto;padding:0 16px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 4px 14px #0f172a0d}
-h2{font-size:18px;margin:0 0 6px}.muted{font-size:12px;color:#64748b}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
-label{font-size:11px;font-weight:800;color:#334155}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:10px;font-size:13px;background:#fff}textarea{min-height:70px;resize:vertical}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}button.primary{background:#047857;color:#fff}button.secondary{background:#e2e8f0;color:#0f172a}button.danger{background:#fee2e2;color:#b91c1c}
-.bulk{background:#f0fdf4;border:1px dashed #86efac;border-radius:14px;padding:14px;margin-top:14px}
-.bulk textarea{min-height:150px;font-family:monospace}
-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}th{background:#f8fafc;font-size:11px}
-.thumb{width:44px;height:44px;object-fit:contain;border:1px solid #e2e8f0;border-radius:8px;background:#fff}.status{margin-top:10px;font-size:12px;font-weight:800}
-@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#0f172a}header{background:#047857;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:15px}header h1{margin:0;font-size:20px}header span{font-size:12px;opacity:.9}.wrap{max-width:1250px;margin:20px auto;padding:0 16px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 4px 14px #0f172a0d}h2{font-size:18px;margin:0 0 6px}.muted{font-size:12px;color:#64748b}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}label{font-size:11px;font-weight:800;color:#334155}input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:10px;font-size:13px;background:#fff}textarea{min-height:70px;resize:vertical}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}button.primary{background:#047857;color:#fff}button.secondary{background:#e2e8f0;color:#0f172a}button.danger{background:#fee2e2;color:#b91c1c}.bulk{background:#f0fdf4;border:1px dashed #86efac;border-radius:14px;padding:14px;margin-top:14px}.bulk textarea{min-height:150px;font-family:monospace}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left}th{background:#f8fafc;font-size:11px}.thumb{width:44px;height:44px;object-fit:contain;border:1px solid #e2e8f0;border-radius:8px;background:#fff}.status{margin-top:10px;font-size:12px;font-weight:800}.loginBox{max-width:520px;margin:30px auto}.hidden{display:none!important}.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.userTag{font-size:11px;font-weight:800;background:#ecfdf5;color:#047857;padding:7px 10px;border-radius:999px}@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
-<div id="maajManagerDirectNotice" style="display:none;background:#fff7ed;color:#9a3412;padding:8px 14px;font-size:12px;font-weight:700;text-align:center">Medicine Manager — Admin use only</div><header><div><h1>💊 MAAJ PHARMACY — Medicine Manager</h1><span>Medicine-only admin panel • Bulk add enabled</span></div><button class="secondary" onclick="history.back()">← Back to Admin</button></header>
-<div class="wrap">
+<header><div><h1>💊 MAAJ PHARMACY — Medicine Manager</h1><span>Shared online medicine catalogue • Bulk add enabled</span></div><div class="actions" style="margin:0"><span id="userTag" class="userTag hidden"></span><button class="secondary" onclick="signOut()">Sign Out</button><button class="secondary" onclick="history.back()">← Back to Admin</button></div></header>
+<div id="loginView" class="wrap loginBox">
+  <div class="card">
+    <h2>Admin Verification</h2><div class="muted">Sign in with the Supabase admin account before changing medicines.</div>
+    <div class="grid" style="margin-top:14px">
+      <div class="field full"><label>Admin Email *</label><input id="adminEmail" type="email" autocomplete="username"></div>
+      <div class="field full"><label>Admin Password *</label><input id="adminPassword" type="password" autocomplete="current-password"></div>
+    </div>
+    <div class="actions"><button class="primary" onclick="signIn()">Admin Login</button></div>
+    <div id="loginStatus" class="status"></div>
+  </div>
+</div>
+<div id="managerView" class="wrap hidden">
 <div class="card">
-<h2>Add Multiple Medicines</h2>
-<div class="muted">Enter one medicine per row. You can add many medicines together without pressing Add repeatedly.</div>
-<div class="bulk">
-<label>Bulk Medicine Data</label>
+<h2>Add Multiple Medicines</h2><div class="muted">Enter one medicine per row. Photo URL is required for every row.</div>
+<div class="bulk"><label>Bulk Medicine Data</label>
 <textarea id="bulkData" placeholder="Medicine Name | Price | MRP | Category | GST | Description | Photo URL
 Paracetamol 500mg | 25 | 30 | Painkiller | 5 | Fever and pain relief | https://...
 Vitamin C 500mg | 80 | 100 | Vitamins | 5 | Vitamin supplement | https://..."></textarea>
 <div class="muted">Format: Name | Selling Price | MRP | Category | GST | Description | Photo URL</div>
-<div class="actions"><button class="primary" onclick="bulkAdd()">Add All Medicines</button><button class="secondary" onclick="document.getElementById('bulkData').value=''">Clear</button></div>
-<div id="bulkStatus" class="status"></div>
+<div class="actions"><button class="primary" onclick="bulkAdd()">Add All Medicines</button><button class="secondary" onclick="document.getElementById('bulkData').value=''">Clear</button></div><div id="bulkStatus" class="status"></div></div>
 </div>
-</div>
-
-<div class="card">
-<h2>Add One Medicine</h2>
+<div class="card"><h2>Add One Medicine</h2>
 <div class="grid">
-<div class="field"><label>Medicine Name *</label><input id="name"></div>
-<div class="field"><label>Selling Price *</label><input id="price" type="number" min="0"></div>
-<div class="field"><label>MRP</label><input id="mrp" type="number" min="0"></div>
-<div class="field"><label>Category</label><input id="category" placeholder="Painkiller / Syrup / Cream"></div>
-<div class="field"><label>GST %</label><select id="gst"><option value="5">5% — Medicine</option><option value="18">18% — Cosmetic</option></select></div>
-<div class="field"><label>Stock</label><input id="stock" type="number" min="0" value="0"></div>
-<div class="field full"><label>Description</label><textarea id="description"></textarea></div>
-<div class="field full"><label>Medicine Photo *</label><input id="photo" type="file" accept="image/*"><div class="muted">Photo is mandatory. The image is stored in this browser for the customer medicine cards.</div></div>
+<div class="field"><label>Medicine Name *</label><input id="name"></div><div class="field"><label>Selling Price *</label><input id="price" type="number" min="0"></div><div class="field"><label>MRP</label><input id="mrp" type="number" min="0"></div><div class="field"><label>Category</label><input id="category" placeholder="Painkiller / Syrup / Cream"></div>
+<div class="field"><label>GST %</label><select id="gst"><option value="5">5% — Medicine</option><option value="18">18% — Cosmetic</option></select></div><div class="field"><label>Stock</label><input id="stock" type="number" min="0" value="0"></div><div class="field full"><label>Description</label><textarea id="description"></textarea></div><div class="field full"><label>Medicine Photo *</label><input id="photo" type="file" accept="image/*"><div class="muted">Photo is mandatory. It will be uploaded to the shared Supabase medicine-images bucket.</div></div>
+</div><div class="actions"><button class="primary" onclick="addOne()">Add Medicine</button></div><div id="oneStatus" class="status"></div>
 </div>
-<div class="actions"><button class="primary" onclick="addOne()">Add Medicine</button></div>
-<div id="oneStatus" class="status"></div>
-</div>
-
-<div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><h2>Medicine List</h2><div class="muted">Edit or delete medicines from this dedicated panel.</div></div><button class="danger" onclick="deleteSelected()">Delete Selected</button></div>
-<table><thead><tr><th><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th><th>Photo</th><th>Medicine</th><th>Price</th><th>MRP</th><th>GST</th><th>Category</th><th>Stock</th><th>Action</th></tr></thead><tbody id="list"></tbody></table>
-</div>
+<div class="card"><div class="topline"><div><h2>Medicine List</h2><div class="muted">These medicines are stored online and can be shown to customers.</div></div><button class="danger" onclick="deleteSelected()">Delete Selected</button></div>
+<table><thead><tr><th><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th><th>Photo</th><th>Medicine</th><th>Price</th><th>MRP</th><th>GST</th><th>Category</th><th>Stock</th><th>Action</th></tr></thead><tbody id="list"></tbody></table></div>
 </div>
 <script>
-const API="http://localhost:5000/api/medicines";
+const SUPABASE_URL='https://fywzoptldcgxatyydyec.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+const DB_URL=SUPABASE_URL+'/rest/v1/medicines';
+const BUCKET='medicine-images';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let medicines=[];
-
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-
-async function apiGet(){
-  const r=await fetch(API,{cache:"no-store"});
-  if(!r.ok) throw new Error("GET "+r.status);
-  medicines=await r.json();
-  render();
-}
-
-function render(){
- const t=document.getElementById('list');
- t.innerHTML=medicines.map((p,i)=>`<tr>
- <td><input type="checkbox" class="sel" data-i="${i}"></td>
- <td><img class="thumb" src="${esc(p.photo||'')}" onerror="this.style.display='none'"></td>
- <td><b>${esc(p.name)}</b></td><td>₹${Number(p.price||0).toFixed(2)}</td><td>₹${Number(p.mrp||0).toFixed(2)}</td>
- <td>${Number(p.gst||5)}%</td><td>${esc(p.category||'')}</td><td>${Number(p.stock||0)}</td>
- <td><button class="secondary" onclick="editMed(${i})">Edit</button></td></tr>`).join('');
-}
-
+function status(id,text,ok=false){const e=document.getElementById(id);if(!e)return;e.textContent=text;e.style.color=ok?'#047857':'#b91c1c'}
+function authHeaders(token){return {'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json','Accept':'application/json'}}
+async function getSession(){const {data}=await sb.auth.getSession();return data.session}
+async function signIn(){const email=document.getElementById('adminEmail').value.trim(),password=document.getElementById('adminPassword').value;if(!email||!password)return status('loginStatus','Email and password are required.');status('loginStatus','Signing in...',true);const {error}=await sb.auth.signInWithPassword({email,password});if(error)return status('loginStatus',error.message);status('loginStatus','Login successful.',true);await showManager()}
+async function signOut(){await sb.auth.signOut();document.getElementById('managerView').classList.add('hidden');document.getElementById('loginView').classList.remove('hidden');document.getElementById('userTag').classList.add('hidden')}
+async function showManager(){const session=await getSession();if(!session){document.getElementById('managerView').classList.add('hidden');document.getElementById('loginView').classList.remove('hidden');return}document.getElementById('loginView').classList.add('hidden');document.getElementById('managerView').classList.remove('hidden');const tag=document.getElementById('userTag');tag.textContent=session.user.email||'Admin';tag.classList.remove('hidden');await loadMedicines()}
+async function loadMedicines(){const session=await getSession();if(!session)return;try{const r=await fetch(DB_URL+'?select=*&order=created_at.desc',{headers:authHeaders(session.access_token),cache:'no-store'});if(!r.ok)throw new Error(await r.text());medicines=await r.json();render()}catch(e){status('oneStatus','Load Error: '+e.message)}}
+function render(){document.getElementById('list').innerHTML=medicines.map((p,i)=>`<tr><td><input type="checkbox" class="sel" data-i="${i}"></td><td><img class="thumb" src="${esc(p.photo||'')}" onerror="this.style.display='none'"></td><td><b>${esc(p.name)}</b></td><td>₹${Number(p.price||0).toFixed(2)}</td><td>₹${Number(p.mrp||0).toFixed(2)}</td><td>${Number(p.gst||5)}%</td><td>${esc(p.category||'')}</td><td>${Number(p.stock||0)}</td><td><button class="secondary" onclick="editMed(${i})">Edit</button></td></tr>`).join('')}
 function toggleAll(x){document.querySelectorAll('.sel').forEach(c=>c.checked=x.checked)}
-
-function fileData(file){return new Promise((res,rej)=>{if(!file){rej('Photo is mandatory');return}let r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej('Photo read failed');r.readAsDataURL(file)})}
-
-async function addOne(){
- const name=document.getElementById('name').value.trim(),price=Number(document.getElementById('price').value),photo=document.getElementById('photo').files[0];
- const status=document.getElementById('oneStatus');
- if(!name||!photo||!(price>=0)){status.textContent='Medicine name, price and photo are required.';return}
- try{
-   const photoData=await fileData(photo);
-   const body={name,price,mrp:Number(document.getElementById('mrp').value||price),category:document.getElementById('category').value.trim()||'Medicine',gst:Number(document.getElementById('gst').value),stock:Number(document.getElementById('stock').value||0),description:document.getElementById('description').value.trim(),photo:photoData};
-   const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-   const data=await r.json(); if(!r.ok) throw new Error(data.error||'Add failed');
-   status.textContent='Medicine saved to database successfully.';
-   ['name','price','mrp','category','description'].forEach(id=>document.getElementById(id).value='');
-   document.getElementById('stock').value='0';document.getElementById('photo').value='';
-   await apiGet();
- }catch(e){status.textContent='ERROR: '+e.message}
-}
-
-async function bulkAdd(){
- const raw=document.getElementById('bulkData').value.trim(),status=document.getElementById('bulkStatus');
- if(!raw){status.textContent='Enter medicine rows first.';return}
- const lines=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean), list=[],errors=[];
- lines.forEach((line,n)=>{
-   const v=line.split('|').map(x=>x.trim());
-   if(v.length<3){errors.push('Row '+(n+1)+': need Name | Price | MRP | Category | GST | Description | Photo URL');return}
-   const [name,price,mrp,category='Medicine',gst='5',description='',photo='']=v;
-   if(!name||isNaN(Number(price))||!photo){errors.push('Row '+(n+1)+': name, price and photo URL required');return}
-   list.push({name,price:Number(price),mrp:Number(mrp||price),category,gst:Number(gst||5),description,photo,stock:0});
- });
- if(!list.length){status.textContent=errors.join(' • ');return}
- try{
-   const r=await fetch(API+'/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({medicines:list})});
-   const data=await r.json(); if(!r.ok) throw new Error(data.error||'Bulk add failed');
-   status.textContent='Added '+data.added+' medicine(s) to PostgreSQL.'+(errors.length?' Errors: '+errors.join(' • '):'');
-   document.getElementById('bulkData').value=''; await apiGet();
- }catch(e){status.textContent='ERROR: '+e.message}
-}
-
-async function editMed(i){
- const p=medicines[i],name=prompt('Medicine name:',p.name);if(name===null)return;
- const price=prompt('Selling price:',p.price);if(price===null)return;
- const mrp=prompt('MRP:',p.mrp);if(mrp===null)return;
- const category=prompt('Category:',p.category||'Medicine');if(category===null)return;
- try{
-   const body={name:name.trim(),price:Number(price)||0,mrp:Number(mrp)||Number(price)||0,category:category.trim(),gst:Number(p.gst||5),description:p.description||'',stock:Number(p.stock||0),photo:p.photo||''};
-   const r=await fetch(API+'/'+encodeURIComponent(p.id),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-   const data=await r.json();if(!r.ok)throw new Error(data.error||'Update failed');await apiGet();
- }catch(e){alert('Update failed: '+e.message)}
-}
-
-async function deleteSelected(){
- const idx=[...document.querySelectorAll('.sel:checked')].map(x=>Number(x.dataset.i));
- if(!idx.length)return alert('Select medicines first.');
- if(!confirm('Delete '+idx.length+' medicine(s) from database?'))return;
- try{
-   for(const i of idx){
-     const r=await fetch(API+'/'+encodeURIComponent(medicines[i].id),{method:'DELETE'});
-     if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Delete failed')}
-   }
-   await apiGet();
- }catch(e){alert('Delete failed: '+e.message)}
-}
-
-apiGet().catch(e=>{document.getElementById('bulkStatus').textContent='Backend not connected: '+e.message+'. Start the backend before adding medicines.'});
+async function uploadPhoto(file){const session=await getSession();if(!session)throw new Error('Admin login required');const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';const path='medicines/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;const r=await fetch(SUPABASE_URL+'/storage/v1/object/'+BUCKET+'/'+path,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+session.access_token,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});if(!r.ok)throw new Error('Photo upload failed: '+await r.text());return SUPABASE_URL+'/storage/v1/object/public/'+BUCKET+'/'+path}
+async function addOne(){const session=await getSession();if(!session)return status('oneStatus','Please login first.');const name=document.getElementById('name').value.trim(),price=Number(document.getElementById('price').value),photo=document.getElementById('photo').files[0];if(!name||!photo||!(price>=0))return status('oneStatus','Medicine name, price and photo are required.');status('oneStatus','Uploading photo and saving medicine...',true);try{const photoUrl=await uploadPhoto(photo);const body={name,price,mrp:Number(document.getElementById('mrp').value||price),category:document.getElementById('category').value.trim()||'Medicine',gst:Number(document.getElementById('gst').value||5),stock:Number(document.getElementById('stock').value||0),description:document.getElementById('description').value.trim(),photo:photoUrl};const r=await fetch(DB_URL,{method:'POST',headers:{...authHeaders(session.access_token),'Prefer':'return=representation'},body:JSON.stringify(body)});if(!r.ok)throw new Error(await r.text());status('oneStatus','Medicine added successfully.',true);['name','price','mrp','category','description','photo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});document.getElementById('stock').value='0';await loadMedicines()}catch(e){status('oneStatus','Add Error: '+e.message)}}
+async function bulkAdd(){const session=await getSession();if(!session)return status('bulkStatus','Please login first.');const raw=document.getElementById('bulkData').value.trim();if(!raw)return;const lines=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean),added=[],errors=[];lines.forEach((line,n)=>{const v=line.split('|').map(x=>x.trim());if(v.length<7){errors.push('Row '+(n+1)+': need Name | Price | MRP | Category | GST | Description | Photo URL');return}const [name,price,mrp,category='Medicine',gst='5',description='',photo='']=v;if(!name||isNaN(Number(price))||!photo){errors.push('Row '+(n+1)+': invalid name/price/photo');return}added.push({name,price:Number(price),mrp:Number(mrp||price),category:category||'Medicine',gst:Number(gst||5),description,photo,stock:0})});if(!added.length)return status('bulkStatus','Nothing valid to add. '+errors.join(' • '));status('bulkStatus','Saving '+added.length+' medicine(s)...',true);try{const r=await fetch(DB_URL,{method:'POST',headers:{...authHeaders(session.access_token),'Prefer':'return=representation'},body:JSON.stringify(added)});if(!r.ok)throw new Error(await r.text());document.getElementById('bulkData').value='';status('bulkStatus','Added '+added.length+' medicine(s).'+(errors.length?' Errors: '+errors.join(' • '):''),true);await loadMedicines()}catch(e){status('bulkStatus','Bulk Add Error: '+e.message)}}
+async function editMed(i){const session=await getSession();const p=medicines[i];if(!session||!p)return;const name=prompt('Medicine name:',p.name);if(name===null)return;const price=prompt('Selling price:',p.price);if(price===null)return;const mrp=prompt('MRP:',p.mrp);if(mrp===null)return;const category=prompt('Category:',p.category||'Medicine');if(category===null)return;const gst=prompt('GST %:',p.gst||5);if(gst===null)return;const description=prompt('Description:',p.description||'');if(description===null)return;try{const r=await fetch(DB_URL+'?id=eq.'+encodeURIComponent(p.id),{method:'PATCH',headers:{...authHeaders(session.access_token),'Prefer':'return=representation'},body:JSON.stringify({name:name.trim(),price:Number(price)||0,mrp:Number(mrp)||Number(price)||0,category:category.trim()||'Medicine',gst:Number(gst)||5,description})});if(!r.ok)throw new Error(await r.text());await loadMedicines()}catch(e){alert('Edit Error: '+e.message)}}
+async function deleteSelected(){const session=await getSession();const idx=[...document.querySelectorAll('.sel:checked')].map(x=>Number(x.dataset.i));if(!idx.length)return alert('Select medicines first.');if(!confirm('Delete '+idx.length+' medicine(s) permanently?'))return;try{for(const i of idx){const p=medicines[i];const r=await fetch(DB_URL+'?id=eq.'+encodeURIComponent(p.id),{method:'DELETE',headers:authHeaders(session.access_token)});if(!r.ok)throw new Error(await r.text())}await loadMedicines()}catch(e){alert('Delete Error: '+e.message)}}
+sb.auth.onAuthStateChange((_event,_session)=>{if(_session)showManager()});
+showManager();
 </script>
 </body></html>
