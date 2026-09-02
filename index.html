@@ -2,11 +2,15 @@
 html>
 <html lang="en">
 <head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAAJ PHARMACY — Complete Enterprise Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         .page-view { display: none; }
         .page-view.active { display: block; }
@@ -30,6 +34,10 @@ html>
             @page { size: A4; margin: 10mm; }
         }
     </style>
+<style id="maaj-min-order-299-style">
+.maaj-min-order-note{margin-top:10px;padding:10px 12px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;border-radius:12px;font-size:12px;font-weight:800}
+</style>
+
 
 <style id="promo-fix-css">
 #homePromoSlider{display:block!important;min-height:180px;background:#047857;}
@@ -151,15 +159,255 @@ html>
 #homeFeaturedProducts > div:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(15,23,42,.10)}
 </style>
 
+<style id="maaj-your-cart-design-system">
+/* YOUR CART — token-driven storefront layer; existing cart logic remains intact */
+:root{
+  --maaj-cart-text:var(--maaj-text-primary,#121414);
+  --maaj-cart-muted:var(--maaj-text-tertiary,#4b4a48);
+  --maaj-cart-border:var(--maaj-border,#d9e2dd);
+  --maaj-cart-brand:var(--maaj-brand,#0e8231);
+  --maaj-cart-brand-hover:var(--maaj-brand-hover,#096c28);
+  --maaj-cart-soft:#f5faf7;
+  --maaj-cart-raised:#f5af23;
+  --maaj-cart-radius-xs:4px;
+  --maaj-cart-radius-sm:8px;
+  --maaj-cart-fast:500ms;
+  --maaj-cart-normal:2000ms;
+}
+.maaj-cart-page{font-family:var(--maaj-font-primary,Inter,Arial,sans-serif);color:var(--maaj-cart-text)}
+.maaj-cart-page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:4px 0 2px}
+.maaj-cart-eyebrow{font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--maaj-cart-brand);margin:0 0 4px}
+.maaj-cart-title{font-size:clamp(24px,4vw,30px);line-height:1.15;font-weight:800;margin:0}
+.maaj-cart-subtitle{font-size:12px;line-height:20px;color:var(--maaj-cart-muted);margin:7px 0 0}
+.maaj-cart-secure{font-size:10px;font-weight:800;color:var(--maaj-cart-brand);background:var(--maaj-cart-soft);border:1px solid #cfe8d8;border-radius:8px;padding:9px 11px;white-space:nowrap}
+.maaj-cart-progress{background:#fff;border:1px solid var(--maaj-cart-border);border-radius:8px;padding:11px 14px;font-size:12px;font-weight:700;min-height:42px;display:flex;align-items:center}
+.maaj-cart-card,.maaj-cart-summary{background:#fff;border:1px solid var(--maaj-cart-border);border-radius:8px;box-shadow:0 6px 20px rgba(18,20,20,.05)}
+.maaj-cart-card{padding:16px}
+.maaj-cart-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #e7eeea;padding-bottom:12px;margin-bottom:4px}
+.maaj-cart-card-head h3,.maaj-cart-summary-head h3{font-size:16px;font-weight:800;margin:0}
+.maaj-cart-card-head p{font-size:10px;color:var(--maaj-cart-muted);margin:3px 0 0}
+.maaj-cart-link-btn{border:0;background:none;color:var(--maaj-cart-brand);font-size:12px;font-weight:800;cursor:pointer;padding:6px 4px;border-radius:4px}
+.maaj-cart-link-btn:hover{text-decoration:underline}.maaj-cart-link-btn:focus-visible{outline:3px solid rgba(14,130,49,.24);outline-offset:2px}
+.maaj-cart-item-row{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #edf1ef}
+.maaj-cart-item-row:last-child{border-bottom:0}
+.maaj-cart-item-image{width:72px;height:72px;border:1px solid #e2e8e4;border-radius:8px;background:#f8faf9;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.maaj-cart-item-image img{max-width:100%;max-height:100%;object-fit:contain}
+.maaj-cart-item-name{font-size:14px;font-weight:800;line-height:20px;overflow-wrap:anywhere}
+.maaj-cart-item-meta{font-size:10px;line-height:16px;color:var(--maaj-cart-muted);margin-top:2px}
+.maaj-cart-item-price{font-size:14px;font-weight:800;margin-top:4px}.maaj-cart-item-mrp{font-size:10px;color:#7b8580;text-decoration:line-through;margin-left:5px}
+.maaj-cart-qty{display:inline-flex;align-items:center;border:1px solid var(--maaj-cart-border);border-radius:8px;overflow:hidden;margin-top:7px}
+.maaj-cart-qty button{width:32px;height:32px;border:0;background:#fff;font-size:16px;font-weight:900;cursor:pointer}.maaj-cart-qty button:hover{background:#f2f7f4}.maaj-cart-qty button:active{background:#e7f1eb}.maaj-cart-qty button:focus-visible{outline:3px solid rgba(14,130,49,.22);outline-offset:-3px}
+.maaj-cart-qty span{min-width:32px;text-align:center;font-size:12px;font-weight:800}
+.maaj-cart-remove{border:0;background:#fff;color:#b42318;font-size:11px;font-weight:800;cursor:pointer;padding:6px;border-radius:4px;margin-top:5px}.maaj-cart-remove:hover{text-decoration:underline}.maaj-cart-remove:focus-visible{outline:3px solid rgba(180,35,24,.2);outline-offset:2px}
+.maaj-cart-empty-state{text-align:center;padding:34px 16px;border:1px dashed #bfcfc5;border-radius:8px;background:#fbfdfc}.maaj-cart-empty-state i{font-size:30px;color:#8aa096}.maaj-cart-empty-state h3{font-size:16px;font-weight:800;margin:10px 0 4px}.maaj-cart-empty-state p{font-size:12px;color:var(--maaj-cart-muted);margin:0 0 14px}
+.maaj-cart-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.maaj-cart-info-card{display:flex;gap:8px;padding:11px;border:1px solid var(--maaj-cart-border);border-radius:8px;background:#fff}.maaj-cart-info-card i{color:var(--maaj-cart-brand);font-size:14px;margin-top:2px}.maaj-cart-info-card b{display:block;font-size:11px;font-weight:800}.maaj-cart-info-card span{display:block;font-size:10px;line-height:15px;color:var(--maaj-cart-muted);margin-top:2px}
+.maaj-cart-summary{padding:16px;position:sticky;top:16px}.maaj-cart-summary-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid #e7eeea}.maaj-cart-summary-head span{font-size:10px;color:var(--maaj-cart-muted);font-weight:700}
+.maaj-cart-coupon{padding:13px 0;border-bottom:1px solid #e7eeea}.maaj-cart-coupon label{display:block;font-size:11px;font-weight:800;margin-bottom:7px}.maaj-coupon-row{display:flex;gap:6px}.maaj-coupon-row input{min-width:0;flex:1;height:38px;border:1px solid #cbd8d0;border-radius:8px;padding:0 10px;font:600 12px/20px var(--maaj-font-primary,Inter,Arial,sans-serif);color:var(--maaj-cart-text);background:#fff}.maaj-coupon-row input:hover{border-color:#8fa69a}.maaj-coupon-row input:focus-visible{outline:3px solid rgba(14,130,49,.2);outline-offset:1px;border-color:var(--maaj-cart-brand)}.maaj-coupon-row button{height:38px;padding:0 13px;border:1px solid var(--maaj-cart-brand);border-radius:8px;background:#fff;color:var(--maaj-cart-brand);font-size:11px;font-weight:900;cursor:pointer}.maaj-coupon-row button:hover{background:var(--maaj-cart-soft)}.maaj-coupon-row button:active{transform:translateY(1px)}.maaj-coupon-row button:focus-visible{outline:3px solid rgba(14,130,49,.2);outline-offset:2px}.maaj-coupon-message{font-size:10px;line-height:15px;color:var(--maaj-cart-muted);min-height:15px;margin:5px 0 0}
+.maaj-cart-summary-lines{padding:12px 0;border-bottom:1px solid #e7eeea}.maaj-cart-summary-lines>div{display:flex;justify-content:space-between;gap:12px;font-size:12px;line-height:20px;margin:4px 0}.maaj-cart-summary-lines span{color:var(--maaj-cart-muted)}.maaj-cart-summary-lines strong{font-weight:800}.maaj-savings{color:var(--maaj-cart-brand)}
+.maaj-cart-savings-note{font-size:10px;line-height:15px;font-weight:700;color:var(--maaj-cart-brand);padding:9px 0;min-height:15px}.maaj-cart-total-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0}.maaj-cart-total-row span{font-size:14px;font-weight:800}.maaj-cart-total-row strong{font-size:20px;font-weight:900;color:var(--maaj-cart-brand)}
+.maaj-cart-primary-btn{width:100%;min-height:44px;border:0;border-radius:8px;background:var(--maaj-cart-brand);color:#fff;font-size:12px;font-weight:900;cursor:pointer;padding:10px 14px;transition:transform 200ms ease,background 200ms ease}.maaj-cart-primary-btn:hover{background:var(--maaj-cart-brand-hover)}.maaj-cart-primary-btn:active{transform:translateY(1px)}.maaj-cart-primary-btn:focus-visible{outline:3px solid rgba(14,130,49,.28);outline-offset:3px}.maaj-cart-primary-btn:disabled{opacity:.5;cursor:not-allowed}.maaj-cart-cod{text-align:center;font-size:10px;color:var(--maaj-cart-muted);margin:9px 0 0}.maaj-cart-cod i{color:var(--maaj-cart-brand)}
+@media(max-width:767px){.maaj-cart-page-head{align-items:flex-start;flex-direction:column}.maaj-cart-secure{white-space:normal}.maaj-cart-info-grid{grid-template-columns:1fr}.maaj-cart-summary{position:static}.maaj-cart-item-row{grid-template-columns:58px minmax(0,1fr);align-items:start}.maaj-cart-item-image{width:58px;height:58px}.maaj-cart-item-actions{grid-column:2}.maaj-cart-title{font-size:24px}}
+@media(max-width:420px){.maaj-cart-card,.maaj-cart-summary{padding:12px}.maaj-cart-card-head{align-items:flex-start}.maaj-cart-link-btn{font-size:10px}.maaj-cart-primary-btn{min-height:46px}.maaj-cart-item-name{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.maaj-cart-primary-btn{transition:none}}
+@media(forced-colors:active){.maaj-cart-card,.maaj-cart-summary,.maaj-cart-progress,.maaj-cart-info-card,.maaj-cart-item-image{border:1px solid CanvasText}.maaj-cart-primary-btn{border:1px solid ButtonText}}
+</style>
+
 <style id="maaj-empty-cart-hide">
 .maaj-order-bar.maaj-cart-empty{display:none!important}
 </style>
+
+<style id="maaj-online-medical-design-system">
+/* ================================================================
+   MAAJ PHARMACY — Token-driven medical-commerce UI layer
+   Added on top of the existing app. Existing markup/functionality is preserved.
+   Design intent: clean, high-trust medical shopping with fast, accessible ordering.
+   ================================================================ */
+:root{
+  --maaj-font-primary:Inter,"Inter Fallback",Arial,sans-serif;
+  --maaj-text-primary:#121414;
+  --maaj-text-secondary:#ffffff;
+  --maaj-text-tertiary:#4b4a48;
+  --maaj-text-inverse:#0e8231;
+  --maaj-surface-base:#ffffff;
+  --maaj-surface-soft:#f7f9f8;
+  --maaj-surface-muted:#eef3f0;
+  --maaj-border:#d9e2dd;
+  --maaj-border-strong:#b8c9c0;
+  --maaj-brand:#0e8231;
+  --maaj-brand-hover:#096c28;
+  --maaj-brand-soft:#eaf7ee;
+  --maaj-info:#2563eb;
+  --maaj-danger:#b42318;
+  --maaj-danger-soft:#fff1f0;
+  --maaj-warning:#a15c00;
+  --maaj-warning-soft:#fff7e8;
+  --maaj-focus:#0b63ce;
+  --maaj-shadow-sm:0 2px 10px rgba(18,20,20,.06);
+  --maaj-shadow-md:0 8px 28px rgba(18,20,20,.09);
+  --maaj-radius-sm:8px;
+  --maaj-radius-md:12px;
+  --maaj-radius-lg:16px;
+  --maaj-radius-xl:20px;
+  --maaj-space-1:2px;
+  --maaj-space-2:4px;
+  --maaj-space-3:8px;
+  --maaj-space-4:15px;
+  --maaj-space-5:16px;
+  --maaj-space-6:24px;
+  --maaj-transition:160ms ease;
+}
+
+html{font-family:var(--maaj-font-primary);font-size:14px;scroll-behavior:smooth}
+body{font-family:var(--maaj-font-primary)!important;font-size:14px;line-height:normal;color:var(--maaj-text-primary)}
+button,input,select,textarea{font-family:var(--maaj-font-primary)}
+
+/* Semantic text helpers */
+.maaj-text-primary{color:var(--maaj-text-primary)!important}
+.maaj-text-secondary{color:var(--maaj-text-secondary)!important}
+.maaj-text-tertiary{color:var(--maaj-text-tertiary)!important}
+.maaj-text-brand{color:var(--maaj-brand)!important}
+.maaj-surface{background:var(--maaj-surface-base)!important}
+.maaj-surface-soft{background:var(--maaj-surface-soft)!important}
+.maaj-border{border-color:var(--maaj-border)!important}
+
+/* Keyboard-first focus. Never remove the native focus indication. */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid var(--maaj-focus)!important;
+  outline-offset:2px!important;
+  box-shadow:0 0 0 2px #fff!important;
+}
+
+/* Global interactive state contract: default / hover / focus-visible / active / disabled / loading / error */
+:where(button,[role="button"]).maaj-loading,
+:where(button,[role="button"])[aria-busy="true"]{position:relative;pointer-events:none;cursor:wait;opacity:.78}
+:where(button,[role="button"])[disabled],
+:where(button,[role="button"])[aria-disabled="true"]{cursor:not-allowed!important;opacity:.5!important;transform:none!important}
+:where(input,select,textarea).maaj-error,
+:where(input,select,textarea)[aria-invalid="true"]{border-color:var(--maaj-danger)!important;background:var(--maaj-danger-soft)!important}
+.maaj-field-error{color:var(--maaj-danger);font-size:12px;font-weight:700;margin-top:var(--maaj-space-2)}
+.maaj-field-help{color:var(--maaj-text-tertiary);font-size:12px;margin-top:var(--maaj-space-2)}
+
+/* Buttons: consistent density and touch target without changing existing actions. */
+:where(button).bg-emerald-600{background:var(--maaj-brand)!important}
+:where(button).bg-emerald-600:hover{background:var(--maaj-brand-hover)!important}
+:where(button).bg-emerald-700:hover{background:var(--maaj-brand-hover)!important}
+:where(button):active{transform:translateY(1px)}
+:where(button,.maaj-extra-btn,.maaj-pro-btn,.maaj-customer-login-btn){min-height:40px}
+
+/* Links: descriptive, visible and keyboard accessible. */
+a:not(.no-underline){text-underline-offset:3px}
+a:hover{opacity:.94}
+
+/* Inputs / selects / textareas */
+:where(input,select,textarea){border-color:var(--maaj-border);transition:border-color var(--maaj-transition),box-shadow var(--maaj-transition),background var(--maaj-transition)}
+:where(input,select,textarea):hover{border-color:var(--maaj-border-strong)}
+:where(input,select,textarea):focus{border-color:var(--maaj-focus)}
+:where(input,select,textarea):disabled{background:#f2f4f3;cursor:not-allowed}
+
+/* Product and content cards */
+:where(.maaj-feature-card,.maaj-pro-card,.maaj-extra-panel,.maaj-pro-box,.maaj-pdp-section,.maaj-pdp-photo){
+  border-color:var(--maaj-border);
+  box-shadow:var(--maaj-shadow-sm);
+}
+:where(.maaj-feature-card,.maaj-pro-card):hover{border-color:#9bc9aa}
+:where(.maaj-feature-card,.maaj-pro-card):focus-within{border-color:var(--maaj-focus)}
+
+/* Product catalog cards generated by the existing renderer. */
+#homeFeaturedProducts>div,
+#catalogGrid>div,
+#medicineGrid>div,
+#storeProducts>div{
+  transition:transform var(--maaj-transition),box-shadow var(--maaj-transition),border-color var(--maaj-transition);
+}
+#homeFeaturedProducts>div:hover,
+#catalogGrid>div:hover,
+#medicineGrid>div:hover,
+#storeProducts>div:hover{transform:translateY(-2px);box-shadow:var(--maaj-shadow-md)}
+
+/* Header/navigation density: keep the existing controls and make them easier to scan. */
+header{font-family:var(--maaj-font-primary)}
+header button,header a{min-height:40px}
+
+/* Promo / fastest-delivery messaging */
+#homePromoSlider{border-radius:var(--maaj-radius-xl);overflow:hidden;box-shadow:var(--maaj-shadow-md)}
+.promo-slide{font-family:var(--maaj-font-primary)}
+.promo-slide h1,.promo-slide h2,.promo-slide h3{font-weight:800;letter-spacing:-.02em}
+
+/* Trust / healthcare service blocks */
+.maaj-feature-card,.maaj-pro-card{border-radius:var(--maaj-radius-lg)}
+.maaj-feature-card:active,.maaj-pro-card:active{transform:translateY(0)}
+.maaj-feature-icon{background:var(--maaj-brand-soft);color:var(--maaj-brand)}
+
+/* Modals: predictable scroll, close-button target and mobile-safe layout. */
+.modal>div,
+#maajFeatureModal>div,
+#maajProModal>div,
+#maajProductDetailsPage .maaj-pdp-wrap{max-width:min(1180px,calc(100vw - 32px))}
+.modal button,.modal [role="button"],
+#maajFeatureModal button,#maajProModal button{touch-action:manipulation}
+
+/* Empty / loading / error patterns for dynamic sections. */
+.maaj-empty-state{padding:32px 20px;text-align:center;border:1px dashed var(--maaj-border-strong);border-radius:var(--maaj-radius-lg);background:var(--maaj-surface-soft);color:var(--maaj-text-tertiary)}
+.maaj-empty-state strong{display:block;color:var(--maaj-text-primary);font-size:16px;margin-bottom:4px}
+.maaj-loading-skeleton{background:linear-gradient(90deg,#eef2ef 25%,#f7f9f8 37%,#eef2ef 63%);background-size:400% 100%;animation:maajSkeleton 1.2s ease infinite;border-radius:var(--maaj-radius-md)}
+@keyframes maajSkeleton{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.maaj-error-state{padding:12px 14px;border:1px solid #f3b8b3;border-radius:var(--maaj-radius-md);background:var(--maaj-danger-soft);color:var(--maaj-danger);font-size:12px;font-weight:700}
+
+/* Responsive behavior: preserve existing layout while improving compact screens. */
+@media(max-width:767px){
+  html{font-size:14px}
+  main{width:100%;overflow-x:hidden}
+  .maaj-pdp-wrap{padding:12px!important}
+  .maaj-feature-strip,.maaj-pro-grid{gap:8px}
+  .maaj-feature-card,.maaj-pro-card{padding:13px}
+  .maaj-extra-panel,.maaj-pro-box{padding:15px}
+  .promo-slide{padding:20px!important;gap:12px}
+  #homePromoSlider,#homePromoTrack,.promo-slide{min-height:160px!important}
+  /* Touch controls must remain comfortably tappable. */
+  button,a,[role="button"]{touch-action:manipulation}
+}
+@media(min-width:768px){
+  .maaj-content-container{max-width:1180px;margin-inline:auto;padding-inline:24px}
+}
+
+/* Long labels and user-generated content must wrap instead of breaking the page. */
+:where(button,a,h1,h2,h3,h4,p,span,td,th){overflow-wrap:anywhere}
+:where(table){max-width:100%;}
+:where(.overflow-auto,.overflow-x-auto,.overflow-y-auto){overscroll-behavior:contain}
+
+/* Accessibility: honor reduced motion. */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* High contrast / forced-colors compatibility. */
+@media(forced-colors:active){
+  :where(button,a,input,select,textarea){forced-color-adjust:auto}
+  :where(a,button):focus-visible{outline:2px solid CanvasText!important;box-shadow:none!important}
+}
+
+/* Small utility classes for future components; no existing feature depends on them. */
+.maaj-container{width:min(1180px,100%);margin-inline:auto;padding-inline:var(--maaj-space-5)}
+.maaj-section{padding-block:var(--maaj-space-6)}
+.maaj-stack-2{display:flex;flex-direction:column;gap:var(--maaj-space-2)}
+.maaj-stack-3{display:flex;flex-direction:column;gap:var(--maaj-space-3)}
+.maaj-stack-4{display:flex;flex-direction:column;gap:var(--maaj-space-4)}
+.maaj-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+</style>
+
+
+<style id="maaj-footer-accessibility">
+#maajCompleteFooter a{transition:opacity .2s ease,background .2s ease}
+#maajCompleteFooter a:focus-visible{outline:3px solid currentColor;outline-offset:3px;border-radius:8px}
+@media(prefers-reduced-motion:reduce){#maajCompleteFooter a{transition:none}}
+</style>
+
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
 
     <!-- TOP ANNOUNCEMENT BAR -->
     <div class="bg-emerald-800 text-white text-xs text-center py-2 px-4 font-medium flex justify-between items-center">
-        <span>⚡ Guaranteed 1-Day Delivery Within 10 KM Radius (Agalpur Region)</span>
+        <span>⚡ Target 1-Day Delivery Within Eligible 10 KM Local Area</span>
         <span class="hidden sm:inline">MAA JHARBANDHALIAN MEDICINE STORE | Lic: BOWZ-2860/R</span>
         <span>Helpline: 6372556219</span>
     </div>
@@ -304,7 +552,7 @@ html>
                 <div class="bg-white p-5 rounded-xl border flex items-center gap-4">
                     <i class="fa-solid fa-certificate text-3xl text-emerald-600"></i>
                     <div>
-                        <h4 class="font-bold text-xs text-slate-800">100% Certified Genuine</h4>
+                        <h4 class="font-bold text-xs text-slate-800">Quality-checked medicines</h4>
                         <p class="text-[11px] text-slate-500">Directly sourced from verified pharma distributors.</p>
                     </div>
                 </div>
@@ -312,7 +560,7 @@ html>
                     <i class="fa-solid fa-user-doctor text-3xl text-blue-600"></i>
                     <div>
                         <h4 class="font-bold text-xs text-slate-800">Pharmacist Verification</h4>
-                        <p class="text-[11px] text-slate-500">Every prescription double-checked before packing.</p>
+                        <p class="text-[11px] text-slate-500">Prescription verification by pharmacy staff before packing.</p>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border flex items-center gap-4">
@@ -354,17 +602,59 @@ html>
         </section>
 
         <!-- 3. SHOPPING CART VIEW -->
-        <section id="page-cart" class="page-view space-y-4">
-            <h2 class="text-xl font-bold">Shopping Cart</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div id="cartItemsList" class="md:col-span-2 space-y-3"></div>
-                <div class="bg-white p-5 rounded-xl border h-fit space-y-4 shadow-sm">
-                    <h3 class="font-bold text-sm border-b pb-2">Order Summary</h3>
-                    <div class="space-y-2">
-                        
-                    </div>
-<button onclick="navigateTo(\'checkout\')" class="w-full bg-emerald-600 text-white font-bold text-xs py-3 rounded-xl hover:bg-emerald-700 shadow">Confirm &amp; Place Order</button>
+        <section id="page-cart" class="page-view space-y-5 maaj-cart-page" aria-labelledby="maajCartPageTitle">
+            <div class="maaj-cart-page-head">
+                <div>
+                    <p class="maaj-cart-eyebrow">YOUR CART</p>
+                    <h2 id="maajCartPageTitle" class="maaj-cart-title">Your Cart</h2>
+                    <p class="maaj-cart-subtitle">Review your medicines, update quantities, and continue to secure checkout.</p>
                 </div>
+                <div class="maaj-cart-secure" aria-label="Secure checkout">
+                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Secure &amp; pharmacy verified
+                </div>
+            </div>
+
+            <div id="maajCartFreeDelivery" class="maaj-cart-progress" role="status" aria-live="polite"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-5 items-start">
+                <div class="space-y-4">
+                    <div class="maaj-cart-card">
+                        <div class="maaj-cart-card-head">
+                            <div><h3>Cart Items</h3><p id="maajCartItemCountLabel">0 items</p></div>
+                            <button type="button" class="maaj-cart-link-btn" onclick="navigateTo('store')">Continue Shopping</button>
+                        </div>
+                        <div id="cartItemsList" class="space-y-3"></div>
+                    </div>
+                    <div class="maaj-cart-info-grid">
+                        <div class="maaj-cart-info-card"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i><div><b>Fast local delivery</b><span>Eligible local orders can be delivered within 1 day.</span></div></div>
+                        <div class="maaj-cart-info-card"><i class="fa-solid fa-certificate" aria-hidden="true"></i><div><b>Genuine medicines</b><span>Products are supplied through the pharmacy ordering flow.</span></div></div>
+                        <div class="maaj-cart-info-card"><i class="fa-solid fa-file-prescription" aria-hidden="true"></i><div><b>Prescription support</b><span>Rx medicines may require prescription verification.</span></div></div>
+                    </div>
+                </div>
+
+                <aside class="maaj-cart-summary" aria-label="Order summary">
+                    <div class="maaj-cart-summary-head"><h3>Order Summary</h3><span id="maajCartSummaryCount">0 items</span></div>
+                    <div class="maaj-cart-coupon">
+                        <label for="couponCodeInput">Have a coupon?</label>
+                        <div class="maaj-coupon-row">
+                            <input id="couponCodeInput" type="text" autocomplete="off" placeholder="Enter coupon code" aria-describedby="couponStatusMessage">
+                            <button type="button" onclick="applyCoupon()">Apply</button>
+                        </div>
+                        <p id="couponStatusMessage" class="maaj-coupon-message" role="status" aria-live="polite"></p>
+                    </div>
+                    <div class="maaj-cart-summary-lines">
+                        <div><span>Subtotal</span><strong id="cartSubtotal">₹0.00</strong></div>
+                        <div><span>Discount</span><strong id="cartDiscount" class="maaj-savings">-₹0.00</strong></div>
+                        <div><span>GST</span><strong id="cartTax">₹0.00</strong></div>
+                        <div><span>Delivery</span><strong id="cartDeliveryFee">₹0.00</strong></div>
+                    </div>
+                    <div id="maajCartSavingsNote" class="maaj-cart-savings-note"></div>
+                    <div class="maaj-cart-total-row"><span>Total</span><strong id="cartGrandTotal">₹0.00</strong></div>
+                    <button type="button" onclick="navigateTo('checkout')" class="maaj-cart-primary-btn" aria-label="Proceed to checkout">
+                        Proceed to Checkout <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </button>
+                    <p class="maaj-cart-cod"><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i> Cash on Delivery available</p>
+                </aside>
             </div>
         </section>
 
@@ -566,6 +856,7 @@ html>
                 <button onclick="switchAdminTab('prescriptions')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Rx PDFs Review</button>
                 <button onclick="switchAdminTab('coupons')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Coupons</button>
                 <button onclick="switchAdminTab('medicine-manager')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">💊 Medicine Manager</button>
+                <button onclick="switchAdminTab('categories')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">🏷️ Categories</button>
             </div>
 
             <!-- TAB 1: PRODUCTS -->
@@ -670,19 +961,66 @@ html>
                 </div>
             </div>
         
-            <!-- TAB: MEDICINE MANAGER (inside protected admin panel) -->
+            <!-- TAB: CATEGORIES — ADMIN CATEGORY MANAGER -->
+            <div id="admin-tab-categories" class="admin-tab space-y-4">
+              <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
+                <div class="p-4 border-b bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+                  <div><h3 class="font-black text-sm">🏷️ Admin Categories</h3><p class="text-[11px] text-slate-500 mt-1">Manage the categories available while adding medicines. Existing categories are kept.</p></div>
+                  <span class="text-[10px] font-black text-emerald-600">MAAJ PHARMACY</span>
+                </div>
+                <div class="p-5">
+                  <div id="maajAdminCategoryGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"></div>
+                  <div class="mt-5 rounded-2xl border bg-slate-50 p-4">
+                    <div class="flex flex-wrap items-end gap-3">
+                      <div class="flex-1 min-w-[220px]"><label class="block text-[11px] font-black text-slate-600 mb-1">Add Custom Category</label><input id="maajNewCategory" class="w-full border rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. Baby Care"></div>
+                      <button type="button" onclick="maajAddAdminCategory()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">+ Add Category</button>
+                    </div>
+                    <div id="maajCategoryStatus" class="text-xs font-bold mt-2"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB: MEDICINE MANAGER — ONLINE SUPABASE CATALOGUE -->
             <div id="admin-tab-medicine-manager" class="admin-tab space-y-4">
-  <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
-    <div class="p-4 border-b bg-slate-50 flex items-center justify-between gap-3">
-      <div>
-        <h3 class="font-black text-sm">💊 Medicine Manager</h3>
-        <p class="text-[11px] text-slate-500 mt-1">Add multiple medicines from one dedicated manager.</p>
-      </div>
-      <span class="text-[10px] font-black text-emerald-600">ADMIN ONLY</span>
-    </div>
-    <iframe src="medicine-manager.html" title="Medicine Manager" style="width:100%;height:720px;border:0;display:block;background:#f1f5f9;"></iframe>
-  </div>
-</div>
+              <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
+                <div class="p-4 border-b bg-slate-50 flex items-center justify-between gap-3">
+                  <div><h3 class="font-black text-sm">💊 Medicine Manager</h3><p class="text-[11px] text-slate-500 mt-1">Login with the Supabase admin account. Medicines added here are saved online and loaded into the customer catalogue.</p></div>
+                  <span id="mmUserTag" class="text-[10px] font-black text-emerald-600">ADMIN LOGIN REQUIRED</span>
+                </div>
+                <div id="mmLogin" class="p-5">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl">
+                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Admin Email *</label><input id="mmEmail" type="email" autocomplete="username" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div>
+                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Admin Password *</label><input id="mmPassword" type="password" autocomplete="current-password" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div>
+                  </div>
+                  <button type="button" onclick="mmSignIn()" class="mt-3 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">Admin Login</button><div id="mmLoginStatus" class="text-xs font-bold mt-2"></div>
+                </div>
+                <div id="mmManager" class="hidden p-5 space-y-5">
+                  <div class="flex flex-wrap items-center justify-between gap-2 bg-emerald-50 border border-emerald-100 rounded-2xl p-3"><div><div class="text-[10px] font-black text-emerald-700 tracking-widest">ONLINE CATALOGUE</div><div id="mmLoggedInAs" class="text-xs font-bold text-slate-700"></div></div><button type="button" onclick="mmSignOut()" class="bg-white border px-3 py-2 rounded-xl text-xs font-black">Sign Out</button></div>
+                  <div class="rounded-2xl border bg-slate-50 p-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <div><h4 class="font-black text-sm">Add Multiple Medicines</h4><p class="text-[11px] text-slate-500 mt-1">Add many medicines together like an Excel sheet. Each row is saved online to Supabase.</p></div>
+                      <div class="flex gap-2"><button type="button" onclick="mmAddBulkRow()" class="bg-white border px-3 py-2 rounded-xl text-xs font-black">+ Add Row</button><button type="button" onclick="mmAddBulkRows(5)" class="bg-white border px-3 py-2 rounded-xl text-xs font-black">+ 5 Rows</button></div>
+                    </div>
+                    <div class="mt-3 overflow-x-auto rounded-xl border bg-white">
+                      <table class="w-full text-left text-xs" style="min-width:1250px">
+                        <thead class="bg-slate-100 border-b"><tr>
+                          <th class="p-2 w-8">#</th><th class="p-2">Medicine Name *</th><th class="p-2">Selling Price *</th><th class="p-2">MRP</th><th class="p-2">Category</th><th class="p-2">Drug Class</th><th class="p-2">GST</th><th class="p-2">Stock</th><th class="p-2">Description</th><th class="p-2">Photo *</th><th class="p-2">Action</th>
+                        </tr></thead>
+                        <tbody id="mmBulkRows"></tbody>
+                      </table>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-3"><button type="button" onclick="mmBulkAdd()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">✓ Add All Medicines Online</button><button type="button" onclick="mmClearBulkRows()" class="bg-white border px-4 py-2.5 rounded-xl text-xs font-black">Clear Rows</button></div>
+                    <div id="mmBulkStatus" class="text-xs font-bold mt-2"></div>
+                  </div>
+                  <div class="rounded-2xl border bg-white p-4"><h4 class="font-black text-sm">Add One Medicine</h4><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Medicine Name *</label><input id="mmName" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Selling Price *</label><input id="mmPrice" type="number" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">MRP</label><input id="mmMrp" type="number" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Category</label><select id="mmCategory" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></select></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Drug Class</label><select id="mmDrugClass" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></select></div>
+                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">GST %</label><select id="mmGst" class="w-full border rounded-xl px-3 py-2.5 text-sm"><option value="5">5% — Medicine</option><option value="18">18% — Cosmetic</option></select></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Stock</label><input id="mmStock" type="number" min="0" value="0" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div class="md:col-span-2"><label class="block text-[11px] font-black text-slate-600 mb-1">Medicine Photo *</label><input id="mmPhoto" type="file" accept="image/*" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></div><div class="md:col-span-2 lg:col-span-4"><label class="block text-[11px] font-black text-slate-600 mb-1">Description</label><textarea id="mmDescription" class="w-full border rounded-xl p-3 text-sm min-h-[80px]"></textarea></div>
+                  </div><button type="button" onclick="mmAddOne()" class="mt-3 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">Add Medicine Online</button><div id="mmOneStatus" class="text-xs font-bold mt-2"></div></div>
+                  <div class="rounded-2xl border bg-white overflow-hidden"><div class="p-4 border-b flex flex-wrap items-center justify-between gap-2"><div><h4 class="font-black text-sm">Medicine List</h4><p class="text-[11px] text-slate-500">Live list from Supabase.</p></div><div class="flex gap-2"><button type="button" onclick="mmLoadMedicines()" class="bg-slate-100 px-3 py-2 rounded-xl text-xs font-black">↻ Refresh</button><button type="button" onclick="mmDeleteSelected()" class="bg-red-50 text-red-700 px-3 py-2 rounded-xl text-xs font-black">Delete Selected</button></div></div><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50 border-b"><tr><th class="p-3"><input type="checkbox" id="mmSelectAll" onclick="mmToggleAll(this)"></th><th class="p-3">Photo</th><th class="p-3">Medicine</th><th class="p-3">Price</th><th class="p-3">MRP</th><th class="p-3">GST</th><th class="p-3">Category</th><th class="p-3">Drug Class</th><th class="p-3">Stock</th><th class="p-3">Action</th></tr></thead><tbody id="mmList"></tbody></table></div></div>
+                </div>
+              </div>
+            </div>
 </section>
 
     
@@ -1371,18 +1709,39 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const MAAJ_API = SUPABASE_URL + "/rest/v1/medicines";
 let maajApiReady = false;
 
+function maajMedicinePhotoUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    if (/^data:image\//i.test(raw) || /^blob:/i.test(raw)) return raw;
+    if (/^https?:\/\//i.test(raw)) return raw;
+    const clean = raw.replace(/^\/+/, '').replace(/^storage\/v1\/object\/(public\/)?/, '');
+    if (clean.startsWith('medicine-images/')) {
+        return SUPABASE_URL + '/storage/v1/object/public/' + clean;
+    }
+    return SUPABASE_URL + '/storage/v1/object/public/medicine-images/' + clean.replace(/^medicine-images\//, '');
+}
+
+function maajImageFallback(el) {
+    if (!el || el.dataset.fallbackApplied === '1') return;
+    el.dataset.fallbackApplied = '1';
+    el.onerror = null;
+    el.src = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240"><rect width="240" height="240" rx="24" fill="#f1f5f9"/><circle cx="120" cy="105" r="48" fill="#ffffff" stroke="#cbd5e1" stroke-width="5"/><path d="M92 105h56M120 77v56" stroke="#10b981" stroke-width="12" stroke-linecap="round"/><text x="120" y="188" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="#64748b">Medicine</text></svg>');
+}
+
 function maajMapApiMedicine(m) {
+    const photo = maajMedicinePhotoUrl(m.photo || m.image || m.photo_url || m.photo_path || '');
     return {
         id: String(m.id),
         name: m.name || "",
         price: Number(m.price || 0),
         mrp: Number(m.mrp || 0),
         category: m.category || "Medicine",
+        drug_class: m.drug_class || m.drugClass || 'Other',
         gst: Number(m.gst || 5),
         description: m.description || "",
         stock: Number(m.stock || 0),
-        photo: m.photo || "",
-        image: m.photo || "",
+        photo,
+        image: photo,
         brand: m.brand || "",
         batch: m.batch || "",
         expiry: m.expiry || "",
@@ -1445,11 +1804,11 @@ async function maajLoadMedicinesFromAPI() {
 
         // --- ADMIN AUTHENTICATION (INDEX.HTML ONLY) ---
         const ADMIN_USERNAME = "admin";
-        const ADMIN_PASSWORD = "MAAJ@Admin2026";
+        const ADMIN_PASSWORD_HASH = "d3dd7030c56b76939ad67b3018cfdf8d413cba62ee1d9dc734d97a7cf6455bac";
         const ADMIN_AUTH_KEY = "maaj_admin_authenticated";
 
         function isAdminAuthenticated() {
-            return localStorage.getItem(ADMIN_AUTH_KEY) === "true";
+            return sessionStorage.getItem(ADMIN_AUTH_KEY) === "true";
         }
 
         function openAdminLogin() {
@@ -1486,20 +1845,21 @@ async function maajLoadMedicinesFromAPI() {
             }
         }
 
-        function adminLogin(event) {
+        async function adminLogin(event) {
             event.preventDefault();
             const username = document.getElementById("adminUsername").value.trim();
             const password = document.getElementById("adminPassword").value;
             const error = document.getElementById("adminLoginError");
-
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                localStorage.setItem(ADMIN_AUTH_KEY, "true");
+            const data = new TextEncoder().encode(password);
+            const digest = await crypto.subtle.digest("SHA-256", data);
+            const hash = Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");
+            if (username === ADMIN_USERNAME && hash === ADMIN_PASSWORD_HASH) {
+                sessionStorage.setItem(ADMIN_AUTH_KEY, "true");
                 error.classList.add("hidden");
                 closeAdminLogin();
                 navigateTo("admin-dashboard");
                 return;
             }
-
             error.textContent = "Invalid username or password.";
             error.classList.remove("hidden");
             document.getElementById("adminPassword").value = "";
@@ -1507,7 +1867,7 @@ async function maajLoadMedicinesFromAPI() {
         }
 
         function adminLogout() {
-            localStorage.removeItem(ADMIN_AUTH_KEY);
+            sessionStorage.removeItem(ADMIN_AUTH_KEY);
             pageHistory = ['home'];
             history.replaceState({page:'home'}, '', '#home');
             navigateTo("home", false);
@@ -1552,7 +1912,7 @@ async function maajLoadMedicinesFromAPI() {
 
         function goHomePage() {
             if (currentPageId === 'admin-dashboard') {
-                localStorage.removeItem(ADMIN_AUTH_KEY);
+                sessionStorage.removeItem(ADMIN_AUTH_KEY);
             }
             pageHistory = ['home'];
             history.replaceState({page:'home'}, '', '#home');
@@ -1561,7 +1921,7 @@ async function maajLoadMedicinesFromAPI() {
 
         function goBackPage() {
             if (currentPageId === 'admin-dashboard') {
-                localStorage.removeItem(ADMIN_AUTH_KEY);
+                sessionStorage.removeItem(ADMIN_AUTH_KEY);
                 pageHistory = ['home'];
                 history.replaceState({page:'home'}, '', '#home');
                 navigateTo('home', false);
@@ -1580,7 +1940,7 @@ async function maajLoadMedicinesFromAPI() {
 
         window.addEventListener('popstate', function() {
             if (currentPageId === 'admin-dashboard') {
-                localStorage.removeItem(ADMIN_AUTH_KEY);
+                sessionStorage.removeItem(ADMIN_AUTH_KEY);
                 pageHistory = ['home'];
                 history.replaceState({page:'home'}, '', '#home');
                 navigateTo('home', false);
@@ -1647,10 +2007,7 @@ async function maajLoadMedicinesFromAPI() {
             if (tabName === 'orders') renderAdminOrders();
             if (tabName === 'prescriptions') renderAdminPrescriptions();
             if (tabName === 'coupons') renderAdminCoupons();
-            if (tabName === 'medicine-manager') {
-                const frame = document.querySelector('#admin-tab-medicine-manager iframe');
-                if (frame && !frame.src) frame.src = 'medicine-manager.html';
-            }
+            if (tabName === 'medicine-manager') { if (typeof mmShowManager === 'function') mmShowManager(); }
         }
 
         // --- HOME PAGE RENDERING ---
@@ -2417,7 +2774,7 @@ async function maajLoadMedicinesFromAPI() {
         }
 
         function viewInvoice(orderId) {
-            if (localStorage.getItem(ADMIN_AUTH_KEY) !== "true") {
+            if (sessionStorage.getItem(ADMIN_AUTH_KEY) !== "true") {
                 alert("Admin login required to generate invoices.");
                 openAdminLogin();
                 return;
@@ -2477,7 +2834,7 @@ async function maajLoadMedicinesFromAPI() {
         }
 
         function printAdminInvoice() {
-            if (localStorage.getItem(ADMIN_AUTH_KEY) !== "true") { alert("Admin login required."); return; }
+            if (sessionStorage.getItem(ADMIN_AUTH_KEY) !== "true") { alert("Admin login required."); return; }
             window.print();
         }
 
@@ -3477,9 +3834,25 @@ window.maajTriggerPrescriptionUpload=function(){
     localStorage.setItem('maaj_cart_total',String(total));
   };
 
+  /* MAAJ PHARMACY — Mandatory minimum order value */
+  var MAAJ_MIN_ORDER = 299;
+  window.maajMinimumOrderCheck = function(){
+    var c = (typeof calc === 'function') ? calc() : {subtotal:0};
+    var value = Number(c.subtotal || 0);
+    if(value < MAAJ_MIN_ORDER){
+      alert('Minimum order value is ₹299. Please add ₹' + (MAAJ_MIN_ORDER - value).toFixed(2) + ' more to continue.');
+      return false;
+    }
+    return true;
+  };
+
   /* Replace checkout with pincode-aware delivery + GST summary. */
   window.maajGoCheckout=function(){
     if(!cart().length)return alert('Your cart is empty.');
+    var minimumCart = calc();
+    if(Number(minimumCart.subtotal||0) < MAAJ_MIN_ORDER){
+      return alert('Minimum order value is ₹299. Please add ₹' + (MAAJ_MIN_ORDER - Number(minimumCart.subtotal||0)).toFixed(2) + ' more to continue.');
+    }
     maajCloseCart();
     var p=document.getElementById('maajCheckoutPage');p.classList.remove('hidden');p.classList.add('block');
     var c=calc();
@@ -3516,7 +3889,11 @@ window.maajTriggerPrescriptionUpload=function(){
     var n=document.getElementById('maajOrderName').value.trim(),m=document.getElementById('maajOrderMobile').value.replace(/\D/g,''),pin=document.getElementById('maajOrderPincode').value.replace(/\D/g,''),a=document.getElementById('maajOrderAddress').value.trim(),c=cart();
     if(!n||m.length!==10||pin.length!==6||!a)return alert('Please complete name, 10-digit mobile number, PIN code and delivery address.');
     var info=pinInfo(pin);if(!info)return alert('Enter a valid 6-digit PIN code.');
-    var x=calc(),fee=deliveryFee(info,x.medicineSubtotal),free=x.medicineSubtotal>=499,total=x.subtotal+x.tax+fee;
+    var x=calc();
+    if(Number(x.subtotal||0) < MAAJ_MIN_ORDER){
+      return alert('Minimum order value is ₹299. Please add ₹' + (MAAJ_MIN_ORDER - Number(x.subtotal||0)).toFixed(2) + ' more before placing the order.');
+    }
+    var fee=deliveryFee(info,x.medicineSubtotal),free=x.medicineSubtotal>=499,total=x.subtotal+x.tax+fee;
     var orders=[];try{orders=JSON.parse(localStorage.getItem('maaj_orders')||'[]')}catch(e){}
     var id='MJ'+Date.now().toString().slice(-8);
     orders.push({id:id,name:n,mobile:m,pincode:pin,address:a,items:c,subtotal:x.subtotal,gst:x.tax,delivery:fee,total:total,status:'Order Placed',payment:'COD',deliveryEstimate:info.days,date:new Date().toISOString()});
@@ -3541,8 +3918,811 @@ window.maajTriggerPrescriptionUpload=function(){
 })();
 </script>
 
-</body>
-</html><script>
+
+<script id="maaj-your-cart-enhancement">
+(function(){
+  function money(n){return '₹'+Number(n||0).toFixed(2);}
+  function escCart(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
+  function getItems(){try{return (typeof cart!=='undefined' && Array.isArray(cart))?cart:[]}catch(e){return[]}}
+  function itemMeta(item){
+    var bits=[];
+    if(item.brand) bits.push(escCart(item.brand));
+    if(item.category) bits.push(escCart(item.category));
+    if(item.packSize) bits.push(escCart(item.packSize));
+    return bits.join(' • ');
+  }
+  window.maajRenderEnhancedCart=function(){
+    var items=getItems();
+    var list=document.getElementById('cartItemsList');
+    var count=items.reduce(function(s,i){return s+Number(i.qty||0)},0);
+    var labels=[document.getElementById('maajCartItemCountLabel'),document.getElementById('maajCartSummaryCount')];
+    labels.forEach(function(el){if(el)el.textContent=count+' '+(count===1?'item':'items')});
+    if(!list)return;
+    if(!items.length){
+      list.innerHTML='<div class="maaj-cart-empty-state"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><h3>Your cart is empty</h3><p>Add medicines and healthcare essentials to continue.</p><button type="button" class="maaj-cart-primary-btn" style="max-width:220px" onclick="navigateTo(\'store\')">Browse Medicines</button></div>';
+    }else{
+      list.innerHTML=items.map(function(item,index){
+        var image=item.image||item.img||item.photo||'https://placehold.co/160x160?text=Medicine';
+        var meta=itemMeta(item);
+        var price=Number(item.price||0);
+        var mrp=Number(item.mrp||0);
+        return '<article class="maaj-cart-item-row" aria-label="'+escCart(item.name||'Medicine')+'">' +
+          '<div class="maaj-cart-item-image"><img src="'+escCart(image)+'" alt="'+escCart(item.name||'Medicine')+'" onerror="this.src=\'https://placehold.co/160x160?text=Medicine\'"></div>' +
+          '<div class="min-w-0"><div class="maaj-cart-item-name">'+escCart(item.name||'Medicine')+'</div>' +
+          (meta?'<div class="maaj-cart-item-meta">'+meta+'</div>':'') +
+          '<div class="maaj-cart-item-price">'+money(price)+(mrp>price?'<span class="maaj-cart-item-mrp">'+money(mrp)+'</span>':'')+'</div>' +
+          '<div class="maaj-cart-qty" aria-label="Quantity controls"><button type="button" aria-label="Decrease quantity" onclick="updateQty('+index+',-1)">−</button><span aria-live="polite">'+Number(item.qty||0)+'</span><button type="button" aria-label="Increase quantity" onclick="updateQty('+index+',1)">+</button></div>' +
+          '</div>' +
+          '<div class="maaj-cart-item-actions text-right"><div class="text-[10px] text-slate-500">'+money(price*Number(item.qty||0))+'</div><button type="button" class="maaj-cart-remove" onclick="removeItem('+index+')"><i class="fa-solid fa-trash mr-1" aria-hidden="true"></i>Remove</button></div>' +
+          '</article>';
+      }).join('');
+    }
+    maajUpdateEnhancedTotals();
+  };
+  window.maajUpdateEnhancedTotals=function(){
+    var items=getItems();
+    var subtotal=items.reduce(function(s,i){return s+(Number(i.price||0)*Number(i.qty||0))},0);
+    var discount=0;
+    try{if(typeof activeCoupon!=='undefined' && activeCoupon){discount=activeCoupon.type==='PERCENT'?(subtotal*Number(activeCoupon.value||0)/100):Number(activeCoupon.value||0)}}catch(e){}
+    discount=Math.min(Math.max(0,discount),subtotal);
+    var taxable=Math.max(0,subtotal-discount);
+    var tax=taxable*0.05;
+    var delivery=0;
+    var total=Math.max(0,taxable+tax+delivery);
+    var set=function(id,val){var el=document.getElementById(id);if(el)el.textContent=val};
+    set('cartSubtotal',money(subtotal)); set('cartDiscount','-'+money(discount)); set('cartTax',money(tax)); set('cartDeliveryFee',money(delivery)); set('cartGrandTotal',money(total));
+    var note=document.getElementById('maajCartSavingsNote');
+    if(note){note.textContent=discount>0?'You saved '+money(discount)+' with your coupon.':'';}
+    var progress=document.getElementById('maajCartFreeDelivery');
+    if(progress){
+      if(!items.length) progress.innerHTML='<i class="fa-solid fa-bag-shopping mr-2" aria-hidden="true"></i>Add medicines to unlock cart benefits.';
+      else if(subtotal>=499) progress.innerHTML='<i class="fa-solid fa-circle-check mr-2" aria-hidden="true"></i>Great! Your medicine order qualifies for <strong class="ml-1">free delivery above ₹499</strong>.';
+      else progress.innerHTML='<i class="fa-solid fa-truck-fast mr-2" aria-hidden="true"></i>Add <strong class="ml-1">'+money(499-subtotal)+'</strong>&nbsp;more to reach ₹499 and unlock free delivery.';
+    }
+  };
+  window.renderCart=function(){window.maajRenderEnhancedCart();};
+  window.calculateTotals=function(){window.maajUpdateEnhancedTotals();};
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){window.maajRenderEnhancedCart();},50);});
+})();
+</script>
+
+<script id="maaj-unified-cart-engine">
+(function(){
+  const KEY = 'maaj_cart';
+  const LEGACY_KEYS = ['cart','maajCart','maaj_cart_items'];
+
+  function read(){
+    let found = null;
+    for(const k of [KEY,...LEGACY_KEYS]){
+      try{
+        const v = JSON.parse(localStorage.getItem(k) || 'null');
+        if(Array.isArray(v)){ found = v; break; }
+      }catch(e){}
+    }
+    return found || [];
+  }
+  function normalize(items){
+    return (Array.isArray(items)?items:[]).map((i,idx)=>({
+      ...i,
+      id: String(i.id ?? i.medicineId ?? i.productId ?? i.sku ?? idx),
+      qty: Math.max(1, Number(i.qty ?? i.quantity ?? 1) || 1),
+      price: Number(i.price ?? i.salePrice ?? i.sellingPrice ?? 0) || 0,
+      mrp: Number(i.mrp ?? i.MRP ?? i.price ?? 0) || 0,
+      name: i.name ?? i.title ?? 'Medicine'
+    }));
+  }
+  function write(items){
+    const data = normalize(items);
+    localStorage.setItem(KEY, JSON.stringify(data));
+    // Keep legacy cart storage synchronized so older modules still work.
+    for(const k of LEGACY_KEYS) localStorage.setItem(k, JSON.stringify(data));
+    window.dispatchEvent(new CustomEvent('maaj:cart-updated',{detail:{cart:data}}));
+    return data;
+  }
+  function current(){ return normalize(read()); }
+
+  window.MAAJ_CART = {
+    get: current,
+    save: write,
+    count(){ return current().reduce((n,i)=>n+Number(i.qty||0),0); },
+    subtotal(){ return current().reduce((n,i)=>n+Number(i.price||0)*Number(i.qty||0),0); },
+    setQty(id,qty){
+      const items=current();
+      const x=items.find(i=>String(i.id)===String(id));
+      if(!x)return items;
+      x.qty=Math.max(1,Math.min(999,Number(qty)||1));
+      return write(items);
+    },
+    inc(id){ const x=current().find(i=>String(i.id)===String(id)); return this.setQty(id,(x?.qty||1)+1); },
+    dec(id){ const x=current().find(i=>String(i.id)===String(id)); return x ? this.setQty(id,(x.qty||1)-1) : current(); },
+    remove(id){ return write(current().filter(i=>String(i.id)!==String(id))); },
+    clear(){ return write([]); },
+    minOrder: 299
+  };
+
+  function refresh(){
+    const c=MAAJ_CART.get(), count=MAAJ_CART.count(), sub=MAAJ_CART.subtotal();
+    document.querySelectorAll('[data-maaj-cart-count],#cartCount,#cartBadge,.cart-count').forEach(el=>el.textContent=count);
+    document.querySelectorAll('[data-maaj-cart-subtotal]').forEach(el=>el.textContent='₹'+sub.toFixed(2));
+    document.querySelectorAll('[data-maaj-min-order]').forEach(el=>{
+      const remaining=Math.max(0,299-sub);
+      el.textContent=remaining
+        ? 'Minimum order ₹299 • Add ₹'+remaining.toFixed(2)+' more'
+        : 'Minimum order ₹299 ✓';
+      el.classList.toggle('is-ready',remaining===0);
+    });
+  }
+  window.addEventListener('storage',refresh);
+  window.addEventListener('maaj:cart-updated',refresh);
+  document.addEventListener('DOMContentLoaded',refresh);
+})();
+</script>
+<style id="maaj-unified-cart-next-level">
+:root{
+  --maaj-cart-bg:#f7faf9;
+  --maaj-cart-card:#ffffff;
+  --maaj-cart-text:#121414;
+  --maaj-cart-muted:#64748b;
+  --maaj-cart-border:#d9e7e4;
+  --maaj-cart-accent:#007c9d;
+  --maaj-cart-green:#0e8231;
+  --maaj-cart-soft:#effaf5;
+  --maaj-cart-warning:#fff7e6;
+  --maaj-cart-shadow:0 14px 40px rgba(15,23,42,.08);
+  --maaj-cart-radius:18px;
+}
+.maaj-cart-next-card{
+  background:var(--maaj-cart-card);border:1px solid var(--maaj-cart-border);
+  border-radius:var(--maaj-cart-radius);box-shadow:var(--maaj-cart-shadow);
+}
+.maaj-cart-next-card .qty-control{
+  display:inline-flex;align-items:center;overflow:hidden;border:1px solid var(--maaj-cart-border);
+  border-radius:12px;background:#fff;height:42px;
+}
+.maaj-cart-next-card .qty-control button{
+  width:40px;height:42px;border:0;background:transparent;font-size:20px;font-weight:800;
+  cursor:pointer;color:var(--maaj-cart-text);
+}
+.maaj-cart-next-card .qty-control button:hover{background:var(--maaj-cart-soft)}
+.maaj-cart-next-card .qty-control button:focus-visible{
+  outline:3px solid rgba(0,124,157,.28);outline-offset:-3px;
+}
+.maaj-cart-next-card .qty-control span{min-width:42px;text-align:center;font-weight:800}
+.maaj-cart-progress{height:7px;border-radius:99px;background:#e7efed;overflow:hidden}
+.maaj-cart-progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#0e8231,#007c9d);transition:width .5s ease}
+.maaj-cart-min-note{padding:12px 14px;border-radius:14px;background:var(--maaj-cart-warning);
+border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
+.maaj-cart-min-note.is-ready{background:var(--maaj-cart-soft);border-color:#b9e5cf;color:#087a35}
+@media(max-width:768px){
+  .maaj-cart-next-card{border-radius:14px}
+  .maaj-cart-next-card .qty-control button{width:38px}
+}
+</style>
+
+
+<script id="maaj-cart-control-sync">
+(function(){
+  function findId(el){
+    return el?.dataset?.cartId || el?.closest('[data-cart-id]')?.dataset?.cartId ||
+      el?.dataset?.id || el?.closest('[data-id]')?.dataset?.id || null;
+  }
+  document.addEventListener('click',function(e){
+    const btn=e.target.closest('[data-cart-action]');
+    if(!btn)return;
+    const id=findId(btn); if(id==null)return;
+    const action=btn.dataset.cartAction;
+    if(action==='inc'){ e.preventDefault(); MAAJ_CART.inc(id); }
+    if(action==='dec'){ e.preventDefault(); MAAJ_CART.dec(id); }
+    if(action==='remove'){ e.preventDefault(); MAAJ_CART.remove(id); }
+  },true);
+})();
+</script>
+
+
+<script id="maaj-cart-next-level-render">
+(function(){
+  function money(n){return '₹'+Number(n||0).toFixed(2)}
+  window.maajRenderUnifiedCartSummary=function(root){
+    root=root||document;
+    const subtotal=MAAJ_CART.subtotal(), remaining=Math.max(0,299-subtotal);
+    root.querySelectorAll('[data-maaj-unified-summary]').forEach(box=>{
+      box.innerHTML=
+        '<div class="maaj-cart-next-card p-5 sm:p-6">'+
+          '<div class="flex items-center justify-between gap-3 mb-4">'+
+            '<div><div class="text-xs font-bold uppercase tracking-wider text-slate-500">Order summary</div>'+
+            '<div class="text-xl font-black text-slate-900">Your Cart</div></div>'+
+            '<div class="text-sm font-black text-slate-700">'+MAAJ_CART.count()+' item'+(MAAJ_CART.count()===1?'':'s')+'</div></div>'+
+          '<div class="space-y-3 text-sm">'+
+            '<div class="flex justify-between"><span class="text-slate-500">Subtotal</span><b>'+money(subtotal)+'</b></div>'+
+            '<div class="flex justify-between"><span class="text-slate-500">Minimum order</span><b>₹299</b></div>'+
+          '</div>'+
+          '<div class="mt-4 maaj-cart-min-note '+(remaining===0?'is-ready':'')+'">'+
+            (remaining ? 'Add '+money(remaining)+' more to unlock checkout' : 'Minimum order reached — ready for checkout')+
+          '</div>'+
+          '<div class="mt-3 maaj-cart-progress"><i style="width:'+Math.min(100,subtotal/299*100)+'%"></i></div>'+
+          '<button type="button" class="mt-5 w-full rounded-xl px-4 py-3 font-black text-white '+(remaining?'opacity-60 cursor-not-allowed':'')+'" '+
+          'style="background:var(--maaj-cart-green)" '+(remaining?'disabled':'')+' onclick="if(window.maajGoCheckout)maajGoCheckout();">Proceed to Checkout</button>'+
+        '</div>';
+    });
+  }
+  document.addEventListener('DOMContentLoaded',()=>maajRenderUnifiedCartSummary());
+  window.addEventListener('maaj:cart-updated',()=>maajRenderUnifiedCartSummary());
+})();
+</script>
+
+
+<!-- MAAJ PHARMACY — Complete Footer / Information Center -->
+<footer id="maajCompleteFooter" class="mt-12 border-t border-slate-200 bg-slate-950 text-white">
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
+      <section>
+        <h2 class="text-base font-black">About MAAJ Pharmacy</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-300">
+          MAAJ PHARMACY is an online medical store focused on convenient medicine ordering,
+          healthcare products, transparent pricing and local delivery support.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <a href="#about" class="rounded-lg border border-slate-700 px-3 py-2 text-xs font-bold hover:bg-slate-800 focus-visible:outline focus-visible:outline-2">About Us</a>
+          <a href="#contact" class="rounded-lg border border-slate-700 px-3 py-2 text-xs font-bold hover:bg-slate-800 focus-visible:outline focus-visible:outline-2">Contact Us</a>
+          <a href="#faq" class="rounded-lg border border-slate-700 px-3 py-2 text-xs font-bold hover:bg-slate-800 focus-visible:outline focus-visible:outline-2">FAQs</a>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-base font-black">Our Categories</h2>
+        <ul class="mt-3 space-y-2 text-sm text-slate-300">
+          <li><a href="#medicines" class="hover:text-white">Pain Relief</a></li>
+          <li><a href="#medicines" class="hover:text-white">Antibiotics</a></li>
+          <li><a href="#medicines" class="hover:text-white">Vitamins & Supplements</a></li>
+          <li><a href="#medicines" class="hover:text-white">First Aid</a></li>
+          <li><a href="#medicines" class="hover:text-white">Syrups</a></li>
+          <li><a href="#medicines" class="hover:text-white">Creams & Ointments</a></li>
+          <li><a href="#medicines" class="hover:text-white">Pain Oils & Balms</a></li>
+          <li><a href="#medicines" class="hover:text-white">Healthcare & Wellness</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-base font-black">Browse</h2>
+        <ul class="mt-3 space-y-2 text-sm text-slate-300">
+          <li><a href="#medicines" class="hover:text-white">View All Medicines</a></li>
+          <li><a href="#medicines" class="hover:text-white">View All OTC Products</a></li>
+          <li><a href="#medicines" class="hover:text-white">Browse by Salt / Composition</a></li>
+          <li><a href="#medicines" class="hover:text-white">View All Categories</a></li>
+          <li><a href="#medicines" class="hover:text-white">View All Brands</a></li>
+          <li><a href="#blogs" class="hover:text-white">Health Blogs</a></li>
+          <li><a href="#home" class="hover:text-white">Parenting & Family Guide</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-base font-black">Our Services</h2>
+        <ul class="mt-3 space-y-2 text-sm text-slate-300">
+          <li><a href="#orders" class="hover:text-white">Order Medicines Online</a></li>
+          <li><a href="#orders" class="hover:text-white">Fast Local Delivery</a></li>
+          <li><a href="#prescription" class="hover:text-white">Prescription Upload</a></li>
+          <li><a href="#orders" class="hover:text-white">Order Tracking</a></li>
+          <li><a href="#cart" class="hover:text-white">Your Cart & Checkout</a></li>
+          <li><a href="#account" class="hover:text-white">My Account</a></li>
+          <li><a href="#contact" class="hover:text-white">Customer Support</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-base font-black">Policies</h2>
+        <ul class="mt-3 space-y-2 text-sm text-slate-300">
+          <li><a href="#editorial-policy" class="hover:text-white">Editorial Policy</a></li>
+          <li><a href="#privacy-policy" class="hover:text-white">Privacy Policy</a></li>
+          <li><a href="#terms" class="hover:text-white">Terms & Conditions</a></li>
+          <li><a href="#returns" class="hover:text-white">Returns & Refunds</a></li>
+          <li><a href="#delivery-policy" class="hover:text-white">Medicine Delivery & Cancellations</a></li>
+          <li><a href="#prescription" class="hover:text-white">Prescription & Restricted Medicines</a></li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="mt-10 grid grid-cols-1 gap-4 border-t border-slate-800 pt-6 md:grid-cols-3">
+      <div>
+        <div class="text-sm font-black">Fast Delivery</div>
+        <p class="mt-1 text-xs text-slate-400">Local delivery support with clear delivery charges and estimates.</p>
+      </div>
+      <div>
+        <div class="text-sm font-black">Minimum Order</div>
+        <p class="mt-1 text-xs text-slate-400">Minimum cart value: ₹299. Free delivery eligibility follows the store's delivery rules.</p>
+      </div>
+      <div>
+        <div class="text-sm font-black">Payment</div>
+        <p class="mt-1 text-xs text-slate-400">Cash on Delivery is available where supported by the order and delivery location.</p>
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-col gap-3 border-t border-slate-800 pt-5 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+      <p>© <span id="maajFooterYear"></span> MAAJ PHARMACY. All rights reserved.</p>
+      <p>MAAJ PHARMACY — Online Medical Store • Online Medicine Order • Local Delivery Support</p>
+    </div>
+  </div>
+</footer>
+<script>
+  (function(){
+    var y=document.getElementById('maajFooterYear');
+    if(y)y.textContent=new Date().getFullYear();
+  })();
+</script>
+
+
+<!-- MAAJ PHARMACY — Universal Button Details & Interaction Layer -->
+
+
+
+
+
+<!-- MAAJ PHARMACY — Real Feature Routing Layer -->
+<style id="maaj-real-routing-style">
+.maaj-route-toast{position:fixed;right:18px;bottom:18px;z-index:999999;max-width:360px;padding:13px 16px;border-radius:14px;background:#0f172a;color:#fff;box-shadow:0 16px 45px rgba(0,0,0,.2);font-size:13px;font-weight:800;display:none}
+.maaj-route-toast.show{display:block}
+</style>
+<div id="maajRouteToast" class="maaj-route-toast" role="status" aria-live="polite"></div>
+<script id="maaj-real-routing-script">
+(function(){
+  function toast(msg){
+    const x=document.getElementById('maajRouteToast');
+    if(!x)return;
+    x.textContent=msg;x.classList.add('show');
+    clearTimeout(window.__maajRouteToast);
+    window.__maajRouteToast=setTimeout(()=>x.classList.remove('show'),2200);
+  }
+  function callFirst(names){
+    for(const n of names){
+      if(typeof window[n]==='function'){ try{ window[n](); return true; }catch(e){} }
+    }
+    return false;
+  }
+  function route(key){
+    const map={
+      cart:['openCart','showCart','openCartDrawer','maajOpenCart','navigateToCart'],
+      checkout:['maajGoCheckout','goToCheckout','openCheckout','navigateToCheckout'],
+      orders:['openOrders','showOrders','maajOpenOrders','navigateToOrders'],
+      tracking:['openOrderTracking','trackOrder','showOrderTracking','maajTrackOrder'],
+      prescription:['openPrescription','showPrescription','openPrescriptionUpload','navigateToPrescription'],
+      prescriptionhistory:['openPrescriptionHistory','showPrescriptionHistory','navigateToPrescriptionHistory'],
+      account:['openAccount','showAccount','openCustomerAccount','navigateToAccount'],
+      login:['showCustomerLogin','openCustomerLogin','openLogin','showLogin'],
+      medicines:['openMedicineStore','showMedicines','navigateToMedicines','openStore'],
+      otc:['openOTC','showOTC','navigateToOTC'],
+      categories:['openCategories','showCategories','navigateToCategories'],
+      brands:['openBrands','showBrands','navigateToBrands'],
+      blogs:['openBlogs','showBlogs','navigateToBlogs'],
+      contact:['openContact','showContact','navigateToContact'],
+      faq:['openFAQ','showFAQ','navigateToFAQ'],
+      about:['openAbout','showAbout','navigateToAbout'],
+      admin:['openAdmin','showAdminLogin','adminLogin','openAdminLogin']
+    };
+    if(map[key] && callFirst(map[key])) return true;
+
+    // Existing app navigation function is the preferred fallback.
+    if(typeof window.navigateTo==='function'){
+      const target={cart:'cart',checkout:'checkout',orders:'orders',tracking:'tracking',
+        prescription:'prescription',prescriptionhistory:'prescription-history',
+        account:'account',medicines:'medicines',otc:'medicines',categories:'medicines',
+        brands:'medicines',blogs:'blogs',contact:'contact',faq:'faq',about:'about',admin:'admin'}[key];
+      if(target){ try{window.navigateTo(target);return true;}catch(e){} }
+    }
+    return false;
+  }
+
+  function keyFrom(el){
+    const s=((el.getAttribute('href')||'')+' '+(el.textContent||'')+' '+(el.getAttribute('aria-label')||'')).toLowerCase();
+    if(s.includes('prescription history'))return 'prescriptionhistory';
+    if(s.includes('upload prescription')||s.includes('prescription upload'))return 'prescription';
+    if(s.includes('track order')||s.includes('tracking'))return 'tracking';
+    if(s.includes('my orders')||s.includes('orders'))return 'orders';
+    if(s.includes('checkout')||s.includes('proceed'))return 'checkout';
+    if(s.includes('cart'))return 'cart';
+    if(s.includes('account')||s.includes('profile'))return 'account';
+    if(s.includes('login')||s.includes('sign in'))return 'login';
+    if(s.includes('all medicines')||s.includes('medicines'))return 'medicines';
+    if(s.includes('otc'))return 'otc';
+    if(s.includes('categories'))return 'categories';
+    if(s.includes('brands'))return 'brands';
+    if(s.includes('blogs'))return 'blogs';
+    if(s.includes('contact'))return 'contact';
+    if(s.includes('faq'))return 'faq';
+    if(s.includes('about'))return 'about';
+    if(s.includes('admin'))return 'admin';
+    return null;
+  }
+
+  document.addEventListener('click',function(e){
+    const el=e.target.closest('a,button');
+    if(!el || el.closest('#maajUniversalDetailsBackdrop'))return;
+
+    const key=keyFrom(el);
+    if(!key)return;
+
+    // Never hijack controls that already have an inline action or a form submit,
+    // unless the control is clearly a navigation/info link.
+    const hasAction=el.hasAttribute('onclick') ||
+      el.type==='submit' ||
+      el.closest('form') ||
+      el.matches('[data-cart-action],[data-action],[data-product-id]');
+    const href=el.getAttribute('href')||'';
+    const explicitNav=!hasAction && (!href || href==='#' || href.startsWith('#'));
+
+    if(explicitNav){
+      e.preventDefault();
+      const ok=route(key);
+      if(!ok)toast('MAAJ PHARMACY: feature is available in the current storefront.');
+    }
+  },true);
+
+  // Make common footer/hash links route to actual existing application sections.
+  document.addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      const k=keyFrom(a);
+      if(k && (a.getAttribute('href')==='#' || a.getAttribute('href')==='')){
+        a.setAttribute('data-maaj-route',k);
+      }
+    });
+  });
+
+  window.maajRouteTo=route;
+})();
+</script>
+
+
+<section id="maajPolicyPages" class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8" aria-label="MAAJ PHARMACY information">
+  <details id="about" class="hidden"><summary>About MAAJ PHARMACY</summary></details>
+  <details id="faq" class="hidden"><summary>FAQs</summary></details>
+  <details id="contact" class="hidden"><summary>Contact Us</summary></details>
+  <details id="editorial-policy" class="hidden"><summary>Editorial Policy</summary></details>
+  <details id="privacy-policy" class="hidden"><summary>Privacy Policy</summary></details>
+  <details id="terms" class="hidden"><summary>Terms & Conditions</summary></details>
+  <details id="returns" class="hidden"><summary>Returns & Refunds</summary></details>
+  <details id="delivery-policy" class="hidden"><summary>Medicine Delivery & Cancellations</summary></details>
+</section>
+
+
+<!-- MAAJ PHARMACY — Real Details + Action Navigation -->
+<style id="maaj-details-real-style">
+#maajRealDetailsOverlay{position:fixed;inset:0;background:rgba(15,23,42,.68);backdrop-filter:blur(6px);z-index:100000;display:none;align-items:center;justify-content:center;padding:18px}
+#maajRealDetailsOverlay.open{display:flex}
+#maajRealDetailsBox{width:min(820px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:26px;box-shadow:0 30px 100px rgba(0,0,0,.30);padding:24px}
+#maajRealDetailsTop{display:flex;justify-content:space-between;gap:18px}
+#maajRealDetailsIcon{width:54px;height:54px;border-radius:16px;background:#eafaf2;display:grid;place-items:center;font-size:25px;margin-bottom:12px}
+#maajRealDetailsTitle{font-size:26px;font-weight:900;color:#121414;margin:0}
+#maajRealDetailsText{font-size:14px;line-height:1.7;color:#475569;margin:10px 0 18px}
+#maajRealDetailsClose{width:42px;height:42px;border:1px solid #dbe5e7;border-radius:12px;background:#fff;font-size:24px;font-weight:900;cursor:pointer}
+.maaj-real-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.maaj-real-detail-card{border:1px solid #d8e6e3;border-radius:16px;padding:16px;background:#fbfefd}
+.maaj-real-detail-card strong{display:block;font-size:14px;color:#121414;margin-bottom:5px}
+.maaj-real-detail-card span{font-size:13px;line-height:1.55;color:#475569}
+#maajRealDetailsAction{margin-top:20px;border:0;border-radius:13px;padding:13px 20px;background:#0e8231;color:#fff;font-weight:900;cursor:pointer}
+#maajRealDetailsAction:focus-visible,#maajRealDetailsClose:focus-visible{outline:3px solid #007c9d;outline-offset:3px}
+@media(max-width:620px){#maajRealDetailsBox{padding:18px;border-radius:20px}.maaj-real-detail-grid{grid-template-columns:1fr}#maajRealDetailsTitle{font-size:22px}}
+</style>
+
+<div id="maajRealDetailsOverlay" role="dialog" aria-modal="true" aria-labelledby="maajRealDetailsTitle">
+  <div id="maajRealDetailsBox" tabindex="-1">
+    <div id="maajRealDetailsTop">
+      <div>
+        <div id="maajRealDetailsIcon">🏥</div>
+        <h2 id="maajRealDetailsTitle">MAAJ PHARMACY</h2>
+      </div>
+      <button id="maajRealDetailsClose" type="button" aria-label="Close details">×</button>
+    </div>
+    <div id="maajRealDetailsText"></div>
+    <div id="maajRealDetailsCards" class="maaj-real-detail-grid"></div>
+    <button id="maajRealDetailsAction" type="button">Open Feature</button>
+  </div>
+</div>
+
+<script id="maaj-details-real-script">
+(function(){
+  const INFO={
+    about:{i:'🏥',t:'About MAAJ PHARMACY',d:'MAAJ PHARMACY is a customer-focused online medical store for ordering medicines and healthcare products with local delivery, prescription support, order tracking and customer assistance.',c:[
+      ['Online Medical Store','Browse eligible medicines and healthcare products from the MAAJ PHARMACY catalogue.'],
+      ['Medicine Information','Open a product to see image, MRP, selling price, brand, composition, pack size, batch, expiry and prescription status when available.'],
+      ['Fast Local Delivery','Delivery timing and charges are calculated using the store delivery rules and serviceable location.'],
+      ['Prescription Support','Upload a valid prescription when a medicine requires prescription verification.'],
+      ['Customer Account','Use your account to manage profile information, orders, prescriptions and available account features.'],
+      ['Secure Checkout','Review cart value, GST, delivery charges and COD details before placing an order.']
+    ],a:'Go to MAAJ PHARMACY',k:'home'},
+    medicines:{i:'💊',t:'All Medicines',d:'Browse the MAAJ PHARMACY medicine catalogue and open any product for complete information before ordering.',c:[
+      ['Search Medicine','Search by medicine or product name.'],
+      ['Product Details','View price, MRP, brand, composition/salt, pack size, batch, expiry and Rx status when available.'],
+      ['Categories','Filter or browse healthcare categories.'],
+      ['Add to Cart','Add eligible products and change quantity from the unified cart.']
+    ],a:'Open Medicine Store',k:'medicines'},
+    otc:{i:'🛍️',t:'OTC Healthcare Products',d:'Browse non-prescription healthcare products that are eligible for online ordering.',c:[
+      ['OTC Products','Explore eligible non-prescription products.'],
+      ['Pricing','Review selling price and MRP before adding an item.'],
+      ['Quantity','Increase or decrease quantity from the cart.'],
+      ['Minimum Order','The minimum order value is ₹299.']
+    ],a:'Browse OTC Products',k:'medicines'},
+    categories:{i:'🗂️',t:'Our Categories',d:'Explore healthcare categories available through MAAJ PHARMACY.',c:[
+      ['Pain Relief','Pain-relief products and applicable healthcare items.'],
+      ['Vitamins','Vitamin and wellness products.'],
+      ['First Aid','Basic first-aid products.'],
+      ['Topical Care','Creams, ointments, balms and pain oils.']
+    ],a:'Browse Categories',k:'medicines'},
+    brands:{i:'🏷️',t:'All Brands',d:'Browse products by brand wherever brand information is available in the MAAJ PHARMACY catalogue.',c:[
+      ['Brand Information','Brand is displayed on applicable product cards and product details.'],
+      ['Search','Use search to find products quickly.'],
+      ['Product Details','Open a product to view its complete available information.'],
+      ['Cart','Add eligible products to the unified cart.']
+    ],a:'Browse Brands',k:'medicines'},
+    salts:{i:'🧪',t:'Salt / Composition',d:'See the active ingredient or composition listed for applicable medicines.',c:[
+      ['Composition','Product details show salt/composition when available.'],
+      ['Medicine Identification','Composition helps identify the active ingredient.'],
+      ['Prescription Status','Rx restrictions still apply where applicable.'],
+      ['Safety','Do not substitute prescription medicines without appropriate professional advice.']
+    ],a:'View Medicines',k:'medicines'},
+    cart:{i:'🛒',t:'Your Cart',d:'Review products, quantities, discounts, GST, delivery charges and the ₹299 minimum order requirement before checkout.',c:[
+      ['Minimum Order','Cart value must be at least ₹299 to proceed.'],
+      ['Free Delivery','Medicine-only orders of ₹499 or more qualify for free delivery under the store rule.'],
+      ['Quantity Controls','Use + and − to change quantities without leaving the cart.'],
+      ['Checkout','Proceed to checkout after the minimum order requirement is met.']
+    ],a:'Open Your Cart',k:'cart'},
+    checkout:{i:'💳',t:'Checkout',d:'Confirm delivery details, order summary, GST, delivery charge and COD payment before placing your order.',c:[
+      ['Order Summary','Review every item and quantity.'],
+      ['GST','Applicable GST is calculated according to the product category.'],
+      ['Delivery','Delivery charge follows the store delivery rules.'],
+      ['COD','Cash on Delivery is the supported payment mode in the current storefront.']
+    ],a:'Go to Checkout',k:'checkout'},
+    prescription:{i:'📄',t:'Prescription Upload',d:'Upload a clear and valid prescription for medicines that require prescription verification. Restricted medicines must not be dispensed without the required prescription.',c:[
+      ['Upload','Choose a clear prescription image/file from your device.'],
+      ['Readable','The prescription must be readable and complete.'],
+      ['Verification','The prescription may be reviewed before fulfillment.'],
+      ['Restricted Medicines','Applicable prescription requirements must be followed.']
+    ],a:'Upload Prescription',k:'prescription'},
+    prescriptionhistory:{i:'🗃️',t:'Prescription History',d:'Review previously uploaded prescriptions and their available status from your customer account.',c:[
+      ['History','See available previously uploaded prescription records.'],
+      ['Status','Review the status shown by the application.'],
+      ['Privacy','Prescription information should be handled as customer account data.'],
+      ['Support','Contact support if a prescription needs assistance.']
+    ],a:'Open Prescription History',k:'prescriptionhistory'},
+    orders:{i:'📦',t:'My Orders',d:'Review previous orders and available order-status information from your customer account.',c:[
+      ['Order History','View previously placed orders.'],
+      ['Order Status','See the current status available for an order.'],
+      ['Delivery','Review available delivery information.'],
+      ['Support','Ask support for help with an order when needed.']
+    ],a:'Open My Orders',k:'orders'},
+    tracking:{i:'🚚',t:'Track Order',d:'Check available tracking and delivery progress for your order.',c:[
+      ['Tracking','View the order tracking information available in the application.'],
+      ['Delivery Status','See progress such as processing, dispatched or delivered when supported.'],
+      ['Order Details','Review the order connected to the tracking record.'],
+      ['Support','Contact support if tracking needs attention.']
+    ],a:'Track Order',k:'tracking'},
+    account:{i:'👤',t:'My Account',d:'Manage your MAAJ PHARMACY customer account, profile information, orders and available healthcare features.',c:[
+      ['Login','Sign in using the registered customer credentials.'],
+      ['Profile','Review available customer information.'],
+      ['Orders','Access order history and tracking.'],
+      ['Logout','Sign out from the current customer session.']
+    ],a:'Open My Account',k:'account'},
+    services:{i:'⚡',t:'Our Services',d:'MAAJ PHARMACY combines online medicine ordering, prescription support, local delivery, customer accounts and order assistance.',c:[
+      ['Online Ordering','Search, review and order eligible medicines.'],
+      ['Prescription Upload','Upload prescriptions when required.'],
+      ['Fast Delivery','Use the local delivery service where the location is serviceable.'],
+      ['Order Tracking','Review available order status and tracking.'],
+      ['Customer Support','Get assistance for orders, products and accounts.'],
+      ['COD','Pay using Cash on Delivery where eligible.']
+    ],a:'Explore Services',k:'home'},
+    faq:{i:'❓',t:'FAQs',d:'Find practical answers about ordering, prescriptions, delivery, payments, accounts and returns.',c:[
+      ['Minimum Order','₹299 minimum order value is mandatory.'],
+      ['Payment','COD is available in the current storefront.'],
+      ['Prescription','Applicable prescription medicines require a valid prescription.'],
+      ['Delivery','Charges and estimated time depend on order value and location.']
+    ],a:'Open FAQ',k:'faq'},
+    contact:{i:'📞',t:'Contact Us',d:'Get assistance with your MAAJ PHARMACY order, delivery, products, prescriptions or account.',c:[
+      ['Order Help','Ask about order status, delivery or cancellation.'],
+      ['Product Help','Ask about availability and product details.'],
+      ['Prescription Help','Get assistance with upload and verification.'],
+      ['Account Help','Get help with login and account information.']
+    ],a:'Contact MAAJ PHARMACY',k:'contact'},
+    blogs:{i:'📰',t:'Health Blogs',d:'Read general health and wellness information published for MAAJ PHARMACY customers.',c:[
+      ['Educational Content','General healthcare and wellness information.'],
+      ['Medicine Education','Learn about medicines and healthcare topics.'],
+      ['Family Health','Practical family and wellness information.'],
+      ['Important','Educational content does not replace professional medical advice.']
+    ],a:'Open Health Blogs',k:'blogs'},
+    parenting:{i:'👨‍👩‍👧',t:'Parenting & Family Guide',d:'A family-health information area covering general parenting, child wellness and family healthcare topics.',c:[
+      ['Family Wellness','General family health information.'],
+      ['Child Health','Educational information for parents and caregivers.'],
+      ['Medicine Safety','Children’s medicines require appropriate dosing and professional guidance.'],
+      ['Support','Use customer support for store and order questions.']
+    ],a:'Open Family Guide',k:'parenting'},
+    delivery:{i:'🚚',t:'Medicine Delivery & Cancellations',d:'Delivery charges, estimated time and cancellation availability depend on the applicable MAAJ PHARMACY order rules.',c:[
+      ['Minimum Order','₹299 minimum order value.'],
+      ['Free Delivery','Medicine-only orders of ₹499 or more qualify for free delivery under the store rule.'],
+      ['Local Delivery','Local delivery timing depends on the mapped serviceable area.'],
+      ['Cancellation','Cancellation depends on order processing/dispatch status.']
+    ],a:'View Delivery Information',k:'delivery'},
+    returns:{i:'↩️',t:'Returns & Refunds',d:'Return and refund eligibility depends on product type, condition and order status under the MAAJ PHARMACY policy.',c:[
+      ['Eligibility','Not every healthcare product may be returnable.'],
+      ['Condition','Products must meet applicable return conditions.'],
+      ['Refund','Approved refunds follow the applicable process.'],
+      ['Support','Contact support before sending a return.']
+    ],a:'View Return Policy',k:'returns'},
+    privacy:{i:'🔒',t:'Privacy Policy',d:'MAAJ PHARMACY should explain how customer, order, prescription and account information is collected, used, protected and managed.',c:[
+      ['Data Minimization','Only information required for the service should be collected.'],
+      ['Security','Customer information must be protected.'],
+      ['Transparency','Important data uses should be clearly explained.'],
+      ['Customer Choice','Available account/privacy controls should be accessible.']
+    ],a:'Read Privacy Policy',k:'privacy'},
+    terms:{i:'📜',t:'Terms & Conditions',d:'These terms define the rules for using MAAJ PHARMACY, placing orders, payment, delivery, prescriptions and customer accounts.',c:[
+      ['Orders','Orders depend on product availability and eligibility.'],
+      ['Prescription','Prescription requirements apply where required.'],
+      ['Payment','Payment availability depends on the current storefront rules.'],
+      ['Delivery','Delivery estimates are estimates and may change.']
+    ],a:'Read Terms',k:'terms'},
+    editorial:{i:'✍️',t:'Editorial Policy',d:'MAAJ PHARMACY health content should be accurate, clear, responsible and written for consumer understanding.',c:[
+      ['Accuracy','Health information should be reviewed for factual accuracy.'],
+      ['Clarity','Content should use clear, understandable language.'],
+      ['Sources','Important health claims should use reliable sources.'],
+      ['Limits','Educational content is not personalized medical advice.']
+    ],a:'Read Editorial Policy',k:'editorial'},
+    support:{i:'💬',t:'Customer Support',d:'Get help with MAAJ PHARMACY orders, delivery, products, prescriptions and customer accounts.',c:[
+      ['Orders','Help with status, cancellation and delivery.'],
+      ['Products','Help with product availability and details.'],
+      ['Prescription','Help with upload and verification.'],
+      ['Account','Help with login and profile.']
+    ],a:'Open Customer Support',k:'contact'}
+  };
+
+  function route(k){
+    if(typeof window.maajRouteTo==='function' && window.maajRouteTo(k)) return true;
+    const targets={
+      home:'home',medicines:'medicines',cart:'cart',checkout:'checkout',
+      prescription:'prescription',prescriptionhistory:'prescription-history',
+      orders:'orders',tracking:'tracking',account:'account'
+    };
+    if(typeof window.navigateTo==='function' && targets[k]){
+      try{window.navigateTo(targets[k]);return true}catch(e){}
+    }
+    const ids={faq:'faq',contact:'contact',privacy:'privacy-policy',terms:'terms',
+      returns:'returns',delivery:'delivery-policy',editorial:'editorial-policy'};
+    if(ids[k]){
+      const node=document.getElementById(ids[k]);
+      if(node){node.scrollIntoView({behavior:'smooth',block:'start'});return true;}
+    }
+    return false;
+  }
+
+  function show(k){
+    const d=INFO[k]||INFO.about;
+    document.getElementById('maajRealDetailsIcon').textContent=d.i;
+    document.getElementById('maajRealDetailsTitle').textContent=d.t;
+    document.getElementById('maajRealDetailsText').textContent=d.d;
+    document.getElementById('maajRealDetailsCards').innerHTML=d.c.map(x=>'<div class="maaj-real-detail-card"><strong>'+x[0]+'</strong><span>'+x[1]+'</span></div>').join('');
+    const b=document.getElementById('maajRealDetailsAction');
+    b.textContent=d.a;
+    b.onclick=function(){close();route(d.k)};
+    const o=document.getElementById('maajRealDetailsOverlay');
+    o.classList.add('open');document.body.style.overflow='hidden';
+    document.getElementById('maajRealDetailsBox').focus();
+  }
+  function close(){
+    document.getElementById('maajRealDetailsOverlay').classList.remove('open');
+    document.body.style.overflow='';
+  }
+
+  function key(el){
+    const s=((el.textContent||'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.getAttribute('href')||'')).toLowerCase();
+    if(s.includes('prescription history'))return 'prescriptionhistory';
+    if(s.includes('upload prescription')||s.includes('prescription upload'))return 'prescription';
+    if(s.includes('track order')||s.includes('tracking'))return 'tracking';
+    if(s.includes('my orders')||s.includes('orders'))return 'orders';
+    if(s.includes('proceed to checkout')||s.includes('checkout'))return 'checkout';
+    if(s.includes('cart'))return 'cart';
+    if(s.includes('account')||s.includes('profile'))return 'account';
+    if(s.includes('all medicines')||s.includes('medicine store'))return 'medicines';
+    if(s.includes('otc'))return 'otc';
+    if(s.includes('categories'))return 'categories';
+    if(s.includes('brands'))return 'brands';
+    if(s.includes('salt')||s.includes('composition'))return 'salts';
+    if(s.includes('health blog')||s.includes('blogs'))return 'blogs';
+    if(s.includes('parenting')||s.includes('family guide'))return 'parenting';
+    if(s.includes('service'))return 'services';
+    if(s.includes('faq'))return 'faq';
+    if(s.includes('contact'))return 'contact';
+    if(s.includes('return')||s.includes('refund'))return 'returns';
+    if(s.includes('delivery')||s.includes('cancellation'))return 'delivery';
+    if(s.includes('privacy'))return 'privacy';
+    if(s.includes('terms'))return 'terms';
+    if(s.includes('editorial'))return 'editorial';
+    if(s.includes('support'))return 'support';
+    if(s.includes('about'))return 'about';
+    return null;
+  }
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#maajRealDetailsClose')){e.preventDefault();close();return;}
+    if(e.target.id==='maajRealDetailsOverlay'){close();return;}
+    const el=e.target.closest('a,button');
+    if(!el || el.closest('#maajRealDetailsBox'))return;
+    const k=key(el);
+    if(!k)return;
+
+    // Informational/footer/navigation controls get a details screen first.
+    // Existing functional app controls (onclick, forms, cart +/- etc.) remain untouched.
+    const existing=el.hasAttribute('onclick') || el.type==='submit' || el.closest('form') ||
+      el.hasAttribute('data-cart-action') || el.hasAttribute('data-action') ||
+      el.hasAttribute('data-product-id');
+    if(existing)return;
+
+    const href=el.getAttribute('href')||'';
+    if(!href || href==='#' || href.startsWith('#')){
+      e.preventDefault();
+      const policyIds={editorial:'maaj-editorial-policy',privacy:'maaj-privacy-policy',terms:'maaj-terms',returns:'maaj-returns',delivery:'maaj-delivery-policy'};
+      if(policyIds[k]){
+        const center=document.getElementById('maajPolicyCenter'), target=document.getElementById(policyIds[k]);
+        if(center){center.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>target&&target.scrollIntoView({behavior:'smooth',block:'start'}),150);return;}
+      }
+      show(k);
+    }
+  },true);
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && document.getElementById('maajRealDetailsOverlay').classList.contains('open')){e.preventDefault();close();}
+  });
+  window.maajShowRealDetails=show;
+})();
+</script>
+
+<!-- MAAJ PHARMACY — COMPLETE POLICY & INFORMATION CENTER -->
+<section id="maajPolicyCenter" class="maaj-policy-center" aria-labelledby="maajPolicyHeading">
+  <div class="maaj-policy-shell">
+    <div class="maaj-policy-hero">
+      <div class="maaj-policy-badge">MAAJ PHARMACY</div>
+      <h2 id="maajPolicyHeading">Policies & Customer Information</h2>
+      <p>Clear, transparent information for medicines, orders, delivery, prescriptions, privacy and customer support.</p>
+      <div class="maaj-policy-meta"><span><b>Effective Date</b> 2 September 2026</span><span><b>Business</b> MAA JHARBANDHALIAN MEDICINE STORE</span></div>
+    </div>
+    <div class="maaj-policy-layout">
+      <nav class="maaj-policy-nav" aria-label="Policy navigation">
+        <a href="#maaj-editorial-policy">01 · Editorial Policy</a>
+        <a href="#maaj-privacy-policy">02 · Privacy Policy</a>
+        <a href="#maaj-terms">03 · Terms & Conditions</a>
+        <a href="#maaj-returns">04 · Returns & Refunds</a>
+        <a href="#maaj-delivery-policy">05 · Delivery & Cancellations</a>
+        <a href="#maaj-prescription-policy">06 · Prescription & Restricted Medicines</a>
+        <a href="#maaj-policy-contact">Contact & Support</a>
+      </nav>
+      <div class="maaj-policy-content">
+        <article id="maaj-editorial-policy" class="maaj-policy-card"><div class="maaj-policy-number">01</div><h3>Editorial Policy</h3><p>At <strong>MAAJ PHARMACY</strong>, we aim to provide clear, useful and responsible health-related information to our customers.</p><p>Our health articles, medicine information, product descriptions and educational content are prepared for general informational and educational purposes.</p><h4>Our Editorial Principles</h4><ul><li>We aim to provide accurate and understandable information.</li><li>Medicine-related information is presented responsibly and should not replace professional medical advice.</li><li>Product information may include uses, precautions, directions, ingredients and other relevant details.</li><li>We do not intentionally publish misleading medical claims.</li><li>Information may be reviewed and updated when necessary.</li><li>Product availability, price and other commercial information may change without prior notice.</li><li>Customers should always read the medicine packaging, label and instructions before use.</li><li>Customers should consult a qualified doctor or healthcare professional when medical advice, diagnosis or treatment is required.</li></ul><div class="maaj-policy-callout"><strong>Medical Disclaimer</strong><p>The information available on the MAAJ PHARMACY website is <strong>not a substitute for consultation with a qualified doctor, pharmacist or other healthcare professional.</strong></p><p>MAAJ PHARMACY does not guarantee that every health-related article or educational resource is suitable for every individual.</p></div></article>
+
+        <article id="maaj-privacy-policy" class="maaj-policy-card"><div class="maaj-policy-number">02</div><h3>Privacy Policy</h3><p>MAAJ PHARMACY respects the privacy of its customers and takes reasonable steps to protect personal information collected through our website.</p><h4>Information We May Collect</h4><ul><li>Customer name</li><li>Mobile number</li><li>Delivery address</li><li>Email address, if provided</li><li>Order details</li><li>Prescription information when required</li><li>Payment or transaction-related information</li><li>Information provided while contacting customer support</li></ul><h4>How We Use Information</h4><ul><li>Process and deliver orders</li><li>Contact you regarding your order</li><li>Verify prescription requirements where applicable</li><li>Provide customer support</li><li>Manage returns, refunds and cancellations</li><li>Improve our website and services</li><li>Maintain business and transaction records</li><li>Prevent fraudulent or unauthorized activities</li><li>Comply with applicable legal requirements</li></ul><h4>Information Security</h4><p>We take reasonable administrative and technical measures to protect customer information from unauthorized access, misuse, alteration or disclosure. However, no internet-based system can be guaranteed to be completely secure.</p><h4>Sharing of Information</h4><p>We do not intend to sell or commercially trade customers' personal information. Information may be shared with service providers or other parties when reasonably necessary to complete an order, deliver products, process a transaction, provide technical services or meet legal or regulatory requirements.</p><h4>Cookies</h4><p>Our website may use cookies or similar technologies to improve website functionality, remember preferences and understand website usage.</p><h4>Policy Changes</h4><p>MAAJ PHARMACY may update this Privacy Policy when necessary. The updated version will be published on this website.</p></article>
+
+        <article id="maaj-terms" class="maaj-policy-card"><div class="maaj-policy-number">03</div><h3>Terms & Conditions</h3><p>By accessing or using the MAAJ PHARMACY website, you agree to comply with these Terms & Conditions.</p><h4>Website Usage</h4><p>Customers agree to use the website only for lawful purposes.</p><ul><li>Provide false or misleading information.</li><li>Attempt to access unauthorized areas of the website.</li><li>Misuse the ordering system.</li><li>Attempt to interfere with website operation.</li><li>Use the website for fraudulent activities.</li></ul><h4>Product Information</h4><p>We make reasonable efforts to display accurate product names, descriptions, prices and availability. However, minor differences may occur between website information and the physical product packaging.</p><h4>Medicine Orders</h4><p>Certain medicines may require a valid prescription. MAAJ PHARMACY reserves the right to request a valid prescription and verify it before processing an applicable order.</p><p>Orders may be rejected or cancelled if:</p><ul><li>A required prescription is not provided.</li><li>The prescription cannot be reasonably verified.</li><li>The prescription appears invalid or incomplete.</li><li>The requested medicine is unavailable.</li><li>Applicable laws or regulations prevent the sale or delivery of the medicine.</li></ul><h4>Order Acceptance</h4><p>Placing an order does not automatically guarantee acceptance. MAAJ PHARMACY may cancel or reject an order where necessary because of stock availability, prescription requirements, pricing errors, delivery limitations or other legitimate reasons.</p><h4>Prices</h4><p>Product prices displayed on the website may change from time to time. Any applicable taxes, delivery charges or other charges will be communicated during the ordering process where applicable.</p><h4>Account Information</h4><p>Customers are responsible for providing accurate information and keeping their account credentials secure.</p></article>
+
+        <article id="maaj-returns" class="maaj-policy-card"><div class="maaj-policy-number">04</div><h3>Returns & Refunds Policy</h3><p>MAAJ PHARMACY aims to provide genuine and properly packed products to customers.</p><h4>Return Eligibility</h4><p>A return or replacement request may be considered where:</p><ul><li>The wrong product was delivered.</li><li>The product was damaged during delivery.</li><li>The product received is defective or unusable.</li><li>The delivered product does not reasonably match the ordered product.</li></ul><h4>Medicines</h4><p>For safety and regulatory reasons, <strong>opened, used or tampered medicines may generally not be eligible for return.</strong> Return eligibility may also depend on the product type and applicable legal requirements.</p><h4>Reporting a Problem</h4><p>Customers should contact MAAJ PHARMACY as soon as possible after delivery if there is an issue with an order.</p><p>Customers may be asked to provide:</p><ul><li>Order details</li><li>Photographs of the product/package</li><li>Description of the issue</li><li>Other information reasonably required to investigate the complaint</li></ul><h4>Refunds</h4><p>If a refund is approved, the refund method and processing time may depend on the original payment method and applicable banking/payment procedures. For Cash on Delivery orders, the refund process may require additional information from the customer.</p><h4>Non-Returnable Situations</h4><ul><li>The product has been used or opened.</li><li>The product has been damaged by the customer.</li><li>The packaging has been intentionally damaged.</li><li>The customer ordered the wrong product.</li><li>The return request is made after the applicable return period.</li><li>The product is not eligible for return due to applicable regulations.</li></ul><p>MAAJ PHARMACY reserves the right to assess each return/refund request individually.</p></article>
+
+        <article id="maaj-delivery-policy" class="maaj-policy-card"><div class="maaj-policy-number">05</div><h3>Medicine Delivery & Cancellations Policy</h3><p>MAAJ PHARMACY provides medicine and healthcare-product delivery subject to product availability, delivery-area coverage and applicable requirements.</p><h4>Delivery Area</h4><p>Delivery is currently intended for customers within the serviceable delivery area of MAAJ PHARMACY. The website/order system may restrict orders outside the available delivery area.</p><h4>Delivery Time</h4><p>Our target is to provide delivery <strong>within 1 day</strong> for eligible orders in the serviceable area.</p><p>However, delivery time may vary because of:</p><ul><li>Product availability</li><li>Prescription verification</li><li>Weather conditions</li><li>Local transportation issues</li><li>Customer availability</li><li>Incorrect delivery information</li><li>Unforeseen operational circumstances</li></ul><p>Therefore, a delivery estimate should not be treated as an unconditional guarantee in circumstances beyond our reasonable control.</p><h4>Delivery Address</h4><p>Customers must provide a complete and accurate delivery address and reachable mobile number. MAAJ PHARMACY is not responsible for delays caused by an incorrect or incomplete address.</p><h4>Order Cancellation</h4><p>An order may be cancelled before dispatch, subject to the order status and applicable circumstances. After dispatch, cancellation may not always be possible.</p><p>MAAJ PHARMACY may cancel an order if:</p><ul><li>The requested product is unavailable.</li><li>A required prescription is not provided or cannot be verified.</li><li>The delivery address is outside the serviceable area.</li><li>There is a suspected fraudulent transaction.</li><li>There is an incorrect price or product listing.</li><li>Applicable law or regulatory requirements prevent fulfilment.</li></ul><h4>Failed Delivery</h4><p>If delivery cannot be completed because the customer is unavailable, unreachable or has provided an incorrect address, MAAJ PHARMACY may contact the customer to arrange another delivery attempt. Additional delivery restrictions or charges may apply where applicable.</p></article>
+
+        <article id="maaj-prescription-policy" class="maaj-policy-card"><div class="maaj-policy-number">06</div><h3>Prescription & Restricted Medicines Policy</h3><p>MAAJ PHARMACY follows applicable requirements relating to prescription and restricted medicines.</p><h4>Prescription Requirement</h4><p>Certain medicines can only be supplied when a valid prescription from a qualified medical practitioner is provided and accepted where required by applicable law. MAAJ PHARMACY may request prescription details or a copy/image of the prescription before processing an order.</p><h4>Prescription Verification</h4><p>A prescription may be checked for relevant information such as:</p><ul><li>Patient details</li><li>Medicine name</li><li>Strength</li><li>Dosage instructions</li><li>Quantity</li><li>Prescriber information</li><li>Date</li><li>Other legally required information</li></ul><h4>Order Rejection</h4><p>MAAJ PHARMACY may refuse or cancel an order if:</p><ul><li>No required prescription is provided.</li><li>The prescription is unclear or incomplete.</li><li>The prescription appears altered or invalid.</li><li>The medicine or quantity requested is not consistent with applicable requirements.</li><li>The medicine is unavailable.</li><li>Supplying the medicine would violate applicable law or regulations.</li></ul><h4>Restricted Medicines</h4><p>Certain medicines may be subject to additional restrictions regarding sale, quantity, prescription, storage, record keeping or delivery. MAAJ PHARMACY will follow applicable requirements for such products.</p><h4>Customer Responsibility</h4><p>Customers must not provide false, altered or fraudulent prescriptions. Customers must use medicines only as directed by a qualified healthcare professional and according to the medicine's approved instructions.</p><div class="maaj-policy-callout"><strong>Important Medical Notice</strong><p>MAAJ PHARMACY does not encourage self-medication with prescription medicines. If you are unsure whether a medicine is appropriate for you, consult a qualified doctor or pharmacist before using it.</p></div></article>
+
+        <article id="maaj-policy-contact" class="maaj-policy-card maaj-contact-card"><div class="maaj-policy-number">☎</div><h3>Contact & Customer Support</h3><p>For questions regarding orders, medicines, delivery, returns or other website services, customers may contact <strong>MAAJ PHARMACY / MAA JHARBANDHALIAN MEDICINE STORE</strong> through the contact details provided on the website.</p><div class="maaj-contact-grid"><div><span>Website</span><strong>MAAJ PHARMACY</strong></div><div><span>Business Name</span><strong>MAA JHARBANDHALIAN MEDICINE STORE</strong></div><div><span>Customer Support</span><strong>Available through the contact/WhatsApp support option provided on the website.</strong></div></div></article>
+
+        <div class="maaj-policy-update"><strong>Policy Updates</strong><p>MAAJ PHARMACY may modify, update or replace these policies when necessary. The latest version published on the website will be considered the current version.</p><span>Last Updated: 2 September 2026 · © 2026 MAAJ PHARMACY. All Rights Reserved.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+#maajPolicyCenter{margin:42px auto 0;padding:0 16px 60px;font-family:Inter,Arial,sans-serif;color:#121414;scroll-margin-top:24px}
+#maajPolicyCenter .maaj-policy-shell{max-width:1220px;margin:auto;background:#f8fbfa;border:1px solid #dbe7e5;border-radius:30px;overflow:hidden;box-shadow:0 20px 60px rgba(15,23,42,.10)}
+#maajPolicyCenter .maaj-policy-hero{padding:34px 34px 30px;background:linear-gradient(135deg,#043c3b,#0b6f62 55%,#079669);color:#fff}
+#maajPolicyCenter .maaj-policy-badge{display:inline-flex;padding:7px 12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.10);font-size:11px;font-weight:900;letter-spacing:.12em}
+#maajPolicyCenter h2{margin:12px 0 7px;font-size:32px;line-height:1.15;font-weight:900}#maajPolicyCenter .maaj-policy-hero>p{margin:0;max-width:760px;color:#dff8f1;font-size:14px;line-height:1.65}
+#maajPolicyCenter .maaj-policy-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.maaj-policy-meta span{padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.10);font-size:12px;color:#eafff8}.maaj-policy-meta b{margin-right:5px;color:#fff}
+#maajPolicyCenter .maaj-policy-layout{display:grid;grid-template-columns:260px 1fr;gap:22px;padding:22px}.maaj-policy-nav{position:sticky;top:15px;align-self:start;display:flex;flex-direction:column;gap:7px;padding:12px;border:1px solid #dbe7e5;border-radius:18px;background:#fff}.maaj-policy-nav a{padding:11px 12px;border-radius:10px;color:#334155;text-decoration:none;font-size:12px;font-weight:800}.maaj-policy-nav a:hover,.maaj-policy-nav a:focus-visible{background:#ecfdf5;color:#047857;outline:2px solid #34d399;outline-offset:1px}
+.maaj-policy-content{min-width:0}.maaj-policy-card{position:relative;margin-bottom:16px;padding:25px 26px;border:1px solid #dbe7e5;border-radius:20px;background:#fff;box-shadow:0 7px 24px rgba(15,23,42,.05);scroll-margin-top:25px}.maaj-policy-number{float:right;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#ecfdf5;color:#047857;font-weight:900;font-size:12px}.maaj-policy-card h3{margin:0 52px 12px 0;font-size:22px;font-weight:900;color:#0f172a}.maaj-policy-card h4{margin:21px 0 7px;font-size:15px;font-weight:900;color:#134e4a}.maaj-policy-card p,.maaj-policy-card li{font-size:14px;line-height:1.72;color:#475569}.maaj-policy-card p{margin:8px 0}.maaj-policy-card ul{margin:8px 0 12px;padding-left:21px}.maaj-policy-card li{margin:4px 0}.maaj-policy-callout{margin-top:18px;padding:16px 17px;border-left:4px solid #10b981;border-radius:12px;background:#ecfdf5}.maaj-policy-callout p{margin-bottom:0}.maaj-contact-card{background:linear-gradient(180deg,#fff,#f0fdf9)}.maaj-contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.maaj-contact-grid div{padding:14px;border:1px solid #d1fae5;border-radius:14px;background:#fff}.maaj-contact-grid span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:900}.maaj-contact-grid strong{display:block;margin-top:5px;font-size:13px;line-height:1.45;color:#0f172a}.maaj-policy-update{margin-top:4px;padding:20px;border-radius:18px;background:#0f172a;color:#fff}.maaj-policy-update strong{font-size:15px}.maaj-policy-update p{margin:5px 0 8px;font-size:13px;line-height:1.6;color:#cbd5e1}.maaj-policy-update span{font-size:11px;color:#94a3b8}
+@media(max-width:850px){#maajPolicyCenter .maaj-policy-layout{grid-template-columns:1fr}.maaj-policy-nav{position:relative;top:auto;display:grid;grid-template-columns:1fr 1fr}.maaj-contact-grid{grid-template-columns:1fr}.maaj-policy-hero{padding:26px 22px!important}.maaj-policy-card{padding:21px}.maaj-policy-hero h2{font-size:26px}}
+@media(max-width:520px){#maajPolicyCenter{padding:0 9px 38px}.maaj-policy-nav{grid-template-columns:1fr}.maaj-policy-card h3{font-size:19px}}
+</style>
+
+
+<script>
 
 /* CUSTOMER CHECKOUT DETAILS FIX — SINGLE INDEX.HTML */
 (function(){
@@ -3594,6 +4774,17 @@ window.maajTriggerPrescriptionUpload=function(){
     try { delivery = subtotal-discount >= Number(storeSettings?.freeDelivery||0) ? 0 : Number(storeSettings?.delivery||0); } catch(e){}
     const tax = 0;
     const total = Math.max(0, subtotal-discount+delivery+tax);
+    const minOrderNote = document.getElementById('checkoutMinimumOrderNote');
+    if(minOrderNote){
+      const remaining = Math.max(0, 299 - subtotal);
+      minOrderNote.textContent = remaining > 0
+        ? `Minimum order ₹299 • Add ₹${remaining.toFixed(2)} more to continue`
+        : 'Minimum order ₹299 ✓';
+      minOrderNote.className = remaining > 0
+        ? 'mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800'
+        : 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700';
+    }
+
     const vals = {
       checkoutSubtotal: `₹${subtotal.toFixed(2)}`,
       checkoutDiscount: `-₹${discount.toFixed(2)}`,
@@ -3876,3 +5067,609 @@ window.maajTriggerPrescriptionUpload=function(){
   document.addEventListener('DOMContentLoaded',()=>{ensureAdminCustomerTab();updateCustomerNav();});
 })();
 </script>
+
+<!-- MAAJ PHARMACY — MASTER STABILIZATION / 12-POINT FIX -->
+<style id="maaj-master-fix-css">
+  .maaj-fix-note{border:1px solid #fde68a;background:#fffbeb;color:#92400e;border-radius:12px;padding:10px;font-size:12px;font-weight:700}
+  #maajCheckoutPage .maaj-min-order-lock{margin-top:10px}
+</style>
+<script id="maaj-master-fix-js">
+(function(){
+  'use strict';
+  const MIN_ORDER=299;
+  const CART_KEY='maaj_cart';
+  const LEGACY_CART_KEY='db_cart';
+  const ADMIN_SESSION_KEY='maaj_admin_authenticated';
+
+  function readJson(k,fallback){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fallback));}catch(e){return fallback;}}
+  function writeCart(a){localStorage.setItem(CART_KEY,JSON.stringify(Array.isArray(a)?a:[]));}
+  function readCart(){return readJson(CART_KEY,[]);}
+  function subtotal(){return readCart().reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||0),0);}
+  function minOK(){
+    const v=subtotal();
+    if(v<MIN_ORDER){alert('Minimum order value is ₹299. Please add ₹'+(MIN_ORDER-v).toFixed(2)+' more to continue.');return false;}
+    return true;
+  }
+  window.maajMinimumOrderCheck=minOK;
+
+  // One customer-facing cart: keep legacy app storage and the newer cart storage synchronized.
+  function syncFromLegacy(){
+    try{
+      const legacy=typeof getDB==='function'?getDB('cart',null):null;
+      const modern=readCart();
+      if(Array.isArray(legacy) && legacy.length && !modern.length) writeCart(legacy);
+      else if(Array.isArray(legacy) && JSON.stringify(legacy)!==JSON.stringify(modern) && !legacy.length && modern.length && typeof setDB==='function') setDB('cart',modern);
+    }catch(e){}
+  }
+  function syncToLegacy(){try{if(typeof setDB==='function')setDB('cart',readCart());}catch(e){}}
+  window.maajSyncCarts=function(){syncFromLegacy();syncToLegacy();if(typeof updateCartBadge==='function')try{updateCartBadge();}catch(e){} if(typeof window.maajRenderCart==='function')try{window.maajRenderCart();}catch(e){} };
+
+  // Wrap the existing add-to-cart so the two historical storage systems do not drift apart.
+  const oldAdd=window.addToCart;
+  if(typeof oldAdd==='function' && !oldAdd.__maajMasterWrapped){
+    const wrapped=function(){const r=oldAdd.apply(this,arguments);setTimeout(syncToLegacy,0);setTimeout(function(){const a=typeof getDB==='function'?getDB('cart',[]):[];if(Array.isArray(a))writeCart(a);},0);return r;};
+    wrapped.__maajMasterWrapped=true;window.addToCart=wrapped;
+  }
+
+  // One checkout gate: all known checkout/order entry points enforce ₹299.
+  ['maajGoCheckout','processOrderCheckout','maajPlaceOrder'].forEach(function(name){
+    const fn=window[name];
+    if(typeof fn==='function' && !fn.__maajMinWrapped){
+      const w=function(){if(!minOK())return;return fn.apply(this,arguments);};
+      w.__maajMinWrapped=true;window[name]=w;
+    }
+  });
+
+  // Keep the admin session browser-tab scoped; closing the tab ends the admin session.
+  try{localStorage.removeItem(ADMIN_SESSION_KEY);}catch(e){}
+
+  // Hash-based app routing for footer/info links. Never intercept forms or real buttons.
+  const routeText={
+    'about maaj pharmacy':'home','about':'home','medicines':'store','medicine catalog':'store','otc medicines':'store','categories':'store','brands':'store','salts':'store',
+    'cart':'cart','your cart':'cart','checkout':'checkout','orders':'orders','my orders':'orders','order tracking':'order-tracking','tracking':'order-tracking',
+    'prescription':'upload-prescription','upload prescription':'upload-prescription','prescription history':'prescription-history','account':'home','contact us':'home',
+    'delivery':'home','returns & refunds':'home','privacy policy':'home','terms & conditions':'home','editorial policy':'home','support':'home','faq':'home','faqs':'home','blogs':'home','parenting':'home','services':'home'
+  };
+  function norm(t){return String(t||'').replace(/\s+/g,' ').trim().toLowerCase();}
+  document.addEventListener('click',function(e){
+    const el=e.target.closest('a,button');if(!el)return;
+    if(el.closest('form')||el.dataset.action||el.getAttribute('onclick')||el.getAttribute('href')?.startsWith('tel:')||el.getAttribute('href')?.startsWith('mailto:'))return;
+    const t=norm(el.textContent);if(!t)return;
+    const key=Object.keys(routeText).find(k=>t===k || t.startsWith(k+' '));
+    if(!key)return;
+    e.preventDefault();
+    const page=routeText[key];
+    if(page==='checkout'&&!minOK())return;
+    if(typeof navigateTo==='function')navigateTo(page);
+  },true);
+
+  // Customer password hardening: new passwords are SHA-256 hashes; old local plain-text records migrate on login.
+  async function sha256(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+  function accounts(){return readJson('maaj_customer_accounts',[]);}
+  function saveAccounts(a){localStorage.setItem('maaj_customer_accounts',JSON.stringify(a));}
+  window.maajCustomerPasswordHash=sha256;
+  const oldLogin=window.customerLogin;
+  if(typeof oldLogin==='function' && !oldLogin.__maajHashWrapped){
+    // Replace the old plain-text comparison with a hashed comparison while retaining migration for existing accounts.
+    window.customerLogin=async function(){
+      const mobile=(document.getElementById('customerLoginMobile')?.value||'').trim();
+      const pass=document.getElementById('customerLoginPassword')?.value||'';
+      const a=accounts(); const i=a.findIndex(u=>u.mobile===mobile);
+      const m=document.getElementById('customerLoginMsg');
+      const show=(x)=>{if(m){m.textContent=x;m.className='text-xs font-bold p-2 rounded text-red-600 bg-red-50 border border-red-200';}};
+      if(i<0)return show('Invalid mobile number or password.');
+      const hash=await sha256(pass); const stored=String(a[i].passwordHash||'');
+      let ok=stored ? stored===hash : a[i].password===pass;
+      if(!ok)return show('Invalid mobile number or password.');
+      if(!stored){a[i].passwordHash=hash;delete a[i].password;saveAccounts(a);}
+      // Use the existing login flow after migration by temporarily restoring the legacy field only in memory is avoided;
+      // establish the same current customer state directly.
+      const u=a[i];const current={id:u.id,name:u.name,mobile:u.mobile,address:u.address||'',pincode:u.pincode||''};
+      localStorage.setItem('maaj_current_customer',JSON.stringify(current));
+      try{if(typeof setDB==='function')setDB('currentUser',current);}catch(e){}
+      if(typeof updateCustomerNav==='function')try{updateCustomerNav();}catch(e){}
+      if(typeof closeCustomerAuth==='function')closeCustomerAuth();
+      if(typeof navigateTo==='function')navigateTo('home');
+    };
+    window.customerLogin.__maajHashWrapped=true;
+  }
+  const oldSignup=window.customerSignup;
+  if(typeof oldSignup==='function' && !oldSignup.__maajHashWrapped){
+    window.customerSignup=async function(){
+      const name=(document.getElementById('customerSignupName')?.value||'').trim();
+      const mobile=(document.getElementById('customerSignupMobile')?.value||'').replace(/\D/g,'');
+      const p=document.getElementById('customerSignupPassword')?.value||'';
+      const p2=document.getElementById('customerSignupPassword2')?.value||'';
+      const m=document.getElementById('customerSignupMsg');const show=(x,ok)=>{if(m){m.textContent=x;m.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200');}};
+      if(!name||!/^[0-9]{10}$/.test(mobile))return show('Enter a valid name and 10-digit mobile number.');
+      if(p.length<6)return show('Password must be at least 6 characters.');if(p!==p2)return show('Passwords do not match.');
+      const a=accounts();if(a.some(u=>u.mobile===mobile))return show('This mobile number already has an account. Please login.');
+      const user={id:'CUS-'+Date.now(),name,mobile,passwordHash:await sha256(p),createdAt:new Date().toLocaleString(),address:'',pincode:''};
+      a.push(user);saveAccounts(a);const current={id:user.id,name:user.name,mobile:user.mobile,address:'',pincode:''};localStorage.setItem('maaj_current_customer',JSON.stringify(current));try{if(typeof setDB==='function')setDB('currentUser',current);}catch(e){}
+      if(typeof updateCustomerNav==='function')try{updateCustomerNav();}catch(e){}show('Account created successfully. You are now logged in.',true);setTimeout(()=>{if(typeof closeCustomerAuth==='function')closeCustomerAuth();if(typeof navigateTo==='function')navigateTo('home');},400);
+    };window.customerSignup.__maajHashWrapped=true;
+  }
+
+  // Initial consistency pass after all scripts have loaded.
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){syncFromLegacy();syncToLegacy();},50);});
+})();
+</script>
+
+<!-- MAAJ PHARMACY — AUTHORITATIVE 12-POINT STABILITY FIX -->
+<style id="maaj-authoritative-fix-css">
+  #maajCartMinimumLock{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:11px;font-weight:800;background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+  #maajCartMinimumLock.ok{background:#ecfdf5;border-color:#a7f3d0;color:#047857}
+  .maaj-auth-error{display:block!important}
+</style>
+<script id="maaj-authoritative-fix-js">
+(function(){
+  'use strict';
+  const MIN_ORDER=299;
+  const CART_KEY='maaj_cart';
+  const LEGACY_CART_KEY='cart';
+  const ORDERS_KEY='maaj_orders';
+  const LEGACY_ORDERS_KEY='orders';
+  const CUSTOMER_KEY='maaj_customer_accounts';
+  const CURRENT_KEY='maaj_current_customer';
+  const ADMIN_KEY='maaj_admin_authenticated';
+
+  const read=(k,f)=>{try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}};
+  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  const cleanMobile=v=>String(v||'').replace(/\D/g,'');
+  const money=n=>'₹'+Number(n||0).toFixed(2);
+  const getCart=()=>{let a=read(CART_KEY,null);if(!Array.isArray(a))a=read(LEGACY_CART_KEY,[]);return Array.isArray(a)?a:[]};
+  const saveCart=a=>{a=Array.isArray(a)?a:[];write(CART_KEY,a);write(LEGACY_CART_KEY,a);try{if(typeof setDB==='function')setDB('cart',a)}catch(e){}};
+  const cartSubtotal=()=>getCart().reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||0),0);
+  const minOrderOK=()=>{const v=cartSubtotal();if(v<MIN_ORDER){alert('Minimum order value is ₹299. Please add '+money(MIN_ORDER-v)+' more to continue.');return false}return true};
+  window.maajMinimumOrderCheck=minOrderOK;
+
+  // 1–2: one cart source of truth + one minimum-order gate.
+  function syncCart(){const a=getCart();saveCart(a);try{if(typeof cart!=='undefined')cart=a}catch(e){};try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){};try{if(typeof renderCart==='function')renderCart()}catch(e){};try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}}
+  window.maajSyncCarts=syncCart;
+
+  window.addToCart=function(id){
+    let a=getCart();
+    let prod=null;
+    try{prod=(typeof products!=='undefined'?products:[]).find(p=>String(p.id)===String(id))}catch(e){}
+    if(!prod)return;
+    const i=a.findIndex(x=>String(x.id)===String(id));
+    if(i>=0){const stock=Number(prod.stock||a[i].stock||999999);if(a[i].qty>=stock){alert('Maximum available stock reached!');return}a[i].qty+=1}
+    else a.push(Object.assign({},prod,{qty:1}));
+    saveCart(a);syncCart();
+    alert(prod.name+' added to cart!');
+  };
+  window.updateQty=function(index,delta){let a=getCart();if(!a[index])return;const stock=Number(a[index].stock||999999);a[index].qty=Number(a[index].qty||0)+Number(delta||0);if(a[index].qty>stock)a[index].qty=stock;if(a[index].qty<=0)a.splice(index,1);saveCart(a);syncCart()};
+  window.removeItem=function(index){let a=getCart();if(a[index])a.splice(index,1);saveCart(a);syncCart()};
+  window.maajChangeQty=function(index,delta){window.updateQty(index,delta)};
+  window.maajRemoveCart=function(index){window.removeItem(index)};
+
+  window.calculateTotals=function(){
+    const a=getCart();let sub=0,discount=0,tax=0;
+    a.forEach(i=>sub+=Number(i.price||0)*Number(i.qty||0));
+    try{if(typeof activeCoupon!=='undefined'&&activeCoupon){discount=activeCoupon.type==='PERCENT'?sub*Number(activeCoupon.value||0)/100:Number(activeCoupon.value||0)}}catch(e){}
+    // Product-level GST: medicines 5%, cosmetic/other categories 18%.
+    a.forEach(i=>{const cosmetic=/cream|ointment|cosmetic|belt|personal care/i.test(String(i.category||''));tax+=Math.max(0,Number(i.price||0)*Number(i.qty||0)-discount*(Number(i.price||0)*Number(i.qty||0)/Math.max(sub,1)))*(cosmetic?0.18:0.05)});
+    const total=Math.max(0,sub-discount+tax);
+    ['cartSubtotal','cartDiscount','cartTax','cartGrandTotal'].forEach((id)=>{const e=document.getElementById(id);if(e)e.innerText=money(id==='cartSubtotal'?sub:id==='cartDiscount'?discount:id==='cartTax'?tax:total)});
+    const lock=document.getElementById('maajCartMinimumLock');if(lock){const rem=Math.max(0,MIN_ORDER-sub);lock.classList.toggle('ok',rem===0);lock.textContent=rem?'Minimum order ₹299 • Add '+money(rem)+' more to continue':'Minimum order ₹299 ✓';}
+    return {subtotal:sub,discount,tax,total};
+  };
+  window.renderCart=function(){
+    const list=document.getElementById('cartItemsList');if(!list){try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){};return}
+    const a=getCart();list.innerHTML='';
+    if(!a.length)list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">Your cart is empty.</div>';
+    else a.forEach((item,index)=>{const row=document.createElement('div');row.className='bg-white p-4 rounded-xl border flex justify-between items-center text-xs shadow-sm';row.innerHTML='<div><h4 class="font-bold text-slate-800">'+String(item.name||'Medicine')+'</h4><p class="text-slate-400">'+money(item.price)+' × '+Number(item.qty||0)+'</p></div><div class="flex items-center gap-2"><button onclick="updateQty('+index+',-1)" class="w-6 h-6 bg-slate-100 font-bold rounded">−</button><span class="font-bold">'+Number(item.qty||0)+'</span><button onclick="updateQty('+index+',1)" class="w-6 h-6 bg-slate-100 font-bold rounded">+</button><button onclick="removeItem('+index+')" class="text-red-500 ml-2"><i class="fa-solid fa-trash"></i></button></div>';list.appendChild(row)});
+    window.calculateTotals();try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
+  };
+
+  // 3–5: every checkout entry point uses the same guard and COD-only flow.
+  window.togglePaymentMode=function(){const e=document.getElementById('onlinePaymentSim');if(e)e.classList.add('hidden')};
+  function gate(fn){return function(){if(!getCart().length){alert('Your cart is empty.');return false}if(!minOrderOK())return false;return fn.apply(this,arguments)}}
+  if(typeof window.processOrderCheckout==='function')window.processOrderCheckout=gate(window.processOrderCheckout);
+
+  const oldGo=window.maajGoCheckout;
+  window.maajGoCheckout=function(){if(!getCart().length){alert('Your cart is empty.');return false}if(!minOrderOK())return false;return typeof oldGo==='function'?oldGo.apply(this,arguments):false};
+  const oldPlace=window.maajPlaceOrder;
+  window.maajPlaceOrder=function(){if(!getCart().length){alert('Your cart is empty.');return false}if(!minOrderOK())return false;return typeof oldPlace==='function'?oldPlace.apply(this,arguments):false};
+
+  // 6–8: customer auth uses one account key, hashed passwords, and no ghost login.
+  async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+  const accounts=()=>read(CUSTOMER_KEY,[]);
+  const saveAccounts=a=>write(CUSTOMER_KEY,a);
+  window.isCustomerLoggedIn=()=>!!read(CURRENT_KEY,null);
+
+  window.customerSignup=async function(){
+    const name=(document.getElementById('customerSignupName')?.value||'').trim(),mobile=cleanMobile(document.getElementById('customerSignupMobile')?.value),p=document.getElementById('customerSignupPassword')?.value||'',p2=document.getElementById('customerSignupPassword2')?.value||'';
+    const m=document.getElementById('customerSignupMsg');const show=(t,ok=false)=>{if(m){m.textContent=t;m.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200')}};
+    if(!name||!/^[0-9]{10}$/.test(mobile))return show('Enter a valid name and 10-digit mobile number.');if(p.length<6)return show('Password must be at least 6 characters.');if(p!==p2)return show('Passwords do not match.');
+    const a=accounts();if(a.some(u=>cleanMobile(u.mobile)===mobile))return show('This mobile number already has an account. Please login.');
+    const u={id:'CUS-'+Date.now(),name,mobile,passwordHash:await hash(p),createdAt:new Date().toLocaleString(),address:'',pincode:''};a.push(u);saveAccounts(a);const c={id:u.id,name:u.name,mobile:u.mobile,address:'',pincode:''};write(CURRENT_KEY,c);try{if(typeof setDB==='function')setDB('currentUser',c)}catch(e){};show('Account created successfully. You are now logged in.',true);try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){};setTimeout(()=>{try{if(typeof closeCustomerAuth==='function')closeCustomerAuth()}catch(e){};try{if(typeof navigateTo==='function')navigateTo('home')}catch(e){}},300);
+  };
+  window.customerLogin=async function(){
+    const mobile=cleanMobile(document.getElementById('customerLoginMobile')?.value),p=document.getElementById('customerLoginPassword')?.value||'',m=document.getElementById('customerLoginMsg');const show=t=>{if(m){m.textContent=t;m.className='text-xs font-bold p-2 rounded text-red-600 bg-red-50 border border-red-200'}};
+    const a=accounts(),i=a.findIndex(u=>cleanMobile(u.mobile)===mobile);if(i<0)return show('Invalid mobile number or password.');const u=a[i],h=await hash(p);let ok=String(u.passwordHash||'')===h;
+    if(!ok&&u.password){ok=String(u.password)===p;if(ok){u.passwordHash=h;delete u.password;a[i]=u;saveAccounts(a)}}
+    if(!ok)return show('Invalid mobile number or password.');const c={id:u.id,name:u.name,mobile:u.mobile,address:u.address||'',pincode:u.pincode||''};write(CURRENT_KEY,c);try{if(typeof setDB==='function')setDB('currentUser',c)}catch(e){};try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){};try{if(typeof closeCustomerAuth==='function')closeCustomerAuth()}catch(e){};try{if(typeof navigateTo==='function')navigateTo('home')}catch(e){}
+  };
+  window.resetCustomerPassword=async function(){const mobile=cleanMobile(document.getElementById('customerForgotMobile')?.value),p=document.getElementById('customerNewPassword')?.value||'',p2=document.getElementById('customerNewPassword2')?.value||'',m=document.getElementById('customerForgotMsg');const show=(t,ok=false)=>{if(m){m.textContent=t;m.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200')}};const a=accounts(),i=a.findIndex(u=>cleanMobile(u.mobile)===mobile);if(i<0)return show('Mobile number not found.');if(p.length<6)return show('Password must be at least 6 characters.');if(p!==p2)return show('Passwords do not match.');a[i].passwordHash=await hash(p);delete a[i].password;saveAccounts(a);show('Password reset successfully. Please login.',true);setTimeout(()=>{try{showCustomerLogin()}catch(e){}},600)};
+  window.customerLogout=function(){localStorage.removeItem(CURRENT_KEY);try{if(typeof setDB==='function')setDB('currentUser',null)}catch(e){};try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){};try{if(typeof navigateTo==='function')navigateTo('home')}catch(e){}};
+
+  // First-screen customer gate: existing account only; never creates a fake account.
+  window.maajFirstCustomerLogin=async function(e){if(e)e.preventDefault();const mobile=cleanMobile(document.getElementById('maajFirstMobile')?.value),p=document.getElementById('maajFirstPassword')?.value||'',err=document.getElementById('maajFirstLoginError')||document.getElementById('maajCustomerFirstError');if(!/^\d{10}$/.test(mobile)||!p){if(err){err.textContent='Enter your 10-digit mobile number and password.';err.classList.remove('hidden');err.style.display='block'}return false}const a=accounts(),i=a.findIndex(u=>cleanMobile(u.mobile)===mobile);if(i<0){if(err){err.textContent='Customer account not found. Please create an account first.';err.classList.remove('hidden');err.style.display='block'}return false}const u=a[i],h=await hash(p);let ok=u.passwordHash===h;if(!ok&&u.password){ok=u.password===p;if(ok){u.passwordHash=h;delete u.password;a[i]=u;saveAccounts(a)}}if(!ok){if(err){err.textContent='Invalid mobile number or password.';err.classList.remove('hidden');err.style.display='block'}return false}const c={id:u.id,name:u.name,mobile:u.mobile,address:u.address||'',pincode:u.pincode||''};write(CURRENT_KEY,c);const gate=document.getElementById('maajCustomerFirstLogin');if(gate){gate.classList.add('hide');gate.style.display='none'}try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(x){};try{if(typeof navigateTo==='function')navigateTo('home',false)}catch(x){};return false};
+
+  // 9: all order views use the same order store and current customer.
+  function allOrders(){const a=read(ORDERS_KEY,null);const b=read(LEGACY_ORDERS_KEY,[]);if(Array.isArray(a)&&a.length)return a;return Array.isArray(b)?b:[]}
+  function saveOrders(a){write(ORDERS_KEY,a);write(LEGACY_ORDERS_KEY,a);try{if(typeof setDB==='function')setDB('orders',a)}catch(e){}}
+  window.maajGetOrders=allOrders;
+  window.maajSaveOrders=saveOrders;
+
+  // 10: canonical navigation aliases, so old links still land on the correct page.
+  const aliases={medicines:'store',catalog:'store',tracking:'order-tracking',prescription:'upload-prescription',prescriptionupload:'upload-prescription',prescriptionhistory:'prescription-history',myorders:'orders',account:'home'};
+  const navBase=window.navigateTo;
+  window.navigateTo=function(pageId){pageId=aliases[String(pageId||'').toLowerCase()]||pageId;return navBase.apply(this,[pageId].concat([].slice.call(arguments,1)))};
+
+  // 11: keep online payment UI hidden; only COD is selectable.
+  document.addEventListener('click',function(e){const b=e.target.closest('button,[role="button"],label');if(!b)return;const t=String(b.textContent||'').toLowerCase();if(t.includes('online payment')||t.includes('upi')||t.includes('card payment')){e.preventDefault();e.stopImmediatePropagation();alert('Cash on Delivery is the available payment method.');}},true);
+
+  // 12: neutralize unsupported guarantee language in any dynamically rendered text.
+  function softenClaims(root){if(!root||root.nodeType!==1)return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=walker.nextNode()){n.nodeValue=n.nodeValue.replace(/100%\s+certified\s+genuine/gi,'Healthcare product information and quality checks').replace(/guaranteed\s+1-day/gi,'target 1-day').replace(/guaranteed\s+delivery/gi,'delivery target');}}
+
+  document.addEventListener('DOMContentLoaded',function(){
+    // Migrate the best available cart/order store once.
+    const c=getCart();saveCart(c);const o=allOrders();saveOrders(o);
+    try{window.calculateTotals();}catch(e){}
+    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
+    try{softenClaims(document.body)}catch(e){}
+    // Correct any stale admin auth written to localStorage by older versions.
+    try{localStorage.removeItem(ADMIN_KEY)}catch(e){}
+  });
+})();
+</script>
+
+<script>
+(function(){
+const U='https://fywzoptldcgxatyydyec.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+let c=null,items=[];const E=id=>document.getElementById(id);const M=(id,t,ok)=>{let e=E(id);if(e){e.textContent=t;e.className='text-xs font-bold mt-2 '+(ok?'text-emerald-700':'text-red-700')}};function init(){if(window.supabase&&!c)c=window.supabase.createClient(U,K)}async function S(){init();if(!c)return null;let r=await c.auth.getSession();return r.data?.session||null}function H(s){return {apikey:K,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json',Accept:'application/json'}}
+async function mmShowManager(){let s=await S();if(!s){E('mmLogin')?.classList.remove('hidden');E('mmManager')?.classList.add('hidden');if(E('mmUserTag'))E('mmUserTag').textContent='ADMIN LOGIN REQUIRED';return}E('mmLogin')?.classList.add('hidden');E('mmManager')?.classList.remove('hidden');if(E('mmUserTag'))E('mmUserTag').textContent='ONLINE • ADMIN';if(E('mmLoggedInAs'))E('mmLoggedInAs').textContent=s.user.email||'Admin';await mmLoadMedicines()}
+async function mmSignIn(){init();let email=(E('mmEmail')?.value||'').trim(),password=E('mmPassword')?.value||'';if(!email||!password)return M('mmLoginStatus','Email and password are required.');M('mmLoginStatus','Signing in...',true);let {error}=await c.auth.signInWithPassword({email,password});if(error)return M('mmLoginStatus',error.message);M('mmLoginStatus','Login successful.',true);await mmShowManager()}async function mmSignOut(){init();await c.auth.signOut();await mmShowManager()}
+async function mmLoadMedicines(){let s=await S();if(!s)return;try{let r=await fetch(U+'/rest/v1/medicines?select=*&order=created_at.desc',{headers:H(s),cache:'no-store'});if(!r.ok)throw Error(await r.text());items=await r.json();mmRender();if(typeof window.maajLoadMedicinesFromAPI==='function')await window.maajLoadMedicinesFromAPI()}catch(e){M('mmOneStatus','Load Error: '+e.message)}}
+function X(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function mmRender(){let t=E('mmList');if(!t)return;t.innerHTML=items.map((p,i)=>{const photo=maajMedicinePhotoUrl(p.photo||p.image||p.photo_url||p.photo_path||'');return `<tr class="border-b"><td class="p-3"><input type="checkbox" class="mmSel" data-i="${i}"></td><td class="p-3"><img src="${X(photo)}" class="w-11 h-11 object-contain rounded-lg border bg-white" onerror="maajImageFallback(this)"></td><td class="p-3 font-bold">${X(p.name||'')}</td><td class="p-3">₹${Number(p.price||0).toFixed(2)}</td><td class="p-3">₹${Number(p.mrp||0).toFixed(2)}</td><td class="p-3">${Number(p.gst||5)}%</td><td class="p-3">${X(p.category||'Medicine')}</td><td class="p-3">${X(p.drug_class||p.drugClass||'—')}</td><td class="p-3">${Number(p.stock||0)}</td><td class="p-3"><button type="button" onclick="mmEditMed(${i})" class="bg-slate-100 px-3 py-1.5 rounded-lg font-black">Edit</button></td></tr>`}).join('')||'<tr><td colspan="10" class="p-6 text-center text-slate-500">No medicines found online.</td></tr>'}function mmToggleAll(x){document.querySelectorAll('.mmSel').forEach(c=>c.checked=x.checked)}
+async function up(f,s){if(!f)throw Error('Photo is required.');init();if(c&&c.storage){let ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg',path='medicines/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;let r=await c.storage.from('medicine-images').upload(path,f,{cacheControl:'3600',upsert:false,contentType:f.type||'image/jpeg'});if(r.error)throw Error('Photo upload failed: '+r.error.message);let g=c.storage.from('medicine-images').getPublicUrl(path);if(!g.data?.publicUrl)throw Error('Could not create public photo URL.');return g.data.publicUrl;}let ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg',path='medicines/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext,r=await fetch(U+'/storage/v1/object/medicine-images/'+path,{method:'POST',headers:{apikey:K,Authorization:'Bearer '+s.access_token,'Content-Type':f.type||'image/jpeg','x-upsert':'false'},body:f});if(!r.ok)throw Error('Photo upload failed: '+await r.text());return U+'/storage/v1/object/public/medicine-images/'+path}
+async function mmAddOne(){let s=await S();if(!s)return M('mmOneStatus','Please login first.');let name=(E('mmName')?.value||'').trim(),price=Number(E('mmPrice')?.value),photo=E('mmPhoto')?.files?.[0];if(!name||!photo||!Number.isFinite(price))return M('mmOneStatus','Medicine name, price and photo are required.');M('mmOneStatus','Uploading photo and saving online...',true);try{let photoUrl=await up(photo,s),body={name,price,mrp:Number(E('mmMrp')?.value||price),category:(E('mmCategory')?.value||'').trim()||'Medicine',drug_class:(E('mmDrugClass')?.value||'').trim()||'Other',gst:Number(E('mmGst')?.value||5),stock:Number(E('mmStock')?.value||0),description:(E('mmDescription')?.value||'').trim(),photo:photoUrl},r=await fetch(U+'/rest/v1/medicines',{method:'POST',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify(body)});if(!r.ok)throw Error(await r.text());['mmName','mmPrice','mmMrp','mmCategory','mmDrugClass','mmDescription','mmPhoto'].forEach(id=>{if(E(id))E(id).value=''});E('mmStock').value='0';M('mmOneStatus','Medicine added ONLINE successfully. Customer catalogue refreshed.',true);await mmLoadMedicines()}catch(e){M('mmOneStatus','Add Error: '+e.message)}}
+async function mmBulkAdd(){let s=await S();if(!s)return M('mmBulkStatus','Please login first.');let raw=(E('mmBulkData')?.value||'').trim();if(!raw)return M('mmBulkStatus','Enter medicine rows first.');let lines=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean),a=[],er=[];lines.forEach((line,n)=>{let v=line.split('|').map(x=>x.trim());if(v.length<7){er.push('Row '+(n+1)+': need 7 fields');return}let [name,price,mrp,category='Medicine',gst='5',description='',photo='']=v;if(!name||isNaN(Number(price))||!photo){er.push('Row '+(n+1)+': invalid name/price/photo');return}a.push({name,price:Number(price),mrp:Number(mrp||price),category:category||'Medicine',gst:Number(gst||5),description,photo,stock:0})});if(!a.length)return M('mmBulkStatus','Nothing valid to add. '+er.join(' • '));M('mmBulkStatus','Saving '+a.length+' medicine(s) ONLINE...',true);try{let r=await fetch(U+'/rest/v1/medicines',{method:'POST',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify(a)});if(!r.ok)throw Error(await r.text());E('mmBulkData').value='';M('mmBulkStatus','Added '+a.length+' medicine(s) ONLINE.'+(er.length?' Errors: '+er.join(' • '):''),true);await mmLoadMedicines()}catch(e){M('mmBulkStatus','Bulk Add Error: '+e.message)}}
+async function mmEditMed(i){let s=await S(),p=items[i];if(!s||!p)return;let name=prompt('Medicine name:',p.name);if(name===null)return;let price=prompt('Selling price:',p.price);if(price===null)return;let mrp=prompt('MRP:',p.mrp);if(mrp===null)return;let category=prompt('Category:',p.category||'Medicine');if(category===null)return;let drugClass=prompt('Drug Class:',p.drug_class||p.drugClass||'Other');if(drugClass===null)return;let gst=prompt('GST %:',p.gst||5);if(gst===null)return;let stock=prompt('Stock:',p.stock||0);if(stock===null)return;let description=prompt('Description:',p.description||'');if(description===null)return;try{let r=await fetch(U+'/rest/v1/medicines?id=eq.'+encodeURIComponent(p.id),{method:'PATCH',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify({name:name.trim(),price:Number(price)||0,mrp:Number(mrp)||Number(price)||0,category:category.trim()||'Medicine',drug_class:drugClass.trim()||'Other',gst:Number(gst)||5,stock:Number(stock)||0,description})});if(!r.ok)throw Error(await r.text());await mmLoadMedicines()}catch(e){alert('Edit Error: '+e.message)}}
+async function mmDeleteSelected(){let s=await S();if(!s)return;let idx=[...document.querySelectorAll('.mmSel:checked')].map(x=>Number(x.dataset.i));if(!idx.length)return alert('Select medicines first.');if(!confirm('Delete '+idx.length+' medicine(s) permanently from online catalogue?'))return;try{for(let i of idx){let r=await fetch(U+'/rest/v1/medicines?id=eq.'+encodeURIComponent(items[i].id),{method:'DELETE',headers:H(s)});if(!r.ok)throw Error(await r.text())}await mmLoadMedicines()}catch(e){alert('Delete Error: '+e.message)}}
+Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,mmBulkAdd,mmEditMed,mmDeleteSelected,mmToggleAll});document.addEventListener('DOMContentLoaded',()=>{init();if(c)c.auth.onAuthStateChange(()=>{if(E('admin-tab-medicine-manager')?.classList.contains('active'))mmShowManager()})});
+})();
+</script>
+<!-- MAAJ PHARMACY — FINAL CLEAN UX / DATA CONSOLIDATION LAYER -->
+<style id="maaj-final-clean-layer">
+  /* Footer must be the final visible content. Policy center stays hidden and opens in the details modal. */
+  #maajPolicyCenter{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important}
+  #maajCompleteFooter{position:relative;z-index:5}
+  body{overflow-x:hidden}
+  #maajRealDetailsBox{scrollbar-width:thin}
+  .maaj-clean-status{font-size:12px;font-weight:800;margin-top:8px}
+</style>
+<script id="maaj-final-clean-layer-js">
+(function(){
+  'use strict';
+  const CART='maaj_cart';
+  const ORDERS='maaj_orders';
+  const OLD_CART='cart';
+  const OLD_ORDERS='orders';
+  const CUSTOMER='maaj_customer_accounts';
+  const CURRENT='maaj_current_customer';
+  const MIN=299;
+  const FREE_MED=499;
+
+  const read=(k,f)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?f:v}catch(e){return f}};
+  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+  const arr=(v)=>Array.isArray(v)?v:[];
+  const num=(v)=>Number(v)||0;
+  const cart=()=>arr(read(CART,[]));
+  const saveCart=(a)=>{
+    a=arr(a); write(CART,a); write(OLD_CART,a);
+    try{if(typeof setDB==='function')setDB('cart',a)}catch(e){}
+    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
+    return a;
+  };
+  const orders=()=>arr(read(ORDERS,read(OLD_ORDERS,[])));
+  const saveOrders=(a)=>{a=arr(a);write(ORDERS,a);write(OLD_ORDERS,a);try{if(typeof setDB==='function')setDB('orders',a)}catch(e){};return a};
+  const customer=()=>read(CURRENT,null);
+  const products=()=>{try{return arr(window.products||read('products',[]))}catch(e){return arr(read('products',[]))}};
+
+  function normalizeItem(i){
+    return Object.assign({},i,{qty:Math.max(1,Math.floor(num(i.qty)||1)),price:num(i.price||i.sellingPrice||0),id:i.id});
+  }
+  function sameItem(a,b){return String(a.id)===String(b.id)}
+  function canonicalCart(){
+    let a=cart().map(normalizeItem);
+    if(!a.length){
+      try{const old=typeof getDB==='function'?getDB('cart',[]):[]; if(arr(old).length)a=arr(old).map(normalizeItem)}catch(e){}
+    }
+    return a;
+  }
+
+  window.maajCanonicalCart=canonicalCart;
+  window.maajCanonicalOrders=orders;
+  window.maajSaveCanonicalOrders=saveOrders;
+  window.maajGetCanonicalCustomer=customer;
+
+  function totals(a){
+    a=arr(a).map(normalizeItem);
+    const subtotal=a.reduce((s,i)=>s+i.price*i.qty,0);
+    let discount=0;
+    try{
+      const c=window.activeCoupon;
+      if(c){discount=c.type==='PERCENT'?subtotal*num(c.value)/100:num(c.value);discount=Math.min(Math.max(0,discount),subtotal)}
+    }catch(e){}
+    const after=Math.max(0,subtotal-discount);
+    let medicineOnly=a.length>0;
+    let tax=0;
+    a.forEach(i=>{
+      const cat=String(i.category||i.type||'medicine').toLowerCase();
+      const rate=(cat.includes('cosmetic')||cat.includes('personal care'))?0.18:0.05;
+      if(!(cat.includes('medicine')||cat.includes('drug')||cat.includes('tablet')||cat.includes('syrup')||cat.includes('capsule')||cat.includes('ointment')||cat.includes('cream')||cat.includes('balm')||cat.includes('pain')||cat.includes('vitamin')||cat.includes('first aid')))medicineOnly=false;
+      tax += i.price*i.qty*rate;
+    });
+    // Delivery: medicine-only >= ₹499 free; otherwise distance rule from the active PIN if available.
+    let distance=null;
+    try{distance=num(document.getElementById('deliveryDistance')?.value||window.maajDeliveryDistance||0)||null}catch(e){}
+    let delivery=0;
+    if(after>=FREE_MED && medicineOnly) delivery=0;
+    else if(distance!==null){delivery=distance<5?0:(distance<=10?20:29)}
+    else {try{delivery=after>=num(window.storeSettings?.freeDelivery||Infinity)?0:num(window.storeSettings?.delivery||0)}catch(e){delivery=0}}
+    return {subtotal,discount,tax,delivery,total:Math.max(0,after+tax+delivery),medicineOnly};
+  }
+  window.maajCanonicalTotals=totals;
+
+  // ONE cart API. Existing buttons continue to call these public functions, but storage is canonical.
+  window.addToCart=function(product,qty){
+    const p=typeof product==='object'?product:(products().find(x=>String(x.id)===String(product))||null);
+    if(!p)return false;
+    const a=canonicalCart(); const q=Math.max(1,Math.floor(num(qty)||1));
+    const i=a.findIndex(x=>sameItem(x,p));
+    if(i>=0)a[i].qty+=q; else a.push(normalizeItem(Object.assign({},p,{qty:q})));
+    saveCart(a);
+    try{if(typeof window.renderCart==='function')window.renderCart()}catch(e){}
+    try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}
+    return true;
+  };
+  window.updateQty=function(index,delta){
+    const a=canonicalCart(); if(!a[index])return;
+    a[index].qty+=Math.trunc(num(delta)); if(a[index].qty<=0)a.splice(index,1); saveCart(a);
+    try{if(typeof window.renderCart==='function')window.renderCart()}catch(e){}
+    try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}
+  };
+  window.removeItem=function(index){const a=canonicalCart();if(index<0||index>=a.length)return;a.splice(index,1);saveCart(a);try{if(typeof window.renderCart==='function')window.renderCart()}catch(e){}try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}};
+
+  function minimumOK(){
+    const t=totals(canonicalCart());
+    if(t.subtotal<MIN){alert('Minimum order value is ₹299. Please add ₹'+(MIN-t.subtotal).toFixed(2)+' more.');return false}
+    return true;
+  }
+  window.maajMinimumOrderCheck=minimumOK;
+
+  // Canonical customer auth state. No OTP and no ghost account creation.
+  window.isCustomerLoggedIn=()=>!!customer();
+  window.maajRequireCustomer=function(){if(customer())return true;try{if(typeof openCustomerAuth==='function')openCustomerAuth('login')}catch(e){}return false};
+
+  // Canonical order placement used by every public order entry point.
+  window.maajCanonicalPlaceOrder=function(){
+    const u=customer(); if(!u)return window.maajRequireCustomer();
+    const a=canonicalCart(); if(!a.length){alert('Your cart is empty.');return false}
+    if(!minimumOK())return false;
+    const name=(document.getElementById('checkoutName')?.value||u.name||'').trim();
+    const phone=(document.getElementById('checkoutPhone')?.value||u.mobile||u.phone||'').replace(/\D/g,'');
+    const pin=(document.getElementById('checkoutPincode')?.value||u.pincode||'').replace(/\D/g,'');
+    const address=(document.getElementById('checkoutAddress')?.value||u.address||'').trim();
+    if(!name||!/^[0-9]{10}$/.test(phone)||!/^[0-9]{6}$/.test(pin)||!address){alert('Please enter valid customer name, 10-digit mobile number, 6-digit PIN code and complete delivery address.');return false}
+    // Rx validation: every prescription-required item must have an uploaded prescription before placement.
+    const rx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true');
+    if(rx){
+      const file=document.querySelector('#prescriptionFile, #rxFile, input[type="file"][name*="prescription" i]');
+      const hasUpload=!!(file&&file.files&&file.files.length)||!!read('maaj_latest_prescription',null);
+      if(!hasUpload){alert('A valid prescription is required for one or more medicines in your cart. Please upload it before placing the order.');return false}
+    }
+    const t=totals(a);
+    const id='ORD-'+Date.now().toString().slice(-8)+'-'+Math.floor(100+Math.random()*900);
+    const o={id,date:new Date().toLocaleString(),customer:name,phone,pincode:pin,address,customerId:u.id,customerMobile:u.mobile||phone,items:JSON.parse(JSON.stringify(a)),subtotal:t.subtotal,discount:t.discount,tax:t.tax,delivery:t.delivery,amount:t.total,paymentMode:'COD',status:'Pending',deliveryEstimate:(pin==='767022'||pin==='767061'||pin==='767021')?'Up to 1 day':'3–7 days'};
+    const os=orders();os.unshift(o);saveOrders(os);
+    // Stock deduction in the single product store.
+    const ps=products();a.forEach(i=>{const p=ps.find(x=>String(x.id)===String(i.id));if(p)p.stock=Math.max(0,num(p.stock)-i.qty)});write('products',ps);try{if(typeof setDB==='function')setDB('products',ps)}catch(e){}
+    saveCart([]);
+    try{window.activeCoupon=null}catch(e){}
+    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
+    alert('Order placed successfully!\nOrder ID: '+id+'\nPayment: Cash on Delivery');
+    try{window.navigateTo('orders')}catch(e){}
+    return true;
+  };
+
+  // Replace all common placement functions with the same canonical path.
+  ['processOrderCheckout','finalPlaceCODOrder','maajPlaceOrder'].forEach(name=>{window[name]=window.maajCanonicalPlaceOrder});
+  window.maajGoCheckout=function(){if(!window.maajRequireCustomer())return false;if(!canonicalCart().length){alert('Your cart is empty.');return false}if(!minimumOK())return false;try{window.navigateTo('checkout')}catch(e){};return true};
+
+  // Canonical navigation aliases. Functional controls with onclick/forms are not intercepted by the details layer.
+  const alias={medicines:'store',catalog:'store',tracking:'order-tracking',prescription:'upload-prescription',prescriptionupload:'upload-prescription',prescriptionhistory:'prescription-history',myorders:'orders'};
+  const baseNav=window.navigateTo;
+  if(baseNav)window.navigateTo=function(page){page=alias[String(page||'').toLowerCase()]||page;return baseNav.apply(this,[page].concat([].slice.call(arguments,1)))};
+
+  // Admin UI: page is not opened unless authenticated. Frontend auth is a UI gate, not production security.
+  const adminOpen=window.isAdminAuthenticated;
+  window.maajAdminGate=function(){return !!(adminOpen&&adminOpen())};
+
+  // Footer/policy behavior: NEVER render the policy center below the footer. Open details in modal only.
+  function openPolicy(k){
+    try{if(typeof window.maajShowRealDetails==='function'){window.maajShowRealDetails(k);return true}}catch(e){}
+    return false;
+  }
+  document.addEventListener('click',function(e){
+    const el=e.target.closest('#maajCompleteFooter a'); if(!el)return;
+    const h=(el.getAttribute('href')||'').toLowerCase();
+    const text=(el.textContent||'').toLowerCase();
+    let k=null;
+    if(h.includes('editorial')||text.includes('editorial'))k='editorial';
+    else if(h.includes('privacy')||text.includes('privacy'))k='privacy';
+    else if(h.includes('terms')||text.includes('terms'))k='terms';
+    else if(h.includes('returns')||text.includes('return'))k='returns';
+    else if(h.includes('delivery')||text.includes('delivery'))k='delivery';
+    else if(text.includes('prescription'))k='prescription';
+    else if(h.includes('about')||text.includes('about'))k='about';
+    else if(h.includes('faq')||text.includes('faq'))k='faq';
+    else if(h.includes('contact')||text.includes('support'))k='contact';
+    if(k){e.preventDefault();e.stopImmediatePropagation();openPolicy(k)}
+  },true);
+
+  // Kill old iframe target if an old DOM fragment ever exists.
+  document.addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('iframe[src*="medicine-manager.html"], iframe[src*="medicine-manager"]').forEach(f=>f.remove());
+    const pc=document.getElementById('maajPolicyCenter');if(pc)pc.setAttribute('aria-hidden','true');
+    saveCart(canonicalCart());saveOrders(orders());
+    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
+  });
+})();
+</script>
+
+
+<style>
+#mmBulkRows .mm-bulk-input{width:100%;min-width:105px;border:1px solid #dbe3ea;border-radius:9px;padding:8px 9px;font-size:12px;background:#fff;outline:none}
+#mmBulkRows .mm-bulk-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.10)}
+#mmBulkRows td{vertical-align:middle}
+#mmBulkRows .mm-photo-label{display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px dashed #a7f3d0;background:#ecfdf5;color:#047857;border-radius:9px;padding:8px 9px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+#mmBulkRows .mm-photo-name{display:block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b;font-size:10px;margin-top:4px}
+#mmBulkRows .mm-row-no{font-weight:900;color:#64748b}
+</style>
+<script>
+(function(){
+  function mmE(id){return document.getElementById(id)}
+  function mmEsc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function mmRowHTML(n){return `<tr class="border-b mm-bulk-row" data-row="${n}">
+    <td class="p-2 mm-row-no">${n}</td>
+    <td class="p-2"><input class="mm-bulk-input mm-bulk-name" placeholder="Paracetamol 500mg"></td>
+    <td class="p-2"><input class="mm-bulk-input mm-bulk-price" type="number" min="0" step="0.01" placeholder="25"></td>
+    <td class="p-2"><input class="mm-bulk-input mm-bulk-mrp" type="number" min="0" step="0.01" placeholder="30"></td>
+    <td class="p-2"><select class="mm-bulk-input mm-bulk-category"></select></td>
+    <td class="p-2"><select class="mm-bulk-input mm-bulk-drug-class"></select></td>
+    <td class="p-2"><select class="mm-bulk-input mm-bulk-gst"><option value="5">5%</option><option value="18">18%</option></select></td>
+    <td class="p-2"><input class="mm-bulk-input mm-bulk-stock" type="number" min="0" step="1" value="0"></td>
+    <td class="p-2"><input class="mm-bulk-input mm-bulk-description" placeholder="Description"></td>
+    <td class="p-2"><label class="mm-photo-label">📷 Choose Photo<input class="mm-bulk-photo" type="file" accept="image/*" style="display:none" onchange="mmBulkPhotoChanged(this)"></label><span class="mm-photo-name">No photo selected</span></td>
+    <td class="p-2"><button type="button" onclick="mmRemoveBulkRow(this)" class="bg-red-50 text-red-700 px-2.5 py-2 rounded-lg font-black">Remove</button></td>
+  </tr>`}
+  window.mmAddBulkRow=function(){
+    const body=mmE('mmBulkRows'); if(!body)return;
+    const n=body.querySelectorAll('tr.mm-bulk-row').length+1;
+    body.insertAdjacentHTML('beforeend',mmRowHTML(n)); mmRenumberBulkRows();
+  };
+  window.mmAddBulkRows=function(count){for(let i=0;i<count;i++)window.mmAddBulkRow()};
+  window.mmRemoveBulkRow=function(btn){btn.closest('tr')?.remove();mmRenumberBulkRows()};
+  window.mmRenumberBulkRows=function(){document.querySelectorAll('#mmBulkRows tr.mm-bulk-row').forEach((tr,i)=>{tr.dataset.row=i+1;const n=tr.querySelector('.mm-row-no');if(n)n.textContent=i+1})};
+  window.mmClearBulkRows=function(){const body=mmE('mmBulkRows');if(body)body.innerHTML='';mmAddBulkRows(3);const st=mmE('mmBulkStatus');if(st)st.textContent='';};
+  window.mmBulkPhotoChanged=function(input){const row=input.closest('tr');const out=row?.querySelector('.mm-photo-name');if(out)out.textContent=input.files?.[0]?.name||'No photo selected'};
+  async function mmBulkAddExcel(){
+    const s=await (typeof S==='function'?S():null); if(!s)return M('mmBulkStatus','Please login first.');
+    const rows=[...document.querySelectorAll('#mmBulkRows tr.mm-bulk-row')];
+    if(!rows.length){mmAddBulkRows(3);return M('mmBulkStatus','Add at least one medicine row.');}
+    const valid=[],errors=[];
+    rows.forEach((tr,i)=>{
+      const q=sel=>tr.querySelector(sel);
+      const name=(q('.mm-bulk-name')?.value||'').trim(), price=Number(q('.mm-bulk-price')?.value), mrp=Number(q('.mm-bulk-mrp')?.value||price), category=(q('.mm-bulk-category')?.value||'').trim()||'Medicine', drug_class=(q('.mm-bulk-drug-class')?.value||'').trim()||'Other', gst=Number(q('.mm-bulk-gst')?.value||5), stock=Number(q('.mm-bulk-stock')?.value||0), description=(q('.mm-bulk-description')?.value||'').trim(), photo=q('.mm-bulk-photo')?.files?.[0];
+      const hasAnything=name||q('.mm-bulk-price')?.value||photo;
+      if(!hasAnything)return;
+      if(!name||!Number.isFinite(price)||price<0||!photo){errors.push('Row '+(i+1)+': name, price and photo are required.');return;}
+      valid.push({tr,name,price,mrp,category,gst,stock,description,photo});
+    });
+    if(!valid.length)return M('mmBulkStatus',errors.length?errors.join(' • '):'Enter at least one medicine.');
+    M('mmBulkStatus','Uploading photos and saving '+valid.length+' medicine(s) ONLINE...',true);
+    try{
+      const saved=[];
+      for(let i=0;i<valid.length;i++){
+        const x=valid[i];
+        M('mmBulkStatus','Uploading '+(i+1)+'/'+valid.length+': '+x.name+'...',true);
+        const photoUrl=await up(x.photo,s);
+        saved.push({name:x.name,price:x.price,mrp:x.mrp,category:x.category,drug_class:x.drug_class,gst:x.gst,stock:x.stock,description:x.description,photo:photoUrl});
+      }
+      const r=await fetch(U+'/rest/v1/medicines',{method:'POST',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify(saved)});
+      if(!r.ok)throw Error(await r.text());
+      mmE('mmBulkRows').innerHTML='';mmAddBulkRows(3);M('mmBulkStatus','✓ Added '+saved.length+' medicine(s) ONLINE successfully. Customer catalogue refreshed.'+(errors.length?' Skipped: '+errors.join(' • '):''),true);await mmLoadMedicines();
+    }catch(e){M('mmBulkStatus','Bulk Add Error: '+e.message)}
+  }
+  window.mmBulkAdd=mmBulkAddExcel;
+  document.addEventListener('DOMContentLoaded',()=>{if(mmE('mmBulkRows')&&!mmE('mmBulkRows').children.length)mmAddBulkRows(3)});
+})();
+</script>
+<script id="maaj-admin-category-manager">
+(function(){
+  const KEY='maaj_admin_categories_v1';
+  const DEFAULTS=['Best Offers','Vitamins & Supplements','Nutritional Drinks','Skin Care','Hair Care','Sexual Wellness','Ayurveda Products','Pain Relief','Homeopathy','Painkiller','Antibiotics','Vitamins','First Aid','Power','Cream','Ointment','Belt','Syrup','Pain Oil','Balm','Condom'];
+  const ICONS={'Best Offers':'🔥','Vitamins & Supplements':'💊','Nutritional Drinks':'🥤','Skin Care':'🧴','Hair Care':'💇','Sexual Wellness':'❤️','Ayurveda Products':'🌿','Pain Relief':'🩹','Homeopathy':'🌱','Painkiller':'💊','Antibiotics':'🧪','Vitamins':'🍊','First Aid':'⛑️','Power':'⚡','Cream':'🧴','Ointment':'🧴','Belt':'🩺','Syrup':'🥄','Pain Oil':'🫧','Balm':'🧴','Condom':'🛡️'};
+  function get(){try{const a=JSON.parse(localStorage.getItem(KEY)||'null');if(Array.isArray(a)&&a.length)return a;}catch(e){}return DEFAULTS.slice();}
+  function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
+  function cats(){return get();}
+  function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function render(){
+    const a=cats(),grid=document.getElementById('maajAdminCategoryGrid'); if(grid) grid.innerHTML=a.map((x,i)=>`<div class="rounded-2xl border bg-white p-4 hover:shadow-sm transition"><div class="text-2xl">${ICONS[x]||'🏷️'}</div><div class="mt-2 text-xs font-black text-slate-800">${esc(x)}</div><button type="button" onclick="maajRemoveAdminCategory(${i})" class="mt-3 text-[10px] font-black text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg">Remove</button></div>`).join('');
+    fillSelect(document.getElementById('mmCategory'));
+    document.querySelectorAll('.mm-bulk-category').forEach(fillSelect);
+  }
+  function fillSelect(sel){if(!sel)return;const old=sel.value;sel.innerHTML=cats().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(cats().includes(old))sel.value=old;}
+  window.maajAddAdminCategory=function(){const el=document.getElementById('maajNewCategory'),name=(el?.value||'').trim();if(!name)return setStatus('Category name required.');const a=cats();if(a.some(x=>x.toLowerCase()===name.toLowerCase()))return setStatus('This category already exists.');a.push(name);save(a);if(el)el.value='';render();setStatus('Category added successfully.',true);};
+  window.maajRemoveAdminCategory=function(i){const a=cats(),name=a[i];if(!name)return;if(!confirm('Remove category "'+name+'" from the admin category list? Existing medicines will not be deleted.'))return;a.splice(i,1);save(a);render();setStatus('Category removed. Existing medicines are safe.',true);};
+  function setStatus(t,ok){const e=document.getElementById('maajCategoryStatus');if(e){e.textContent=t;e.style.color=ok?'#047857':'#b91c1c';}}
+  document.addEventListener('DOMContentLoaded',()=>{render();setTimeout(render,300);});
+  window.maajAdminCategories=cats;
+})();
+</script>
+
+<style id="maaj-drug-class-layer">
+#mmBulkRows .mm-bulk-drug-class{min-width:145px}
+#mmDrugClass{min-width:0}
+</style>
+<script id="maaj-drug-class-manager">
+(function(){
+  const DRUG_CLASSES=['Analgesics','Antibiotics','Antipyretics','NSAIDs','Antihistamines','Antacids','Anti-ulcer / GI','Antifungals','Antivirals','Antiseptics / Disinfectants','Antidiabetics','Antihypertensives','Cardiovascular','Respiratory','CNS / Neurological','Dermatological','Ophthalmic','Otic','Hormones','Contraceptives','Vitamins & Minerals','Nutritional Supplements','Ayurvedic / Herbal','Homeopathic','Topical','Other'];
+  function fillSelect(el, current){if(!el)return; const old=current||el.value||'Other'; el.innerHTML=DRUG_CLASSES.map(x=>`<option value="${x.replace(/"/g,'&quot;')}">${x}</option>`).join(''); el.value=DRUG_CLASSES.includes(old)?old:'Other';}
+  function fillAll(){fillSelect(document.getElementById('mmDrugClass'));document.querySelectorAll('#mmBulkRows .mm-bulk-drug-class').forEach(e=>fillSelect(e));}
+  window.maajDrugClasses=DRUG_CLASSES;
+  const oldAdd=window.mmAddBulkRow;
+  if(typeof oldAdd==='function') window.mmAddBulkRow=function(){oldAdd();fillAll()};
+  const oldRows=window.mmAddBulkRows;
+  if(typeof oldRows==='function') window.mmAddBulkRows=function(n){oldRows(n);fillAll()};
+  document.addEventListener('DOMContentLoaded',()=>{setTimeout(fillAll,50);setTimeout(fillAll,300)});
+})();
+</script>
+
+<script id="maaj-photo-display-fix">
+(function(){
+  'use strict';
+  const U='https://fywzoptldcgxatyydyec.supabase.co';
+  function photo(v){
+    const raw=String(v||'').trim();
+    if(!raw)return '';
+    if(/^data:image\//i.test(raw)||/^blob:/i.test(raw)||/^https?:\/\//i.test(raw))return raw;
+    const clean=raw.replace(/^\/+/, '').replace(/^storage\/v1\/object\/(public\/)?/, '');
+    return U+'/storage/v1/object/public/medicine-images/'+clean.replace(/^medicine-images\//,'');
+  }
+  function fallback(el){
+    if(!el||el.dataset.maajPhotoFallback==='1')return;
+    el.dataset.maajPhotoFallback='1'; el.onerror=null;
+    el.src='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><rect width="240" height="240" rx="24" fill="#f1f5f9"/><circle cx="120" cy="105" r="48" fill="#fff" stroke="#cbd5e1" stroke-width="5"/><path d="M92 105h56M120 77v56" stroke="#10b981" stroke-width="12" stroke-linecap="round"/><text x="120" y="188" text-anchor="middle" font-family="Arial" font-size="18" font-weight="700" fill="#64748b">Medicine</text></svg>');
+  }
+  function fix(){
+    document.querySelectorAll('img').forEach(img=>{
+      const src=img.getAttribute('src')||'';
+      if(src.includes('medicine-images')||img.closest('#mmList')||img.closest('#maajRealDetailsBox')||img.closest('#maajPdpBox')||img.closest('#maajCartBox')){
+        const p=photo(src); if(p)img.src=p; img.addEventListener('error',()=>fallback(img),{once:true});
+      }
+    });
+  }
+  window.maajMedicinePhotoUrl=photo;
+  window.maajImageFallback=fallback;
+  document.addEventListener('DOMContentLoaded',()=>{fix();setTimeout(fix,500);setTimeout(fix,1500)});
+  const mo=new MutationObserver(()=>fix());
+  document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));
+})();
+</script>
+</body>
+</html>
