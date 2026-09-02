@@ -5,8 +5,8 @@ html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAAJ PHARMACY — Complete Enterprise Suite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         .page-view { display: none; }
@@ -62,7 +62,12 @@ html>
 .maaj-login-icons{text-align:center;margin-top:18px;color:#94a3b8;word-spacing:16px}
 .maaj-login-secure{text-align:center;font-size:10px;color:#94a3b8;margin-top:9px}
 </style>
-
+<style id="maaj-real-otp-css">
+.maaj-otp-box{margin-top:10px;padding:12px;border:1px solid #a7f3d0;background:#ecfdf5;border-radius:14px}
+.maaj-otp-input{text-align:center;letter-spacing:.45em;font-weight:900;font-size:18px}
+.maaj-resend{background:none;border:0;color:#047857;font-size:11px;font-weight:900;cursor:pointer;padding:7px 0}
+.maaj-otp-note{font-size:11px;color:#475569;line-height:1.45;margin-bottom:8px}
+</style>
 
 <style id="maaj-all-features-css">
 .maaj-feature-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -1370,6 +1375,8 @@ html>
 const SUPABASE_URL = "https://fywzoptldcgxatyydyec.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk";
 const MAAJ_API = SUPABASE_URL + "/rest/v1/medicines";
+// Customer authentication uses Supabase Auth phone OTP. The anon key is safe for browser use; never put a service-role key here.
+window.MAAJ_SUPABASE_AUTH = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 let maajApiReady = false;
 
 function maajMapApiMedicine(m) {
@@ -3542,178 +3549,6 @@ window.maajTriggerPrescriptionUpload=function(){
 })();
 </script>
 
-
-<!-- MAAJ FINAL CUSTOMER AUTH: SUPABASE SMS OTP SIGNUP -->
-<script id="maaj-final-supabase-customer-auth">
-(function(){
-  const SUPABASE_URL="https://fywzoptldcgxatyydyec.supabase.co";
-  const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk";
-  if(!window.supabase){ console.error("Supabase library failed to load."); return; }
-  const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-  let pendingSignup=null;
-  let customer=null;
-
-  function phone10(v){return String(v||'').replace(/\D/g,'').slice(-10);}
-  function intl(v){const n=phone10(v);return n?'+91'+n:'';}
-  function validPhone(v){return /^[6-9]\d{9}$/.test(phone10(v));}
-  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-  function saveCustomer(c){customer=c;localStorage.setItem('maaj_current_customer',JSON.stringify(c));localStorage.setItem('maaj_customer_user_id',c.id||'');}
-  function clearCustomer(){customer=null;localStorage.removeItem('maaj_current_customer');localStorage.removeItem('maaj_customer_user_id');}
-  function customerObject(u){return u?{id:u.id,name:u.user_metadata?.full_name||'Customer',mobile:phone10(u.phone),phone:u.phone||'',address:'',pincode:''}:null;}
-  function msg(id,text,ok){const e=document.getElementById(id);if(!e)return;e.textContent=text;e.className='maaj-otp-msg '+(ok?'ok':'err');e.style.display='block';}
-  function closeGate(){const g=document.getElementById('maajCustomerFirstLogin');if(g){g.classList.add('hide');g.style.display='none';}}
-  function openGate(){const g=document.getElementById('maajCustomerFirstLogin');if(g){g.classList.remove('hide');g.style.display='flex';}}
-  function setNav(){
-    const e=document.getElementById('customerAccountBtn');
-    const label=document.getElementById('customerNavLabel');
-    if(label)label.textContent=customer?(customer.name||'Customer').split(' ')[0]:'Customer Login';
-    if(e){e.innerHTML=customer?'<i class="fa-solid fa-user mr-1"></i>'+esc((customer.name||'Customer').split(' ')[0]):'<i class="fa-solid fa-user mr-1"></i> Customer Login';}
-  }
-
-  function buildGate(){
-    const g=document.getElementById('maajCustomerFirstLogin');
-    if(!g)return;
-    g.innerHTML=`<div class="maaj-login-box">
-      <div class="maaj-login-logo"><i class="fa-solid fa-pills"></i></div>
-      <h1>MAAJ PHARMACY</h1><div class="maaj-sub">Customer Account • Secure Mobile Verification</div>
-      <div id="maajGateLogin" class="maaj-otp-panel">
-        <label>Mobile Number</label><input id="maajGateLoginMobile" type="tel" maxlength="10" inputmode="numeric" placeholder="10-digit mobile number">
-        <label>Password</label><input id="maajGateLoginPassword" type="password" placeholder="Password">
-        <button class="maaj-customer-login-btn" onclick="maajFinalLogin()">LOGIN</button>
-        <button class="maaj-link-btn" onclick="maajFinalShowSignup()">Create New Account</button>
-        <button class="maaj-link-btn danger" onclick="maajFinalShowForgot()">Forgot Password?</button>
-        <div id="maajGateLoginMsg" class="maaj-otp-msg"></div>
-      </div>
-      <div id="maajGateSignup" class="maaj-otp-panel" style="display:none">
-        <label>Full Name</label><input id="maajGateSignupName" type="text" placeholder="Full name">
-        <label>Mobile Number</label><input id="maajGateSignupMobile" type="tel" maxlength="10" inputmode="numeric" placeholder="10-digit mobile number">
-        <label>Password</label><input id="maajGateSignupPassword" type="password" placeholder="Minimum 6 characters">
-        <label>Confirm Password</label><input id="maajGateSignupPassword2" type="password" placeholder="Confirm password">
-        <button class="maaj-customer-login-btn" onclick="maajFinalSignup()">SEND SMS OTP</button>
-        <button class="maaj-link-btn" onclick="maajFinalShowLogin()">Already have an account? Login</button>
-        <div id="maajGateSignupMsg" class="maaj-otp-msg"></div>
-      </div>
-      <div id="maajGateOtp" class="maaj-otp-panel" style="display:none">
-        <div class="maaj-otp-note">A 6-digit OTP has been sent by SMS to <b id="maajOtpPhoneText"></b>.</div>
-        <label>SMS OTP</label><input id="maajGateOtpInput" type="tel" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit OTP" class="maaj-otp-input">
-        <button class="maaj-customer-login-btn" onclick="maajFinalVerifySignup()">VERIFY OTP & CREATE ACCOUNT</button>
-        <button class="maaj-link-btn" onclick="maajFinalShowSignup()">Change Mobile Number</button>
-        <div id="maajGateOtpMsg" class="maaj-otp-msg"></div>
-      </div>
-      <div id="maajGateForgot" class="maaj-otp-panel" style="display:none">
-        <label>Registered Mobile Number</label><input id="maajGateForgotMobile" type="tel" maxlength="10" inputmode="numeric" placeholder="10-digit mobile number">
-        <button class="maaj-customer-login-btn" onclick="maajFinalSendForgot()">SEND RESET OTP</button>
-        <div id="maajGateForgotStep" style="display:none">
-          <label>SMS OTP</label><input id="maajGateForgotOtp" type="tel" maxlength="6" inputmode="numeric" placeholder="6-digit OTP" class="maaj-otp-input">
-          <label>New Password</label><input id="maajGateNewPassword" type="password" placeholder="Minimum 6 characters">
-          <label>Confirm New Password</label><input id="maajGateNewPassword2" type="password" placeholder="Confirm new password">
-          <button class="maaj-customer-login-btn" onclick="maajFinalResetPassword()">VERIFY OTP & RESET PASSWORD</button>
-        </div>
-        <button class="maaj-link-btn" onclick="maajFinalShowLogin()">Back to Login</button>
-        <div id="maajGateForgotMsg" class="maaj-otp-msg"></div>
-      </div>
-      <div class="maaj-login-secure"><i class="fa-solid fa-shield-halved"></i> Mobile OTP verification powered by Supabase</div>
-    </div>`;
-    if(!document.getElementById('maajFinalAuthCss')){
-      const st=document.createElement('style');st.id='maajFinalAuthCss';st.textContent=`
-      .maaj-otp-panel{margin-top:4px}.maaj-otp-msg{display:none;margin-top:10px;padding:9px;border-radius:9px;font-size:11px;font-weight:800}.maaj-otp-msg.ok{display:block;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}.maaj-otp-msg.err{display:block;background:#fef2f2;border:1px solid #fecaca;color:#dc2626}.maaj-link-btn{display:block;width:100%;border:0;background:transparent;color:#047857;font-size:11px;font-weight:900;margin-top:11px;cursor:pointer}.maaj-link-btn.danger{color:#dc2626}.maaj-otp-note{padding:11px;border-radius:11px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:11px;margin-bottom:10px}.maaj-otp-input{text-align:center;letter-spacing:.5em;font-weight:900;font-size:18px}`;document.head.appendChild(st);
-    }
-  }
-  function panel(id){['maajGateLogin','maajGateSignup','maajGateOtp','maajGateForgot'].forEach(x=>{const e=document.getElementById(x);if(e)e.style.display=x===id?'block':'none';});}
-  window.maajFinalShowLogin=function(){panel('maajGateLogin');};
-  window.maajFinalShowSignup=function(){panel('maajGateSignup');};
-  window.maajFinalShowForgot=function(){panel('maajGateForgot');};
-  window.maajFinalSignup=async function(){
-    const name=(document.getElementById('maajGateSignupName')?.value||'').trim();
-    const mobile=phone10(document.getElementById('maajGateSignupMobile')?.value||'');
-    const pass=document.getElementById('maajGateSignupPassword')?.value||'';
-    const pass2=document.getElementById('maajGateSignupPassword2')?.value||'';
-    if(!name)return msg('maajGateSignupMsg','Full name is required.',false);
-    if(!validPhone(mobile))return msg('maajGateSignupMsg','Enter a valid 10-digit Indian mobile number.',false);
-    if(pass.length<6)return msg('maajGateSignupMsg','Password must be at least 6 characters.',false);
-    if(pass!==pass2)return msg('maajGateSignupMsg','Passwords do not match.',false);
-    msg('maajGateSignupMsg','Sending SMS OTP...',true);
-    const r=await sb.auth.signUp({phone:intl(mobile),password:pass,options:{data:{full_name:name}}});
-    if(r.error)return msg('maajGateSignupMsg',r.error.message,false);
-    pendingSignup={phone:intl(mobile),mobile,name,password:pass};
-    document.getElementById('maajOtpPhoneText').textContent='+91 '+mobile;
-    panel('maajGateOtp');msg('maajGateOtpMsg','OTP sent successfully. Check your SMS.',true);
-  };
-  window.maajFinalVerifySignup=async function(){
-    if(!pendingSignup)return msg('maajGateOtpMsg','Please start signup again.',false);
-    const otp=(document.getElementById('maajGateOtpInput')?.value||'').trim();
-    if(!/^\d{6}$/.test(otp))return msg('maajGateOtpMsg','Enter the 6-digit OTP.',false);
-    msg('maajGateOtpMsg','Verifying OTP...',true);
-    const r=await sb.auth.verifyOtp({phone:pendingSignup.phone,token:otp,type:'sms'});
-    if(r.error)return msg('maajGateOtpMsg',r.error.message,false);
-    let session=r.data?.session;
-    if(!session){const l=await sb.auth.signInWithPassword({phone:pendingSignup.phone,password:pendingSignup.password});if(l.error)return msg('maajGateOtpMsg',l.error.message,false);session=l.data.session;}
-    if(!session)return msg('maajGateOtpMsg','Account verified, but login session could not be created.',false);
-    saveCustomer(customerObject(session.user));pendingSignup=null;setNav();closeGate();
-    try{if(typeof updateCustomerNav==='function')updateCustomerNav();}catch(e){}
-    try{if(typeof navigateTo==='function')navigateTo('home',false);}catch(e){}
-    alert('Account created successfully.\n\nYour User ID:\n'+session.user.id+'\n\nFor future login use your mobile number + password.');
-  };
-  window.maajFinalLogin=async function(){
-    const mobile=phone10(document.getElementById('maajGateLoginMobile')?.value||'');const pass=document.getElementById('maajGateLoginPassword')?.value||'';
-    if(!validPhone(mobile))return msg('maajGateLoginMsg','Enter a valid 10-digit mobile number.',false);
-    if(!pass)return msg('maajGateLoginMsg','Password is required.',false);
-    msg('maajGateLoginMsg','Logging in...',true);
-    const r=await sb.auth.signInWithPassword({phone:intl(mobile),password:pass});
-    if(r.error)return msg('maajGateLoginMsg','Login failed: '+r.error.message,false);
-    saveCustomer(customerObject(r.data.user));setNav();closeGate();
-    try{if(typeof updateCustomerNav==='function')updateCustomerNav();}catch(e){}
-    try{if(typeof navigateTo==='function')navigateTo('home',false);}catch(e){}
-  };
-  window.maajFinalSendForgot=async function(){
-    const mobile=phone10(document.getElementById('maajGateForgotMobile')?.value||'');
-    if(!validPhone(mobile))return msg('maajGateForgotMsg','Enter the registered 10-digit mobile number.',false);
-    msg('maajGateForgotMsg','Sending reset OTP...',true);
-    const r=await sb.auth.signInWithOtp({phone:intl(mobile),options:{shouldCreateUser:false}});
-    if(r.error)return msg('maajGateForgotMsg',r.error.message,false);
-    document.getElementById('maajGateForgotStep').style.display='block';
-    msg('maajGateForgotMsg','Reset OTP sent by SMS.',true);
-    window.maajForgotPhone=intl(mobile);
-  };
-  window.maajFinalResetPassword=async function(){
-    const otp=(document.getElementById('maajGateForgotOtp')?.value||'').trim();const p=document.getElementById('maajGateNewPassword')?.value||'';const p2=document.getElementById('maajGateNewPassword2')?.value||'';
-    if(!window.maajForgotPhone)return msg('maajGateForgotMsg','Send reset OTP first.',false);
-    if(!/^\d{6}$/.test(otp))return msg('maajGateForgotMsg','Enter the 6-digit OTP.',false);
-    if(p.length<6)return msg('maajGateForgotMsg','New password must be at least 6 characters.',false);
-    if(p!==p2)return msg('maajGateForgotMsg','Passwords do not match.',false);
-    msg('maajGateForgotMsg','Verifying OTP...',true);
-    const r=await sb.auth.verifyOtp({phone:window.maajForgotPhone,token:otp,type:'sms'});
-    if(r.error)return msg('maajGateForgotMsg',r.error.message,false);
-    const u=await sb.auth.updateUser({password:p});
-    if(u.error)return msg('maajGateForgotMsg',u.error.message,false);
-    window.maajForgotPhone='';await sb.auth.signOut();msg('maajGateForgotMsg','Password reset successfully. Please login.',true);setTimeout(maajFinalShowLogin,700);
-  };
-  window.openCustomerAuth=function(mode){buildGate();openGate();if(mode==='signup')panel('maajGateSignup');else if(mode==='forgot')panel('maajGateForgot');else panel('maajGateLogin');};
-  window.closeCustomerAuth=function(){closeGate();};
-  window.customerLogout=async function(){await sb.auth.signOut();clearCustomer();setNav();openGate();panel('maajGateLogin');};
-
-  // Final navigation guard: customer auth is the single source of truth.
-  const previousNavigate=window.navigateTo;
-  window.navigateTo=function(pageId,addHistory){
-    if(['orders','checkout','order-tracking','upload-prescription','prescription-history'].includes(pageId) && !customer){openGate();panel('maajGateLogin');return;}
-    return previousNavigate.apply(this,arguments);
-  };
-
-  async function init(){
-    buildGate();
-    const r=await sb.auth.getSession();
-    if(r.data?.session){saveCustomer(customerObject(r.data.session.user));closeGate();}
-    else{clearCustomer();openGate();panel('maajGateLogin');}
-    setNav();
-    sb.auth.onAuthStateChange(function(event,session){
-      if(session){saveCustomer(customerObject(session.user));closeGate();setNav();}
-      else{clearCustomer();openGate();panel('maajGateLogin');setNav();}
-    });
-  }
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(init,80);});
-})();
-</script>
-
 </body>
 </html><script>
 
@@ -3948,16 +3783,27 @@ window.maajTriggerPrescriptionUpload=function(){
         <input id="customerSignupMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="10-digit mobile number">
         <input id="customerSignupPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="Create password (min 6 characters)">
         <input id="customerSignupPassword2" type="password" class="w-full p-3 border rounded-xl" placeholder="Confirm password">
-        <button onclick="customerSignup()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Create Account</button>
+        <button onclick="customerSignup()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Send SMS OTP</button>
+        <div id="customerSignupOtpBox" class="maaj-otp-box" style="display:none">
+          <div class="maaj-otp-note">A 6-digit OTP has been sent by SMS to <b id="customerSignupOtpPhone"></b>.</div>
+          <input id="customerSignupOTP" maxlength="6" inputmode="numeric" autocomplete="one-time-code" class="w-full p-3 border rounded-xl maaj-otp-input" placeholder="Enter 6-digit OTP">
+          <button onclick="customerVerifySignupOTP()" class="w-full bg-emerald-700 text-white py-3 rounded-xl font-bold mt-2">Verify OTP & Create Account</button>
+          <button onclick="customerSignup()" class="maaj-resend">Resend OTP</button>
+        </div>
         <button onclick="showCustomerLogin()" class="w-full text-xs text-slate-600 font-bold">Already have an account? Login</button>
         <p id="customerSignupMsg" class="hidden text-xs font-bold p-2 rounded"></p>
       </div>
       <div id="customerForgotBox" class="hidden space-y-3">
         <input id="customerForgotMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="Registered mobile number">
-        <input id="customerNewPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="New password (min 6 characters)">
-        <input id="customerNewPassword2" type="password" class="w-full p-3 border rounded-xl" placeholder="Confirm new password">
-        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded-lg">Single-file mode: password reset is local. No real SMS/OTP is sent.</p>
-        <button onclick="resetCustomerPassword()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold">Reset Password</button>
+        <button id="customerForgotSendBtn" onclick="customerSendForgotOTP()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold">Send Reset OTP</button>
+        <div id="customerForgotOtpBox" class="maaj-otp-box" style="display:none">
+          <div class="maaj-otp-note">A 6-digit OTP has been sent by SMS to your registered mobile number.</div>
+          <input id="customerForgotOTP" maxlength="6" inputmode="numeric" autocomplete="one-time-code" class="w-full p-3 border rounded-xl maaj-otp-input" placeholder="Enter 6-digit OTP">
+          <input id="customerNewPassword" type="password" class="w-full p-3 border rounded-xl mt-2" placeholder="New password (min 6 characters)">
+          <input id="customerNewPassword2" type="password" class="w-full p-3 border rounded-xl mt-2" placeholder="Confirm new password">
+          <button onclick="resetCustomerPassword()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold mt-2">Verify OTP & Reset Password</button>
+          <button onclick="customerSendForgotOTP()" class="maaj-resend">Resend OTP</button>
+        </div>
         <button onclick="showCustomerLogin()" class="w-full text-xs text-slate-600 font-bold">Back to Login</button>
         <p id="customerForgotMsg" class="hidden text-xs font-bold p-2 rounded"></p>
       </div>
@@ -3967,39 +3813,124 @@ window.maajTriggerPrescriptionUpload=function(){
   window.openCustomerAuth=function(mode='login'){ addCustomerModal(); showCustomerLogin(); document.getElementById('customerAuthModal').classList.remove('hidden'); document.getElementById('customerAuthModal').classList.add('flex'); if(mode==='signup')showCustomerSignup(); if(mode==='forgot')showForgotPassword(); };
   window.closeCustomerAuth=function(){ const m=document.getElementById('customerAuthModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');} };
   function hideBoxes(){ ['customerLoginBox','customerSignupBox','customerForgotBox'].forEach(id=>document.getElementById(id)?.classList.add('hidden')); }
-  window.showCustomerLogin=function(){hideBoxes();document.getElementById('customerLoginBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Customer Login';};
-  window.showCustomerSignup=function(){hideBoxes();document.getElementById('customerSignupBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Create Customer Account';};
-  window.showForgotPassword=function(){hideBoxes();document.getElementById('customerForgotBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Forgot Password';};
+  window.showCustomerLogin=function(){hideBoxes();maajShowSignupOtp(false);maajShowForgotOtp(false);document.getElementById('customerLoginBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Customer Login';};
+  window.showCustomerSignup=function(){hideBoxes();maajShowSignupOtp(false);document.getElementById('customerSignupBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Create Customer Account';};
+  window.showForgotPassword=function(){hideBoxes();maajShowForgotOtp(false);document.getElementById('customerForgotBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Forgot Password';};
   function msg(id,text,ok=false){const e=document.getElementById(id); if(!e)return; e.innerText=text; e.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200');}
 
-  window.customerSignup=function(){
-    const name=document.getElementById('customerSignupName').value.trim(), mobile=document.getElementById('customerSignupMobile').value.trim(), pass=document.getElementById('customerSignupPassword').value, pass2=document.getElementById('customerSignupPassword2').value;
+  let maajPendingSignup = null;
+  let maajPendingForgot = null;
+  function maajPhone10(v){ return String(v||'').replace(/\D/g,''); }
+  function maajPhoneE164(v){ return '+91'+maajPhone10(v); }
+  function maajAuth(){ return window.MAAJ_SUPABASE_AUTH; }
+  function maajAuthError(text,id){ msg(id,text,false); }
+  function maajAuthReady(id){ if(!maajAuth()){maajAuthError('Secure authentication is not loaded. Please refresh the page.',id);return false;} return true; }
+  function maajShowSignupOtp(show){const b=document.getElementById('customerSignupOtpBox');if(b)b.style.display=show?'block':'none';}
+  function maajShowForgotOtp(show){const b=document.getElementById('customerForgotOtpBox');if(b)b.style.display=show?'block':'none';}
+
+  window.customerSignup=async function(){
+    const name=document.getElementById('customerSignupName').value.trim();
+    const mobile=maajPhone10(document.getElementById('customerSignupMobile').value);
+    const pass=document.getElementById('customerSignupPassword').value;
+    const pass2=document.getElementById('customerSignupPassword2').value;
     if(!name || !validMobile(mobile)) return msg('customerSignupMsg','Enter a valid name and 10-digit mobile number.');
     if(pass.length<6) return msg('customerSignupMsg','Password must be at least 6 characters.');
     if(pass!==pass2) return msg('customerSignupMsg','Passwords do not match.');
-    if(customerAccounts.some(u=>u.mobile===mobile)) return msg('customerSignupMsg','This mobile number already has an account. Please login.');
-    const user={id:'CUS-'+Date.now(),name,mobile,password:pass,createdAt:new Date().toLocaleString(),address:'',pincode:''};
-    customerAccounts.push(user); saveAccounts(); currentCustomer={id:user.id,name:user.name,mobile:user.mobile,address:'',pincode:''}; saveCurrent();
-    // Also keep the existing app's currentUser in sync when available.
-    if(typeof setDB==='function') setDB('currentUser',currentCustomer);
-    msg('customerSignupMsg','Account created successfully. You are now logged in.',true); updateCustomerNav(); setTimeout(()=>{closeCustomerAuth(); if(typeof navigateTo==='function')navigateTo('home');},500);
+    if(!maajAuthReady('customerSignupMsg')) return;
+    const auth=maajAuth();
+    const phone=maajPhoneE164(mobile);
+    try{
+      msg('customerSignupMsg','Sending SMS OTP...',true);
+      const {data,error}=await auth.auth.signUp({phone,password:pass,options:{data:{full_name:name}}});
+      if(error) throw error;
+      maajPendingSignup={name,mobile,phone,password:pass,userId:data?.user?.id||null};
+      document.getElementById('customerSignupOtpPhone').textContent='+'+mobile;
+      maajShowSignupOtp(true);
+      msg('customerSignupMsg','OTP sent successfully. Enter the 6-digit OTP below.',true);
+      setTimeout(()=>document.getElementById('customerSignupOTP')?.focus(),100);
+    }catch(e){
+      msg('customerSignupMsg',e?.message||'Unable to send OTP. Check Supabase Phone Auth/SMS provider settings.');
+    }
   };
-  window.customerLogin=function(){
-    const mobile=document.getElementById('customerLoginMobile').value.trim(), pass=document.getElementById('customerLoginPassword').value;
-    const user=customerAccounts.find(u=>u.mobile===mobile);
-    if(!user) return msg('customerLoginMsg','Invalid mobile number or password.');
-    if(user.password!==pass) return msg('customerLoginMsg','Invalid password. Please try again or use Forgot Password.');
-    currentCustomer={id:user.id,name:user.name,mobile:user.mobile,address:user.address||'',pincode:user.pincode||''}; saveCurrent(); if(typeof setDB==='function')setDB('currentUser',currentCustomer); updateCustomerNav(); closeCustomerAuth();
-    if(typeof navigateTo==='function')navigateTo('home');
+
+  window.customerVerifySignupOTP=async function(){
+    const otp=(document.getElementById('customerSignupOTP')?.value||'').replace(/\D/g,'');
+    if(!maajPendingSignup) return msg('customerSignupMsg','Please request the signup OTP first.');
+    if(!/^\d{6}$/.test(otp)) return msg('customerSignupMsg','Enter the 6-digit OTP.');
+    if(!maajAuthReady('customerSignupMsg')) return;
+    try{
+      const {data,error}=await maajAuth().auth.verifyOtp({phone:maajPendingSignup.phone,token:otp,type:'sms'});
+      if(error) throw error;
+      const u=data?.user;
+      const localUser={id:'CUS-'+(u?.id||Date.now()),authId:u?.id||'',name:maajPendingSignup.name,mobile:maajPendingSignup.mobile,createdAt:new Date().toLocaleString(),address:'',pincode:''};
+      const idx=customerAccounts.findIndex(x=>x.mobile===localUser.mobile);
+      if(idx>=0) customerAccounts[idx]={...customerAccounts[idx],...localUser}; else customerAccounts.push(localUser);
+      saveAccounts();
+      currentCustomer=localUser; saveCurrent();
+      if(typeof setDB==='function') setDB('currentUser',currentCustomer);
+      maajPendingSignup=null; maajShowSignupOtp(false);
+      msg('customerSignupMsg','Mobile verified. Account created successfully.',true);
+      updateCustomerNav();
+      setTimeout(()=>{closeCustomerAuth();if(typeof navigateTo==='function')navigateTo('home');},500);
+    }catch(e){msg('customerSignupMsg',e?.message||'Invalid or expired OTP. Please try again.');}
   };
-  window.resetCustomerPassword=function(){
-    const mobile=document.getElementById('customerForgotMobile').value.trim(), p=document.getElementById('customerNewPassword').value, p2=document.getElementById('customerNewPassword2').value;
-    const i=customerAccounts.findIndex(u=>u.mobile===mobile);
-    if(i<0)return msg('customerForgotMsg','Mobile number not found.');
-    if(p.length<6)return msg('customerForgotMsg','New password must be at least 6 characters.');
-    if(p!==p2)return msg('customerForgotMsg','Passwords do not match.');
-    customerAccounts[i].password=p; saveAccounts(); msg('customerForgotMsg','Password reset successfully. Please login.',true); setTimeout(showCustomerLogin,700);
+
+  window.customerLogin=async function(){
+    const mobile=maajPhone10(document.getElementById('customerLoginMobile').value);
+    const pass=document.getElementById('customerLoginPassword').value;
+    if(!validMobile(mobile)) return msg('customerLoginMsg','Enter a valid 10-digit mobile number.');
+    if(!pass) return msg('customerLoginMsg','Enter your password.');
+    if(!maajAuthReady('customerLoginMsg')) return;
+    try{
+      const {data,error}=await maajAuth().auth.signInWithPassword({phone:maajPhoneE164(mobile),password:pass});
+      if(error) throw error;
+      const u=data?.user;
+      const old=customerAccounts.find(x=>x.mobile===mobile)||{};
+      currentCustomer={id:'CUS-'+(u?.id||old.id||Date.now()),authId:u?.id||'',name:u?.user_metadata?.full_name||old.name||'Customer',mobile,address:old.address||'',pincode:old.pincode||''};
+      const idx=customerAccounts.findIndex(x=>x.mobile===mobile); if(idx>=0) customerAccounts[idx]={...customerAccounts[idx],...currentCustomer}; else customerAccounts.push(currentCustomer);
+      saveAccounts();saveCurrent();if(typeof setDB==='function')setDB('currentUser',currentCustomer);updateCustomerNav();closeCustomerAuth();if(typeof navigateTo==='function')navigateTo('home');
+    }catch(e){msg('customerLoginMsg',e?.message||'Invalid mobile number or password.');}
   };
+
+  window.customerSendForgotOTP=async function(){
+    const mobile=maajPhone10(document.getElementById('customerForgotMobile').value);
+    if(!validMobile(mobile)) return msg('customerForgotMsg','Enter your registered 10-digit mobile number.');
+    if(!maajAuthReady('customerForgotMsg')) return;
+    try{
+      const {data,error}=await maajAuth().auth.signInWithOtp({phone:maajPhoneE164(mobile),options:{shouldCreateUser:false}});
+      if(error) throw error;
+      maajPendingForgot={mobile,phone:maajPhoneE164(mobile)};
+      maajShowForgotOtp(true);
+      msg('customerForgotMsg','Reset OTP sent by SMS. Enter the OTP and your new password.',true);
+      setTimeout(()=>document.getElementById('customerForgotOTP')?.focus(),100);
+    }catch(e){msg('customerForgotMsg',e?.message||'Unable to send reset OTP. Make sure this mobile number is registered.');}
+  };
+
+  window.resetCustomerPassword=async function(){
+    const otp=(document.getElementById('customerForgotOTP')?.value||'').replace(/\D/g,'');
+    const p=document.getElementById('customerNewPassword').value;
+    const p2=document.getElementById('customerNewPassword2').value;
+    if(!maajPendingForgot) return msg('customerForgotMsg','Please request the reset OTP first.');
+    if(!/^\d{6}$/.test(otp)) return msg('customerForgotMsg','Enter the 6-digit OTP.');
+    if(p.length<6) return msg('customerForgotMsg','New password must be at least 6 characters.');
+    if(p!==p2) return msg('customerForgotMsg','Passwords do not match.');
+    if(!maajAuthReady('customerForgotMsg')) return;
+    try{
+      const {error}=await maajAuth().auth.verifyOtp({phone:maajPendingForgot.phone,token:otp,type:'sms'});
+      if(error) throw error;
+      const {error:updateError}=await maajAuth().auth.updateUser({password:p});
+      if(updateError) throw updateError;
+      await maajAuth().auth.signOut();
+      maajPendingForgot=null;maajShowForgotOtp(false);
+      document.getElementById('customerForgotMobile').value='';
+      document.getElementById('customerForgotOTP').value='';
+      document.getElementById('customerNewPassword').value='';
+      document.getElementById('customerNewPassword2').value='';
+      msg('customerForgotMsg','Password reset successfully. Please login with your new password.',true);
+      setTimeout(showCustomerLogin,900);
+    }catch(e){msg('customerForgotMsg',e?.message||'Invalid or expired OTP. Please try again.');}
+  };
+
   window.customerLogout=function(){currentCustomer=null;saveCurrent();if(typeof setDB==='function')setDB('currentUser',null);updateCustomerNav();if(typeof navigateTo==='function')navigateTo('home');};
 
   function updateCustomerNav(){
