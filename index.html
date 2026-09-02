@@ -402,6 +402,112 @@ header button,header a{min-height:40px}
 @media(prefers-reduced-motion:reduce){#maajCompleteFooter a{transition:none}}
 </style>
 
+
+
+<style id="maaj-mobile-phone-responsive-final">
+/* MAAJ PHARMACY — PHONE / TABLET RESPONSIVE LAYOUT
+   Additive responsive layer only. Existing desktop layout and features remain unchanged. */
+html,body{max-width:100%;overflow-x:hidden}
+img{max-width:100%;height:auto}
+
+@media (max-width: 767px){
+  /* Top announcement */
+  body>div:first-child{font-size:10px!important;gap:8px;line-height:1.35;padding:7px 10px!important;flex-wrap:wrap;justify-content:center!important}
+  body>div:first-child span:last-child{white-space:nowrap}
+
+  /* Main header becomes a clean 2/3-row mobile header */
+  header>div{flex-wrap:wrap!important;padding:10px 10px!important;gap:9px!important}
+  header>div>div:first-child{flex:1 1 180px;min-width:0}
+  header>div>div:first-child h1{font-size:16px!important}
+  header>div>div:first-child p{font-size:8px!important;white-space:normal;line-height:1.25}
+  header>div>div:first-child>div:first-child{width:36px!important;height:36px!important;font-size:17px!important;flex:0 0 36px}
+
+  /* Page selector takes a full row on phones */
+  #pageSelector{width:100%;max-width:100%;font-size:11px!important;min-height:34px}
+  header>div>div:nth-child(2){order:3;flex:1 1 100%;width:100%;padding:6px 8px!important;justify-content:center}
+
+  /* Header action buttons fit the phone width */
+  header>div>div:nth-child(3){width:100%;display:flex;justify-content:space-between;gap:5px!important;order:4}
+  header>div>div:nth-child(3)>button,
+  header>div>div:nth-child(3)>a{min-height:40px;display:inline-flex;align-items:center;justify-content:center;padding:7px 9px!important}
+  #navBackBtn,#navHomeBtn{font-size:0!important;min-width:42px}
+  #navBackBtn i,#navHomeBtn i{font-size:15px!important;margin:0!important}
+  header>div>div:nth-child(3)>button[onclick="openAdminLogin()"]{font-size:10px!important;white-space:nowrap}
+  header>div>div:nth-child(3)>button[onclick="navigateTo('cart')"]{min-width:44px}
+
+  /* Main page spacing */
+  main{padding:12px 10px 90px!important;width:100%!important;max-width:100%!important;box-sizing:border-box}
+  .page-view{width:100%;min-width:0}
+
+  /* Hero */
+  #page-home>.bg-gradient-to-br{padding:20px!important;border-radius:20px!important;gap:18px!important}
+  #page-home>.bg-gradient-to-br h2{font-size:26px!important;line-height:1.18!important}
+  #page-home>.bg-gradient-to-br p{font-size:12px!important}
+  #page-home>.bg-gradient-to-br .min-w-\[260px\]{min-width:0!important;width:100%!important;padding:16px!important}
+  #page-home>.bg-gradient-to-br .max-w-xl{max-width:100%!important;width:100%!important}
+  #page-home>.bg-gradient-to-br .flex-col.sm\:flex-row{width:100%}
+
+  /* Search/buttons */
+  #homeSearchInput{font-size:13px!important;min-width:0}
+  #page-home .px-6.py-3{padding:10px 13px!important}
+
+  /* Categories and product grids */
+  #page-home .grid.grid-cols-2{gap:8px!important}
+  #page-home .grid.grid-cols-2>div{padding:12px 8px!important;min-width:0}
+  #page-home .grid.grid-cols-2 p{overflow-wrap:anywhere}
+  #homeFeaturedProducts{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .maaj-home-meds{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+
+  /* Catalog */
+  #page-store .flex.gap-2.w-full{flex-direction:column!important}
+  #catalogSearch{width:100%!important;min-width:0!important}
+  #page-store .flex.gap-2.w-full button{width:100%}
+
+  /* Checkout forms */
+  #page-checkout .grid{min-width:0}
+  #page-checkout .p-5{padding:14px!important}
+  #page-checkout input,#page-checkout textarea,#page-checkout select{font-size:14px!important;max-width:100%}
+
+  /* Cart */
+  .maaj-cart-page{padding-bottom:15px}
+  .maaj-cart-item-row{grid-template-columns:58px minmax(0,1fr)!important;gap:9px!important}
+  .maaj-cart-item-row>.maaj-cart-qty,
+  .maaj-cart-item-row>.qty-control{grid-column:2;justify-self:start}
+  .maaj-cart-item-image{width:58px!important;height:58px!important}
+  .maaj-cart-item-name{font-size:13px!important}
+  .maaj-cart-summary{width:100%!important}
+  .maaj-cart-coupon-row,.maaj-coupon-row{flex-wrap:wrap}
+  .maaj-coupon-row input{min-width:0;width:100%}
+  .maaj-coupon-row button{width:100%}
+
+  /* Modals / drawers */
+  .modal>div,#maajFeatureModal>div,#maajProModal>div{width:calc(100vw - 20px)!important;max-width:calc(100vw - 20px)!important;margin:10px!important;max-height:calc(100vh - 20px)!important;overflow-y:auto!important}
+  #maajProductDetailsPage .maaj-pdp-wrap{width:calc(100vw - 20px)!important;max-width:calc(100vw - 20px)!important;padding:10px!important}
+
+  /* Long tables stay inside the phone instead of stretching the page */
+  table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .overflow-auto,.overflow-x-auto{max-width:100%;-webkit-overflow-scrolling:touch}
+
+  /* Fixed bottom order bar */
+  .maaj-order-bar{left:0!important;right:0!important;width:100%!important}
+  .maaj-order-bar-inner{padding:9px 10px!important}
+  .maaj-checkout-btn{padding:11px 16px!important;white-space:nowrap}
+
+  /* Admin content */
+  #adminDashboard,.admin-tab{max-width:100%;overflow-x:hidden}
+}
+
+@media (max-width: 420px){
+  header>div>div:first-child h1{font-size:15px!important}
+  #page-home>.bg-gradient-to-br h2{font-size:23px!important}
+  #homeFeaturedProducts{grid-template-columns:1fr!important}
+  .maaj-home-meds{grid-template-columns:1fr!important}
+  #page-home .grid.grid-cols-2>div{padding:10px 6px!important}
+  .maaj-order-main{font-size:11px!important}
+  .maaj-order-sub{font-size:9px!important}
+}
+</style>
+
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
 
@@ -1704,6 +1810,8 @@ header button,header a{min-height:40px}
         }
 
         let products = getDB("products", defaultProducts);
+        // Expose the same array object; other modules may add medicines to it.
+        window.products = products;
 const SUPABASE_URL = "https://fywzoptldcgxatyydyec.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk";
 const MAAJ_API = SUPABASE_URL + "/rest/v1/medicines";
@@ -2060,7 +2168,29 @@ async function maajLoadMedicinesFromAPI() {
             const search = (searchEl ? searchEl.value : '').trim().toLowerCase();
             grid.innerHTML = '';
 
-            const filtered = products.filter(p => {
+            // Build one reliable catalogue from the original products + imported Excel medicines.
+            // IDs are always numeric so inline buttons can never generate invalid JavaScript.
+            const excelProducts = Array.isArray(window.MAAJ_EXCEL_MEDICINES)
+                ? window.MAAJ_EXCEL_MEDICINES.map((m, i) => ({
+                    id: 900000 + i,
+                    name: m.name || '',
+                    price: Number(m.price || 0),
+                    selling_price: Number(m.price || 0),
+                    mrp: Number(m.mrp || m.price || 0),
+                    category: m.category || 'Other',
+                    gst: Number(String(m.gst || '5').replace('%','')) || 5,
+                    stock: Number(m.stock || 0),
+                    description: m.description || '',
+                    photo: m.photo || '',
+                    image: m.image || '',
+                    rx: !!(m.rx || m.prescription_required),
+                    source: 'excel'
+                }))
+                : [];
+            const seenNames = new Set(products.map(p => String(p.name || '').trim().toLowerCase()));
+            const catalogProducts = products.concat(excelProducts.filter(p => !seenNames.has(String(p.name || '').trim().toLowerCase())));
+
+            const filtered = catalogProducts.filter(p => {
                 const name = String(p.name || '').toLowerCase();
                 const brand = String(p.brand || '').toLowerCase();
                 const batch = String(p.batch || '').toLowerCase();
@@ -2095,7 +2225,7 @@ async function maajLoadMedicinesFromAPI() {
                 card.innerHTML = `
                     <div class="h-44 bg-slate-50 flex items-center justify-center p-3 relative" onclick="maajOpenMedicineDetails(${p.id})">
                         ${photo ? `<img src="${photo}" alt="${p.name}" class="max-h-full max-w-full object-contain">` : `<div class="text-center text-slate-400"><i class="fa-solid fa-pills text-4xl"></i><p class="text-[10px] mt-2">Photo unavailable</p></div>`}
-                        <button type="button" onclick="event.stopPropagation();maajAddWishlist(${p.id},${JSON.stringify(p.name)},${JSON.stringify(p.price)})" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white border text-rose-500 shadow"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="event.stopPropagation();maajAddWishlist(${JSON.stringify(String(p.id))},${JSON.stringify(p.name)},${JSON.stringify(p.price)})" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white border text-rose-500 shadow"><i class="fa-solid fa-heart"></i></button>
                     </div>
                     <div class="p-4 flex flex-col flex-1">
                         <div class="flex justify-between items-start gap-2">
@@ -2107,7 +2237,7 @@ async function maajLoadMedicinesFromAPI() {
                         <p class="text-[11px] text-slate-500 mt-2 line-clamp-2">${desc}</p>
                         <div class="pt-3 mt-auto border-t flex justify-between items-center">
                             <div><span class="text-xs line-through text-slate-400">₹${Number(p.mrp || 0).toFixed(2)}</span><span class="text-sm font-black text-emerald-600 ml-1">₹${Number(p.price || 0).toFixed(2)}</span></div>
-                            ${Number(p.stock) > 0 ? `<button onclick="event.stopPropagation();addToCart(${p.id})" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Add</button>` : `<span class="text-xs text-red-500 font-bold">Out of Stock</span>`}
+                            ${Number(p.stock) > 0 ? `<button onclick="event.stopPropagation();addToCart(${JSON.stringify(String(p.id))})" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Add</button>` : `<span class="text-xs text-red-500 font-bold">Out of Stock</span>`}
                         </div>
                     </div>`;
                 card.addEventListener('click', function(){ maajOpenMedicineDetails(p.id); });
@@ -2117,19 +2247,87 @@ async function maajLoadMedicinesFromAPI() {
 
         // --- CART SYSTEM ---
         function addToCart(prodId) {
-            const prod = products.find(p => p.id === prodId);
-            if (!prod) return;
+            // Accept numeric IDs, string IDs, Supabase IDs and imported Excel IDs.
+            const wanted = String(prodId);
+            let prod = products.find(p => String(p.id) === wanted);
 
-            const existing = cart.find(c => c.id === prodId);
-            if (existing) {
-                if (existing.qty < prod.stock) existing.qty++;
-                else alert("Maximum available stock reached!");
-            } else {
-                cart.push({ ...prod, qty: 1 });
+            // Imported Excel medicines use IDs 900000, 900001, ...
+            if (!prod && Array.isArray(window.MAAJ_EXCEL_MEDICINES)) {
+                const idx = Number(wanted) - 900000;
+                if (Number.isInteger(idx) && idx >= 0 && idx < window.MAAJ_EXCEL_MEDICINES.length) {
+                    const m = window.MAAJ_EXCEL_MEDICINES[idx];
+                    prod = {
+                        id: 900000 + idx,
+                        name: m.name || 'Medicine',
+                        price: Number(m.price || 0),
+                        selling_price: Number(m.price || 0),
+                        mrp: Number(m.mrp || m.price || 0),
+                        category: m.category || 'Other',
+                        gst: Number(String(m.gst || '5').replace('%','')) || 5,
+                        stock: Number(m.stock || 0),
+                        description: m.description || '',
+                        photo: m.photo || '',
+                        image: m.image || '',
+                        rx: !!(m.rx || m.prescription_required),
+                        source: 'excel'
+                    };
+                }
             }
+
+            if (!prod) {
+                // Last fallback: match an imported medicine by its name from local storage.
+                try {
+                    const local = JSON.parse(localStorage.getItem('maaj_admin_medicines_v1') || '[]');
+                    if (Array.isArray(local)) {
+                        const found = local.find(x => String(x.id) === wanted || String(x.name || '').trim().toLowerCase() === wanted.trim().toLowerCase());
+                        if (found) prod = { ...found, id: found.id ?? ('local-' + Date.now()) };
+                    }
+                } catch (e) {}
+            }
+
+            if (!prod) {
+                alert('Medicine could not be loaded. Please refresh the page once.');
+                return;
+            }
+
+            const existing = cart.find(c => String(c.id) === wanted);
+            const stock = Number(prod.stock || 0);
+            if (stock <= 0) {
+                alert('This medicine is currently out of stock.');
+                return;
+            }
+
+            if (existing) {
+                if (Number(existing.qty || 0) < stock) {
+                    existing.qty = Number(existing.qty || 0) + 1;
+                } else {
+                    alert('Maximum available stock reached!');
+                    return;
+                }
+            } else {
+                cart.push({ ...prod, id: prod.id, qty: 1 });
+            }
+
             setDB('cart', cart);
+            // Keep the original cart state and customer cart drawer on the SAME data.
+            // This is a direct fix to the original addToCart function — no override/wrapper.
+            try { localStorage.setItem('maaj_cart', JSON.stringify(cart)); } catch (e) {}
             updateCartBadge();
-            alert(`${prod.name} added to cart!`);
+            try { renderCart(); } catch (e) {}
+            try { if (typeof window.maajRenderCart === 'function') window.maajRenderCart(); } catch (e) {}
+            try {
+                const total = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+                document.querySelectorAll('#cartBadgeCount,#maajBottomCartCount,.cart-badge-count,[data-cart-count]').forEach(el => { el.textContent = String(total); });
+            } catch (e) {}
+            // Add completed: do not show an OK/confirmation alert.
+            // Open the customer cart automatically so the user can review the item immediately.
+            try {
+                if (typeof window.maajOpenCart === 'function') {
+                    window.maajOpenCart();
+                } else if (typeof maajOpenCart === 'function') {
+                    maajOpenCart();
+                }
+            } catch (e) {}
         }
 
         function updateCartBadge() {
@@ -2169,15 +2367,19 @@ async function maajLoadMedicinesFromAPI() {
             cart[index].qty += delta;
             if (cart[index].qty <= 0) cart.splice(index, 1);
             setDB('cart', cart);
+            try { localStorage.setItem('maaj_cart', JSON.stringify(cart)); } catch (e) {}
             updateCartBadge();
             renderCart();
+            try { if (typeof window.maajRenderCart === 'function') window.maajRenderCart(); } catch (e) {}
         }
 
         function removeItem(index) {
             cart.splice(index, 1);
             setDB('cart', cart);
+            try { localStorage.setItem('maaj_cart', JSON.stringify(cart)); } catch (e) {}
             updateCartBadge();
             renderCart();
+            try { if (typeof window.maajRenderCart === 'function') window.maajRenderCart(); } catch (e) {}
         }
 
         function calculateTotals() {
@@ -3459,7 +3661,15 @@ function maajWishlistButton(id,name,price){
 
 <script id="maaj-real-product-features">
 function maajOpenMedicineDetails(id){
-  var p=products.find(function(x){return String(x.id)===String(id)}); if(!p)return;
+  var p=(typeof products!=='undefined'&&Array.isArray(products)) ? products.find(function(x){return String(x.id)===String(id)}) : null;
+  if(!p && Array.isArray(window.MAAJ_EXCEL_MEDICINES)){
+    var idx=Number(id)-900000;
+    if(Number.isInteger(idx) && idx>=0 && idx<window.MAAJ_EXCEL_MEDICINES.length){
+      var m=window.MAAJ_EXCEL_MEDICINES[idx];
+      p={id:900000+idx,name:m.name||'',price:Number(m.price||0),mrp:Number(m.mrp||m.price||0),category:m.category||'Medicine',stock:Number(m.stock||0),description:m.description||'',photo:'',image:'',rx:false};
+    }
+  }
+  if(!p)return;
   var recent=[];try{recent=JSON.parse(localStorage.getItem('maaj_recently_viewed')||'[]')}catch(e){}
   recent=recent.filter(function(x){return String(x.id)!==String(p.id)});
   recent.unshift({id:p.id,name:p.name,price:p.price});
@@ -3478,7 +3688,7 @@ function maajOpenMedicineDetails(id){
   var b=document.getElementById('maajDetailAdd');
   b.disabled=Number(p.stock)<=0;b.className='font-bold px-5 py-3 rounded-xl '+(b.disabled?'bg-slate-300 text-slate-500':'bg-emerald-600 text-white');
   b.innerHTML=Number(p.stock)>0?'<i class="fa-solid fa-cart-plus mr-1"></i> Add to Cart':'Out of Stock';
-  b.onclick=function(){if(Number(p.stock)>0)addToCart(p.id);};
+  b.onclick=function(){if(Number(p.stock)>0)addToCart(String(p.id));};
   var m=document.getElementById('maajMedicineDetailsModal');m.classList.remove('hidden');m.classList.add('flex');
 }
 function maajCloseMedicineDetails(){var m=document.getElementById('maajMedicineDetailsModal');m.classList.add('hidden');m.classList.remove('flex')}
@@ -3659,20 +3869,7 @@ document.addEventListener('DOMContentLoaded',function(){
    localStorage.setItem('maaj_orders',JSON.stringify(orders));setCart([]);localStorage.removeItem('maaj_cart_total');
    document.getElementById('maajCheckoutContent').innerHTML='<div class="maaj-success"><div class="text-5xl text-emerald-600">✓</div><h2 class="text-2xl font-black mt-3">Order placed successfully</h2><p class="text-sm text-slate-600 mt-2">Your order <b>'+id+'</b> has been received.</p><p class="text-xs text-slate-500 mt-1">Payment: Cash on Delivery</p><button onclick="maajCloseCheckout();location.reload()" class="maaj-checkout-btn mt-5">Continue Shopping</button></div>';
  };
- // Keep existing cart in sync with the new customer drawer where possible.
- var oldAdd=window.addToCart;
- if(typeof oldAdd==='function'){
-   window.addToCart=function(id){
-     var p=(typeof products!=='undefined')?products.find(function(x){return String(x.id)===String(id)}):null;
-     if(p){
-       var c=getCart(),found=c.find(function(x){return String(x.id)===String(id)});
-       if(found)found.qty=Number(found.qty||1)+1;else c.push({id:p.id,name:p.name,price:p.price,mrp:p.mrp,photo:p.photo||p.image||'',qty:1});
-       setCart(c);maajRenderCart();
-     }
-     try{return oldAdd.apply(this,arguments)}catch(e){}
-   };
- }
- document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){maajRenderCustomerHome();maajRenderCart()},300)});
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){maajRenderCustomerHome();maajRenderCart()},300)});
 })();
 </script>
 
@@ -5068,133 +5265,6 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
 })();
 </script>
 
-<!-- MAAJ PHARMACY — MASTER STABILIZATION / 12-POINT FIX -->
-<style id="maaj-master-fix-css">
-  .maaj-fix-note{border:1px solid #fde68a;background:#fffbeb;color:#92400e;border-radius:12px;padding:10px;font-size:12px;font-weight:700}
-  #maajCheckoutPage .maaj-min-order-lock{margin-top:10px}
-</style>
-<script id="maaj-master-fix-js">
-(function(){
-  'use strict';
-  const MIN_ORDER=299;
-  const CART_KEY='maaj_cart';
-  const LEGACY_CART_KEY='db_cart';
-  const ADMIN_SESSION_KEY='maaj_admin_authenticated';
-
-  function readJson(k,fallback){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(fallback));}catch(e){return fallback;}}
-  function writeCart(a){localStorage.setItem(CART_KEY,JSON.stringify(Array.isArray(a)?a:[]));}
-  function readCart(){return readJson(CART_KEY,[]);}
-  function subtotal(){return readCart().reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||0),0);}
-  function minOK(){
-    const v=subtotal();
-    if(v<MIN_ORDER){alert('Minimum order value is ₹299. Please add ₹'+(MIN_ORDER-v).toFixed(2)+' more to continue.');return false;}
-    return true;
-  }
-  window.maajMinimumOrderCheck=minOK;
-
-  // One customer-facing cart: keep legacy app storage and the newer cart storage synchronized.
-  function syncFromLegacy(){
-    try{
-      const legacy=typeof getDB==='function'?getDB('cart',null):null;
-      const modern=readCart();
-      if(Array.isArray(legacy) && legacy.length && !modern.length) writeCart(legacy);
-      else if(Array.isArray(legacy) && JSON.stringify(legacy)!==JSON.stringify(modern) && !legacy.length && modern.length && typeof setDB==='function') setDB('cart',modern);
-    }catch(e){}
-  }
-  function syncToLegacy(){try{if(typeof setDB==='function')setDB('cart',readCart());}catch(e){}}
-  window.maajSyncCarts=function(){syncFromLegacy();syncToLegacy();if(typeof updateCartBadge==='function')try{updateCartBadge();}catch(e){} if(typeof window.maajRenderCart==='function')try{window.maajRenderCart();}catch(e){} };
-
-  // Wrap the existing add-to-cart so the two historical storage systems do not drift apart.
-  const oldAdd=window.addToCart;
-  if(typeof oldAdd==='function' && !oldAdd.__maajMasterWrapped){
-    const wrapped=function(){const r=oldAdd.apply(this,arguments);setTimeout(syncToLegacy,0);setTimeout(function(){const a=typeof getDB==='function'?getDB('cart',[]):[];if(Array.isArray(a))writeCart(a);},0);return r;};
-    wrapped.__maajMasterWrapped=true;window.addToCart=wrapped;
-  }
-
-  // One checkout gate: all known checkout/order entry points enforce ₹299.
-  ['maajGoCheckout','processOrderCheckout','maajPlaceOrder'].forEach(function(name){
-    const fn=window[name];
-    if(typeof fn==='function' && !fn.__maajMinWrapped){
-      const w=function(){if(!minOK())return;return fn.apply(this,arguments);};
-      w.__maajMinWrapped=true;window[name]=w;
-    }
-  });
-
-  // Keep the admin session browser-tab scoped; closing the tab ends the admin session.
-  try{localStorage.removeItem(ADMIN_SESSION_KEY);}catch(e){}
-
-  // Hash-based app routing for footer/info links. Never intercept forms or real buttons.
-  const routeText={
-    'about maaj pharmacy':'home','about':'home','medicines':'store','medicine catalog':'store','otc medicines':'store','categories':'store','brands':'store','salts':'store',
-    'cart':'cart','your cart':'cart','checkout':'checkout','orders':'orders','my orders':'orders','order tracking':'order-tracking','tracking':'order-tracking',
-    'prescription':'upload-prescription','upload prescription':'upload-prescription','prescription history':'prescription-history','account':'home','contact us':'home',
-    'delivery':'home','returns & refunds':'home','privacy policy':'home','terms & conditions':'home','editorial policy':'home','support':'home','faq':'home','faqs':'home','blogs':'home','parenting':'home','services':'home'
-  };
-  function norm(t){return String(t||'').replace(/\s+/g,' ').trim().toLowerCase();}
-  document.addEventListener('click',function(e){
-    const el=e.target.closest('a,button');if(!el)return;
-    if(el.closest('form')||el.dataset.action||el.getAttribute('onclick')||el.getAttribute('href')?.startsWith('tel:')||el.getAttribute('href')?.startsWith('mailto:'))return;
-    const t=norm(el.textContent);if(!t)return;
-    const key=Object.keys(routeText).find(k=>t===k || t.startsWith(k+' '));
-    if(!key)return;
-    e.preventDefault();
-    const page=routeText[key];
-    if(page==='checkout'&&!minOK())return;
-    if(typeof navigateTo==='function')navigateTo(page);
-  },true);
-
-  // Customer password hardening: new passwords are SHA-256 hashes; old local plain-text records migrate on login.
-  async function sha256(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-  function accounts(){return readJson('maaj_customer_accounts',[]);}
-  function saveAccounts(a){localStorage.setItem('maaj_customer_accounts',JSON.stringify(a));}
-  window.maajCustomerPasswordHash=sha256;
-  const oldLogin=window.customerLogin;
-  if(typeof oldLogin==='function' && !oldLogin.__maajHashWrapped){
-    // Replace the old plain-text comparison with a hashed comparison while retaining migration for existing accounts.
-    window.customerLogin=async function(){
-      const mobile=(document.getElementById('customerLoginMobile')?.value||'').trim();
-      const pass=document.getElementById('customerLoginPassword')?.value||'';
-      const a=accounts(); const i=a.findIndex(u=>u.mobile===mobile);
-      const m=document.getElementById('customerLoginMsg');
-      const show=(x)=>{if(m){m.textContent=x;m.className='text-xs font-bold p-2 rounded text-red-600 bg-red-50 border border-red-200';}};
-      if(i<0)return show('Invalid mobile number or password.');
-      const hash=await sha256(pass); const stored=String(a[i].passwordHash||'');
-      let ok=stored ? stored===hash : a[i].password===pass;
-      if(!ok)return show('Invalid mobile number or password.');
-      if(!stored){a[i].passwordHash=hash;delete a[i].password;saveAccounts(a);}
-      // Use the existing login flow after migration by temporarily restoring the legacy field only in memory is avoided;
-      // establish the same current customer state directly.
-      const u=a[i];const current={id:u.id,name:u.name,mobile:u.mobile,address:u.address||'',pincode:u.pincode||''};
-      localStorage.setItem('maaj_current_customer',JSON.stringify(current));
-      try{if(typeof setDB==='function')setDB('currentUser',current);}catch(e){}
-      if(typeof updateCustomerNav==='function')try{updateCustomerNav();}catch(e){}
-      if(typeof closeCustomerAuth==='function')closeCustomerAuth();
-      if(typeof navigateTo==='function')navigateTo('home');
-    };
-    window.customerLogin.__maajHashWrapped=true;
-  }
-  const oldSignup=window.customerSignup;
-  if(typeof oldSignup==='function' && !oldSignup.__maajHashWrapped){
-    window.customerSignup=async function(){
-      const name=(document.getElementById('customerSignupName')?.value||'').trim();
-      const mobile=(document.getElementById('customerSignupMobile')?.value||'').replace(/\D/g,'');
-      const p=document.getElementById('customerSignupPassword')?.value||'';
-      const p2=document.getElementById('customerSignupPassword2')?.value||'';
-      const m=document.getElementById('customerSignupMsg');const show=(x,ok)=>{if(m){m.textContent=x;m.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200');}};
-      if(!name||!/^[0-9]{10}$/.test(mobile))return show('Enter a valid name and 10-digit mobile number.');
-      if(p.length<6)return show('Password must be at least 6 characters.');if(p!==p2)return show('Passwords do not match.');
-      const a=accounts();if(a.some(u=>u.mobile===mobile))return show('This mobile number already has an account. Please login.');
-      const user={id:'CUS-'+Date.now(),name,mobile,passwordHash:await sha256(p),createdAt:new Date().toLocaleString(),address:'',pincode:''};
-      a.push(user);saveAccounts(a);const current={id:user.id,name:user.name,mobile:user.mobile,address:'',pincode:''};localStorage.setItem('maaj_current_customer',JSON.stringify(current));try{if(typeof setDB==='function')setDB('currentUser',current);}catch(e){}
-      if(typeof updateCustomerNav==='function')try{updateCustomerNav();}catch(e){}show('Account created successfully. You are now logged in.',true);setTimeout(()=>{if(typeof closeCustomerAuth==='function')closeCustomerAuth();if(typeof navigateTo==='function')navigateTo('home');},400);
-    };window.customerSignup.__maajHashWrapped=true;
-  }
-
-  // Initial consistency pass after all scripts have loaded.
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){syncFromLegacy();syncToLegacy();},50);});
-})();
-</script>
-
 <!-- MAAJ PHARMACY — AUTHORITATIVE 12-POINT STABILITY FIX -->
 <style id="maaj-authoritative-fix-css">
   #maajCartMinimumLock{margin-top:10px;padding:10px 12px;border-radius:10px;font-size:11px;font-weight:800;background:#fffbeb;border:1px solid #fde68a;color:#92400e}
@@ -5217,7 +5287,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
   const cleanMobile=v=>String(v||'').replace(/\D/g,'');
   const money=n=>'₹'+Number(n||0).toFixed(2);
-  const getCart=()=>{let a=read(CART_KEY,null);if(!Array.isArray(a))a=read(LEGACY_CART_KEY,[]);return Array.isArray(a)?a:[]};
+  const getCart=()=>{const a=read(CART_KEY,null);if(Array.isArray(a))return a;const legacy=read(LEGACY_CART_KEY,[]);return Array.isArray(legacy)?legacy:[]};
   const saveCart=a=>{a=Array.isArray(a)?a:[];write(CART_KEY,a);write(LEGACY_CART_KEY,a);try{if(typeof setDB==='function')setDB('cart',a)}catch(e){}};
   const cartSubtotal=()=>getCart().reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||0),0);
   const minOrderOK=()=>{const v=cartSubtotal();if(v<MIN_ORDER){alert('Minimum order value is ₹299. Please add '+money(MIN_ORDER-v)+' more to continue.');return false}return true};
@@ -5226,18 +5296,6 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   // 1–2: one cart source of truth + one minimum-order gate.
   function syncCart(){const a=getCart();saveCart(a);try{if(typeof cart!=='undefined')cart=a}catch(e){};try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){};try{if(typeof renderCart==='function')renderCart()}catch(e){};try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}}
   window.maajSyncCarts=syncCart;
-
-  window.addToCart=function(id){
-    let a=getCart();
-    let prod=null;
-    try{prod=(typeof products!=='undefined'?products:[]).find(p=>String(p.id)===String(id))}catch(e){}
-    if(!prod)return;
-    const i=a.findIndex(x=>String(x.id)===String(id));
-    if(i>=0){const stock=Number(prod.stock||a[i].stock||999999);if(a[i].qty>=stock){alert('Maximum available stock reached!');return}a[i].qty+=1}
-    else a.push(Object.assign({},prod,{qty:1}));
-    saveCart(a);syncCart();
-    alert(prod.name+' added to cart!');
-  };
   window.updateQty=function(index,delta){let a=getCart();if(!a[index])return;const stock=Number(a[index].stock||999999);a[index].qty=Number(a[index].qty||0)+Number(delta||0);if(a[index].qty>stock)a[index].qty=stock;if(a[index].qty<=0)a.splice(index,1);saveCart(a);syncCart()};
   window.removeItem=function(index){let a=getCart();if(a[index])a.splice(index,1);saveCart(a);syncCart()};
   window.maajChangeQty=function(index,delta){window.updateQty(index,delta)};
@@ -5423,19 +5481,6 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     return {subtotal,discount,tax,delivery,total:Math.max(0,after+tax+delivery),medicineOnly};
   }
   window.maajCanonicalTotals=totals;
-
-  // ONE cart API. Existing buttons continue to call these public functions, but storage is canonical.
-  window.addToCart=function(product,qty){
-    const p=typeof product==='object'?product:(products().find(x=>String(x.id)===String(product))||null);
-    if(!p)return false;
-    const a=canonicalCart(); const q=Math.max(1,Math.floor(num(qty)||1));
-    const i=a.findIndex(x=>sameItem(x,p));
-    if(i>=0)a[i].qty+=q; else a.push(normalizeItem(Object.assign({},p,{qty:q})));
-    saveCart(a);
-    try{if(typeof window.renderCart==='function')window.renderCart()}catch(e){}
-    try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}
-    return true;
-  };
   window.updateQty=function(index,delta){
     const a=canonicalCart(); if(!a[index])return;
     a[index].qty+=Math.trunc(num(delta)); if(a[index].qty<=0)a.splice(index,1); saveCart(a);
@@ -5669,6 +5714,277 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   document.addEventListener('DOMContentLoaded',()=>{fix();setTimeout(fix,500);setTimeout(fix,1500)});
   const mo=new MutationObserver(()=>fix());
   document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));
+})();
+</script>
+
+
+<script>
+/* ============================================================
+   MAAJ PHARMACY — MERGED EXCEL MEDICINE SEED
+   Source: uploaded Medicines Excel sheet
+   Total rows: 50
+   Existing features are preserved.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  const MAAJ_EXCEL_MEDICINES = [{"name": "CREMAFIN FRESH TAB", "price": 12.44, "mrp": 12.44, "category": "Tablet", "gst": "5%", "stock": 20, "description": "Laxative tablet used for relief of constipation. Use according to the product label/medical advice."}, {"name": "PANTOP I.V. 40MG", "price": 53.88, "mrp": 53.88, "category": "Injection", "gst": "5%", "stock": 26, "description": "Pantoprazole injection reduces stomach acid and is used for acid-related gastrointestinal conditions under medical supervision."}, {"name": "DEXORANGE SYP", "price": 197.8, "mrp": 197.8, "category": "Haematinic Syrup", "gst": "5%", "stock": 3, "description": "Iron and vitamin nutritional syrup used as a haematinic supplement; exact formulation should be checked on the pack."}, {"name": "DERIPHYLLIN R 300", "price": 64.43, "mrp": 64.43, "category": "Respiratory Medicine", "gst": "5%", "stock": 10, "description": "Doxofylline 300 mg is a bronchodilator used in certain obstructive airway conditions such as asthma/COPD."}, {"name": "CYPON SYR", "price": 153.52, "mrp": 153.52, "category": "Appetite Stimulant / Antihistamine", "gst": "5%", "stock": 2, "description": "Cyproheptadine-based syrup formulations may be used for allergy symptoms and appetite stimulation; verify exact composition."}, {"name": "LIV-52 TAB", "price": 220, "mrp": 220, "category": "Liver Support", "gst": "5%", "stock": 1, "description": "Herbal formulation marketed for liver support and appetite; follow the manufacturer's directions."}, {"name": "CHERI SYR", "price": 210, "mrp": 210, "category": "Syrup", "gst": "5%", "stock": 5, "description": "Syrup product; exact composition should be verified from the package before assigning a specific indication."}, {"name": "CYCLOPAM VIAL", "price": 22.47, "mrp": 22.47, "category": "Injection / Antispasmodic", "gst": "5%", "stock": 5, "description": "Injection used for relief of abdominal cramps and spasmodic pain; administer only under professional guidance."}, {"name": "ZERODOL SP TAB", "price": 139.69, "mrp": 139.69, "category": "Painkiller / Anti-inflammatory", "gst": "5%", "stock": 10, "description": "Analgesic and anti-inflammatory tablet used for pain and inflammation; use as directed by a healthcare professional."}, {"name": "NAMCOLD NAS.PED.DROP", "price": 44.71, "mrp": 44.71, "category": "Nasal Drops", "gst": "5%", "stock": 3, "description": "Pediatric nasal-drop preparation for nasal symptom relief; verify ingredients and age directions on the pack."}, {"name": "NAMCOLD Z SYR", "price": 61.03, "mrp": 61.03, "category": "Cough & Cold", "gst": "5%", "stock": 10, "description": "Cold/cough symptom-relief syrup; exact ingredients should be checked on the product label."}, {"name": "SALPHYL D 1S INJ SUN SYR", "price": 55.78, "mrp": 55.78, "category": "Injection / Syrup", "gst": "5%", "stock": 6, "description": "Product identification is unclear from the invoice image; verify the pack and active ingredients before use."}, {"name": "CEFILOC 100 SYR", "price": 146.3, "mrp": 146.3, "category": "Antibiotic Syrup", "gst": "5%", "stock": 3, "description": "Cefixime 100 mg dry syrup is an antibiotic used for susceptible bacterial infections and should be used only when prescribed."}, {"name": "FEBUMAC 40 TAB", "price": 161.89, "mrp": 161.89, "category": "Uric Acid / Gout Medicine", "gst": "5%", "stock": 5, "description": "Febuxostat 40 mg lowers uric acid and is used for chronic hyperuricemia/gout under medical supervision."}, {"name": "MACBERY JUNIOR SYP", "price": 100.02, "mrp": 100.02, "category": "Cough & Cold / Respiratory", "gst": "5%", "stock": 3, "description": "Levosalbutamol, ambroxol and guaifenesin combination used to help relieve productive cough and bronchospasm; prescription use as directed."}, {"name": "MAN-APT MIST", "price": 155, "mrp": 155, "category": "Respiratory Spray", "gst": "5%", "stock": 3, "description": "Respiratory spray product; exact active ingredient and indication should be verified from the package."}, {"name": "MAN-NUROKIND GOLD INJ", "price": 33.41, "mrp": 33.41, "category": "Vitamin Injection", "gst": "5%", "stock": 12, "description": "B-vitamin injection formulation used for vitamin-B deficiency states and certain nerve-related conditions under medical supervision."}, {"name": "MAN-NUROKIND GOLD RF", "price": 103.01, "mrp": 103.01, "category": "Vitamin / Nerve Supplement", "gst": "5%", "stock": 6, "description": "B-vitamin nutritional formulation used to support treatment of vitamin-B deficiency and related nerve symptoms."}, {"name": "SIBA HEALTH TONIC", "price": 295, "mrp": 295, "category": "Health Tonic", "gst": "5%", "stock": 8, "description": "Nutritional health tonic; exact ingredients and intended use should be verified from the manufacturer's label."}, {"name": "SHIV-SOUN.THUSHIKHANDA", "price": 160, "mrp": 160, "category": "Ayurvedic", "gst": "5%", "stock": 12, "description": "Ayurvedic product; exact composition and indication should be verified from the package."}, {"name": "RANITIN INJ", "price": 7.42, "mrp": 7.42, "category": "Injection / Acid Reducer", "gst": "5%", "stock": 100, "description": "Ranitidine injection reduces stomach acid; current availability and appropriate use depend on regulatory and clinical guidance."}, {"name": "DROTIN M TAB", "price": 241.41, "mrp": 241.41, "category": "Antispasmodic", "gst": "5%", "stock": 10, "description": "Drotaverine tablet is an antispasmodic used for relief of smooth-muscle spasms and cramp-like pain."}, {"name": "SKINLITE CREAM", "price": 210, "mrp": 210, "category": "Dermatology Cream", "gst": "5%", "stock": 6, "description": "Topical dermatology cream; check active ingredients because some formulations contain prescription skin-lightening/corticosteroid components."}, {"name": "TAXIM-250MG", "price": 19.03, "mrp": 19.03, "category": "Antibiotic Injection", "gst": "5%", "stock": 24, "description": "Cefotaxime 250 mg injection is a cephalosporin antibiotic used for susceptible bacterial infections under medical supervision."}, {"name": "PACIMOL 650MG", "price": 32.12, "mrp": 32.12, "category": "Pain & Fever", "gst": "5%", "stock": 30, "description": "Paracetamol 650 mg is used to reduce fever and relieve mild-to-moderate pain; do not exceed recommended doses."}, {"name": "AMRUTANJAN STRONG (AFR)", "price": 320, "mrp": 320, "category": "Pain Balm", "gst": "5%", "stock": 1, "description": "Topical balm used for temporary relief of minor headache and body aches; apply externally as directed."}, {"name": "SUGAR FREE GOLD TABL", "price": 42, "mrp": 42, "category": "Sweetener", "gst": "5%", "stock": 12, "description": "Low-calorie tabletop sweetener used as an alternative to sugar in foods and beverages; check the pack for formulation."}, {"name": "VOLTAIC BALM", "price": 144, "mrp": 144, "category": "Pain Balm", "gst": "5%", "stock": 1, "description": "Topical balm intended for temporary relief of minor muscular and joint aches; verify exact ingredients on the pack."}, {"name": "DICLOTAL INJ", "price": 5.42, "mrp": 5.42, "category": "Painkiller Injection", "gst": "5%", "stock": 500, "description": "Diclofenac injection is an NSAID used for short-term relief of acute pain and inflammation; administration should be by a qualified professional."}, {"name": "LACTODEX-3 POW", "price": 990, "mrp": 990, "category": "Infant Formula", "gst": "5%", "stock": 1, "description": "Growing-up/child nutrition formula; use the age range and preparation instructions printed on the product pack."}, {"name": "THYROX 100MG TAB", "price": 169.92, "mrp": 169.92, "category": "Thyroid Medicine", "gst": "5%", "stock": 2, "description": "Levothyroxine is thyroid hormone replacement used for hypothyroidism; prescription medicine."}, {"name": "AZITHRAL 500MG TAB", "price": 126.73, "mrp": 126.73, "category": "Antibiotic", "gst": "5%", "stock": 12, "description": "Azithromycin 500 mg is an antibiotic used for susceptible bacterial infections and should be taken only as prescribed."}, {"name": "GLIMISTAR M1 TAB", "price": 123.58, "mrp": 123.58, "category": "Diabetes Medicine", "gst": "5%", "stock": 6, "description": "Oral antidiabetic combination used to help control blood glucose in type 2 diabetes; use only as prescribed."}, {"name": "CANDID POWDER", "price": 106.5, "mrp": 106.5, "category": "Antifungal Powder", "gst": "5%", "stock": 3, "description": "Clotrimazole dusting powder used for fungal skin infections and moisture-related fungal rashes; for external use."}, {"name": "BABY MOISTURING SOAP", "price": 65, "mrp": 65, "category": "Baby Care", "gst": "5%", "stock": 5, "description": "Gentle cleansing soap intended for babies' delicate skin; follow the manufacturer's label."}, {"name": "BABY NOURISHING SOAP", "price": 65, "mrp": 65, "category": "Baby Care", "gst": "5%", "stock": 5, "description": "Baby cleansing soap designed to gently cleanse delicate skin; verify the exact formulation on the pack."}, {"name": "VERTISTAR MD 8 TAB", "price": 67.71, "mrp": 67.71, "category": "Anti-Vertigo Medicine", "gst": "5%", "stock": 6, "description": "Betahistine 8 mg is used for symptoms associated with Ménière's disease such as vertigo and tinnitus; use as prescribed."}, {"name": "OROFLORA TAB", "price": 45, "mrp": 45, "category": "Probiotic", "gst": "5%", "stock": 23, "description": "Probiotic supplement intended to support healthy intestinal flora; verify strains and directions on the pack."}, {"name": "MAXICAL 500MG TAB", "price": 130, "mrp": 130, "category": "Calcium Supplement", "gst": "5%", "stock": 10, "description": "Calcium supplement used to support calcium intake and bone health; follow label or healthcare advice."}, {"name": "MAN MOHAN JADU MALAM", "price": 28, "mrp": 28, "category": "Pain Balm", "gst": "5%", "stock": 21, "description": "Topical balm used for temporary relief of minor aches and pains; verify ingredients on the label."}, {"name": "DOLOKIND SR TAB", "price": 78.75, "mrp": 78.75, "category": "Painkiller / Anti-inflammatory", "gst": "5%", "stock": 10, "description": "Aceclofenac sustained-release tablet used for pain and inflammation; use under medical guidance."}, {"name": "MADHIL (D)", "price": 125, "mrp": 125, "category": "Verify Product", "gst": "5%", "stock": 3, "description": "Product name/composition is not sufficiently clear in the invoice image; verify the package before assigning a medical indication."}, {"name": "DETTOL LIQU", "price": 167.34, "mrp": 167.34, "category": "Antiseptic / Hygiene", "gst": "5%", "stock": 3, "description": "Dettol liquid antiseptic is commonly used for cleansing/disinfection according to the product label; do not ingest."}, {"name": "CEFO LAC 200MG TAB", "price": 143, "mrp": 143, "category": "Antibiotic", "gst": "5%", "stock": 13, "description": "The invoice identifies a CefoLac/Cefolac 200 mg product; verify the exact active ingredient on the strip and use only as prescribed."}, {"name": "OPTINEURON INJ", "price": 119.36, "mrp": 119.36, "category": "Vitamin B-Complex Injection", "gst": "5%", "stock": 7, "description": "B-complex vitamin injection used for vitamin-B deficiency states and certain neuropathic conditions under medical supervision."}, {"name": "MACBERY DX SYP", "price": 119.21, "mrp": 119.21, "category": "Cough Syrup", "gst": "5%", "stock": 10, "description": "Dextromethorphan/chlorpheniramine cough formulation used for dry cough and associated allergy symptoms; verify label directions."}, {"name": "BANDY SUSP", "price": 300, "mrp": 300, "category": "Anthelmintic Suspension", "gst": "5%", "stock": 1, "description": "Albendazole suspension used to treat intestinal worm infections; use according to medical advice, especially in children."}, {"name": "MRIDUL COUGH SYP(ARCS)", "price": 19.21, "mrp": 19.21, "category": "Cough Syrup", "gst": "5%", "stock": 1, "description": "Cough syrup product; exact formulation could not be reliably verified from the invoice. Check active ingredients on the bottle."}, {"name": "TAXIM 500MG INJ", "price": 26.03, "mrp": 26.03, "category": "Antibiotic Injection", "gst": "5%", "stock": 30, "description": "Cefotaxime 500 mg injection is a cephalosporin antibiotic used for susceptible bacterial infections under medical supervision."}, {"name": "MAHAFLOX EYE DROP", "price": 119.25, "mrp": 119.25, "category": "Antibiotic Eye Drop", "gst": "5%", "stock": 3, "description": "Moxifloxacin eye drops are used for bacterial eye infections; use as prescribed and follow the complete course."}];
+  window.MAAJ_EXCEL_MEDICINES = MAAJ_EXCEL_MEDICINES;
+
+  function num(v, fallback) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : (fallback ?? 0);
+  }
+
+  function normalise(m, index) {
+    const price = num(m.price, 0);
+    const mrp = num(m.mrp, price);
+    return {
+      id: 'excel-' + (index + 1),
+      name: m.name || '',
+      price: price,
+      selling_price: price,
+      mrp: mrp,
+      category: m.category || 'Other',
+      drug_class: '',
+      gst: num(m.gst, 5),
+      stock: num(m.stock, 0),
+      description: m.description || '',
+      photo: '',
+      image: '',
+      prescription_required: false,
+      source: 'excel'
+    };
+  }
+
+  const seeded = MAAJ_EXCEL_MEDICINES.map(normalise);
+
+  // Preserve any existing locally stored medicines and append only new names.
+  const storageKeys = [
+    'maaj_admin_medicines_v1',
+    'maaj_medicines_v1',
+    'maajMedicines'
+  ];
+
+  let storedKey = 'maaj_admin_medicines_v1';
+  let existing = [];
+  for (const key of storageKeys) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          storedKey = key;
+          existing = parsed;
+          break;
+        }
+      }
+    } catch (_) {}
+  }
+
+  const existingNames = new Set(existing.map(x => String(x.name || '').trim().toLowerCase()));
+  const toAdd = seeded.filter(x => x.name && !existingNames.has(x.name.trim().toLowerCase()));
+
+  if (toAdd.length) {
+    try {
+      localStorage.setItem(storedKey, JSON.stringify(existing.concat(toAdd)));
+    } catch (_) {}
+  }
+
+  // Expose a manual sync helper. It uses the existing Supabase REST setup when available.
+  window.maajSyncExcelMedicinesToSupabase = async function () {
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      alert('Supabase SDK available nahi hai. Existing Medicine Manager ke Supabase login ke baad try karein.');
+      return;
+    }
+
+    const U = 'https://fywzoptldcgxatyydyec.supabase.co';
+    const K = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneXh0YXR5eWR5ZWMifQ.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+    const client = window.supabase.createClient(U, K);
+    const sessionResult = await client.auth.getSession();
+    const session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
+
+    if (!session) {
+      alert('Pehle Admin → Medicine Manager mein Supabase login karein.');
+      return;
+    }
+
+    const rows = seeded.map(m => ({
+      name: m.name,
+      price: m.price,
+      mrp: m.mrp,
+      category: m.category,
+      gst: m.gst,
+      stock: m.stock,
+      description: m.description
+    }));
+
+    // Drug Class is intentionally not sent here because older databases may not have
+    // that column. The existing manager handles drug_class after its DB column is added.
+    const res = await fetch(U + '/rest/v1/medicines', {
+      method: 'POST',
+      headers: {
+        'apikey': K,
+        'Authorization': 'Bearer ' + session.access_token,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(rows)
+    });
+
+    if (!res.ok) {
+      const msg = await res.text();
+      alert('Online Add Error: ' + msg);
+      return;
+    }
+
+    alert(seeded.length + ' Excel medicines Supabase mein online add ho gayi.');
+    if (typeof window.maajLoadMedicinesFromAPI === 'function') {
+      try { await window.maajLoadMedicinesFromAPI(); } catch (_) {}
+    }
+  };
+
+  // Add a visible import/sync button inside the existing Medicine Manager, if present.
+  function installButton() {
+    if (document.getElementById('maajExcelMergedButton')) return;
+
+    const candidates = [
+      document.getElementById('mmAddBulkRows'),
+      document.getElementById('mmBulkRows')
+    ];
+    let anchor = candidates.find(Boolean);
+    if (!anchor) return;
+
+    const parent = anchor.parentElement;
+    if (!parent) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'maajExcelMergedButton';
+    btn.type = 'button';
+    btn.className = 'px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold ml-2';
+    btn.textContent = '📊 Add Excel 50 Medicines';
+    btn.title = 'Uploaded Excel ki 50 medicines';
+    btn.onclick = window.maajSyncExcelMedicinesToSupabase;
+    parent.appendChild(btn);
+  }
+
+  document.addEventListener('DOMContentLoaded', installButton);
+  setTimeout(installButton, 1500);
+  setTimeout(installButton, 4000);
+})();
+</script>
+
+
+
+<script id="maaj-actually-add-50-medicines">
+(function(){
+  'use strict';
+
+  const excel50 = (window.MAAJ_EXCEL_MEDICINES || [{"name": "CREMAFIN FRESH TAB", "price": 12.44, "mrp": 12.44, "category": "Tablet", "gst": "5%", "stock": 20, "description": "Laxative tablet used for relief of constipation. Use according to the product label/medical advice."}, {"name": "PANTOP I.V. 40MG", "price": 53.88, "mrp": 53.88, "category": "Injection", "gst": "5%", "stock": 26, "description": "Pantoprazole injection reduces stomach acid and is used for acid-related gastrointestinal conditions under medical supervision."}, {"name": "DEXORANGE SYP", "price": 197.8, "mrp": 197.8, "category": "Haematinic Syrup", "gst": "5%", "stock": 3, "description": "Iron and vitamin nutritional syrup used as a haematinic supplement; exact formulation should be checked on the pack."}, {"name": "DERIPHYLLIN R 300", "price": 64.43, "mrp": 64.43, "category": "Respiratory Medicine", "gst": "5%", "stock": 10, "description": "Doxofylline 300 mg is a bronchodilator used in certain obstructive airway conditions such as asthma/COPD."}, {"name": "CYPON SYR", "price": 153.52, "mrp": 153.52, "category": "Appetite Stimulant / Antihistamine", "gst": "5%", "stock": 2, "description": "Cyproheptadine-based syrup formulations may be used for allergy symptoms and appetite stimulation; verify exact composition."}, {"name": "LIV-52 TAB", "price": 220, "mrp": 220, "category": "Liver Support", "gst": "5%", "stock": 1, "description": "Herbal formulation marketed for liver support and appetite; follow the manufacturer's directions."}, {"name": "CHERI SYR", "price": 210, "mrp": 210, "category": "Syrup", "gst": "5%", "stock": 5, "description": "Syrup product; exact composition should be verified from the package before assigning a specific indication."}, {"name": "CYCLOPAM VIAL", "price": 22.47, "mrp": 22.47, "category": "Injection / Antispasmodic", "gst": "5%", "stock": 5, "description": "Injection used for relief of abdominal cramps and spasmodic pain; administer only under professional guidance."}, {"name": "ZERODOL SP TAB", "price": 139.69, "mrp": 139.69, "category": "Painkiller / Anti-inflammatory", "gst": "5%", "stock": 10, "description": "Analgesic and anti-inflammatory tablet used for pain and inflammation; use as directed by a healthcare professional."}, {"name": "NAMCOLD NAS.PED.DROP", "price": 44.71, "mrp": 44.71, "category": "Nasal Drops", "gst": "5%", "stock": 3, "description": "Pediatric nasal-drop preparation for nasal symptom relief; verify ingredients and age directions on the pack."}, {"name": "NAMCOLD Z SYR", "price": 61.03, "mrp": 61.03, "category": "Cough & Cold", "gst": "5%", "stock": 10, "description": "Cold/cough symptom-relief syrup; exact ingredients should be checked on the product label."}, {"name": "SALPHYL D 1S INJ SUN SYR", "price": 55.78, "mrp": 55.78, "category": "Injection / Syrup", "gst": "5%", "stock": 6, "description": "Product identification is unclear from the invoice image; verify the pack and active ingredients before use."}, {"name": "CEFILOC 100 SYR", "price": 146.3, "mrp": 146.3, "category": "Antibiotic Syrup", "gst": "5%", "stock": 3, "description": "Cefixime 100 mg dry syrup is an antibiotic used for susceptible bacterial infections and should be used only when prescribed."}, {"name": "FEBUMAC 40 TAB", "price": 161.89, "mrp": 161.89, "category": "Uric Acid / Gout Medicine", "gst": "5%", "stock": 5, "description": "Febuxostat 40 mg lowers uric acid and is used for chronic hyperuricemia/gout under medical supervision."}, {"name": "MACBERY JUNIOR SYP", "price": 100.02, "mrp": 100.02, "category": "Cough & Cold / Respiratory", "gst": "5%", "stock": 3, "description": "Levosalbutamol, ambroxol and guaifenesin combination used to help relieve productive cough and bronchospasm; prescription use as directed."}, {"name": "MAN-APT MIST", "price": 155, "mrp": 155, "category": "Respiratory Spray", "gst": "5%", "stock": 3, "description": "Respiratory spray product; exact active ingredient and indication should be verified from the package."}, {"name": "MAN-NUROKIND GOLD INJ", "price": 33.41, "mrp": 33.41, "category": "Vitamin Injection", "gst": "5%", "stock": 12, "description": "B-vitamin injection formulation used for vitamin-B deficiency states and certain nerve-related conditions under medical supervision."}, {"name": "MAN-NUROKIND GOLD RF", "price": 103.01, "mrp": 103.01, "category": "Vitamin / Nerve Supplement", "gst": "5%", "stock": 6, "description": "B-vitamin nutritional formulation used to support treatment of vitamin-B deficiency and related nerve symptoms."}, {"name": "SIBA HEALTH TONIC", "price": 295, "mrp": 295, "category": "Health Tonic", "gst": "5%", "stock": 8, "description": "Nutritional health tonic; exact ingredients and intended use should be verified from the manufacturer's label."}, {"name": "SHIV-SOUN.THUSHIKHANDA", "price": 160, "mrp": 160, "category": "Ayurvedic", "gst": "5%", "stock": 12, "description": "Ayurvedic product; exact composition and indication should be verified from the package."}, {"name": "RANITIN INJ", "price": 7.42, "mrp": 7.42, "category": "Injection / Acid Reducer", "gst": "5%", "stock": 100, "description": "Ranitidine injection reduces stomach acid; current availability and appropriate use depend on regulatory and clinical guidance."}, {"name": "DROTIN M TAB", "price": 241.41, "mrp": 241.41, "category": "Antispasmodic", "gst": "5%", "stock": 10, "description": "Drotaverine tablet is an antispasmodic used for relief of smooth-muscle spasms and cramp-like pain."}, {"name": "SKINLITE CREAM", "price": 210, "mrp": 210, "category": "Dermatology Cream", "gst": "5%", "stock": 6, "description": "Topical dermatology cream; check active ingredients because some formulations contain prescription skin-lightening/corticosteroid components."}, {"name": "TAXIM-250MG", "price": 19.03, "mrp": 19.03, "category": "Antibiotic Injection", "gst": "5%", "stock": 24, "description": "Cefotaxime 250 mg injection is a cephalosporin antibiotic used for susceptible bacterial infections under medical supervision."}, {"name": "PACIMOL 650MG", "price": 32.12, "mrp": 32.12, "category": "Pain & Fever", "gst": "5%", "stock": 30, "description": "Paracetamol 650 mg is used to reduce fever and relieve mild-to-moderate pain; do not exceed recommended doses."}, {"name": "AMRUTANJAN STRONG (AFR)", "price": 320, "mrp": 320, "category": "Pain Balm", "gst": "5%", "stock": 1, "description": "Topical balm used for temporary relief of minor headache and body aches; apply externally as directed."}, {"name": "SUGAR FREE GOLD TABL", "price": 42, "mrp": 42, "category": "Sweetener", "gst": "5%", "stock": 12, "description": "Low-calorie tabletop sweetener used as an alternative to sugar in foods and beverages; check the pack for formulation."}, {"name": "VOLTAIC BALM", "price": 144, "mrp": 144, "category": "Pain Balm", "gst": "5%", "stock": 1, "description": "Topical balm intended for temporary relief of minor muscular and joint aches; verify exact ingredients on the pack."}, {"name": "DICLOTAL INJ", "price": 5.42, "mrp": 5.42, "category": "Painkiller Injection", "gst": "5%", "stock": 500, "description": "Diclofenac injection is an NSAID used for short-term relief of acute pain and inflammation; administration should be by a qualified professional."}, {"name": "LACTODEX-3 POW", "price": 990, "mrp": 990, "category": "Infant Formula", "gst": "5%", "stock": 1, "description": "Growing-up/child nutrition formula; use the age range and preparation instructions printed on the product pack."}, {"name": "THYROX 100MG TAB", "price": 169.92, "mrp": 169.92, "category": "Thyroid Medicine", "gst": "5%", "stock": 2, "description": "Levothyroxine is thyroid hormone replacement used for hypothyroidism; prescription medicine."}, {"name": "AZITHRAL 500MG TAB", "price": 126.73, "mrp": 126.73, "category": "Antibiotic", "gst": "5%", "stock": 12, "description": "Azithromycin 500 mg is an antibiotic used for susceptible bacterial infections and should be taken only as prescribed."}, {"name": "GLIMISTAR M1 TAB", "price": 123.58, "mrp": 123.58, "category": "Diabetes Medicine", "gst": "5%", "stock": 6, "description": "Oral antidiabetic combination used to help control blood glucose in type 2 diabetes; use only as prescribed."}, {"name": "CANDID POWDER", "price": 106.5, "mrp": 106.5, "category": "Antifungal Powder", "gst": "5%", "stock": 3, "description": "Clotrimazole dusting powder used for fungal skin infections and moisture-related fungal rashes; for external use."}, {"name": "BABY MOISTURING SOAP", "price": 65, "mrp": 65, "category": "Baby Care", "gst": "5%", "stock": 5, "description": "Gentle cleansing soap intended for babies' delicate skin; follow the manufacturer's label."}, {"name": "BABY NOURISHING SOAP", "price": 65, "mrp": 65, "category": "Baby Care", "gst": "5%", "stock": 5, "description": "Baby cleansing soap designed to gently cleanse delicate skin; verify the exact formulation on the pack."}, {"name": "VERTISTAR MD 8 TAB", "price": 67.71, "mrp": 67.71, "category": "Anti-Vertigo Medicine", "gst": "5%", "stock": 6, "description": "Betahistine 8 mg is used for symptoms associated with Ménière's disease such as vertigo and tinnitus; use as prescribed."}, {"name": "OROFLORA TAB", "price": 45, "mrp": 45, "category": "Probiotic", "gst": "5%", "stock": 23, "description": "Probiotic supplement intended to support healthy intestinal flora; verify strains and directions on the pack."}, {"name": "MAXICAL 500MG TAB", "price": 130, "mrp": 130, "category": "Calcium Supplement", "gst": "5%", "stock": 10, "description": "Calcium supplement used to support calcium intake and bone health; follow label or healthcare advice."}, {"name": "MAN MOHAN JADU MALAM", "price": 28, "mrp": 28, "category": "Pain Balm", "gst": "5%", "stock": 21, "description": "Topical balm used for temporary relief of minor aches and pains; verify ingredients on the label."}, {"name": "DOLOKIND SR TAB", "price": 78.75, "mrp": 78.75, "category": "Painkiller / Anti-inflammatory", "gst": "5%", "stock": 10, "description": "Aceclofenac sustained-release tablet used for pain and inflammation; use under medical guidance."}, {"name": "MADHIL (D)", "price": 125, "mrp": 125, "category": "Verify Product", "gst": "5%", "stock": 3, "description": "Product name/composition is not sufficiently clear in the invoice image; verify the package before assigning a medical indication."}, {"name": "DETTOL LIQU", "price": 167.34, "mrp": 167.34, "category": "Antiseptic / Hygiene", "gst": "5%", "stock": 3, "description": "Dettol liquid antiseptic is commonly used for cleansing/disinfection according to the product label; do not ingest."}, {"name": "CEFO LAC 200MG TAB", "price": 143, "mrp": 143, "category": "Antibiotic", "gst": "5%", "stock": 13, "description": "The invoice identifies a CefoLac/Cefolac 200 mg product; verify the exact active ingredient on the strip and use only as prescribed."}, {"name": "OPTINEURON INJ", "price": 119.36, "mrp": 119.36, "category": "Vitamin B-Complex Injection", "gst": "5%", "stock": 7, "description": "B-complex vitamin injection used for vitamin-B deficiency states and certain neuropathic conditions under medical supervision."}, {"name": "MACBERY DX SYP", "price": 119.21, "mrp": 119.21, "category": "Cough Syrup", "gst": "5%", "stock": 10, "description": "Dextromethorphan/chlorpheniramine cough formulation used for dry cough and associated allergy symptoms; verify label directions."}, {"name": "BANDY SUSP", "price": 300, "mrp": 300, "category": "Anthelmintic Suspension", "gst": "5%", "stock": 1, "description": "Albendazole suspension used to treat intestinal worm infections; use according to medical advice, especially in children."}, {"name": "MRIDUL COUGH SYP(ARCS)", "price": 19.21, "mrp": 19.21, "category": "Cough Syrup", "gst": "5%", "stock": 1, "description": "Cough syrup product; exact formulation could not be reliably verified from the invoice. Check active ingredients on the bottle."}, {"name": "TAXIM 500MG INJ", "price": 26.03, "mrp": 26.03, "category": "Antibiotic Injection", "gst": "5%", "stock": 30, "description": "Cefotaxime 500 mg injection is a cephalosporin antibiotic used for susceptible bacterial infections under medical supervision."}, {"name": "MAHAFLOX EYE DROP", "price": 119.25, "mrp": 119.25, "category": "Antibiotic Eye Drop", "gst": "5%", "stock": 3, "description": "Moxifloxacin eye drops are used for bacterial eye infections; use as prescribed and follow the complete course."}]).map(function(m, i){
+    const price = Number(m.price || 0);
+    return {
+      id: 'excel-' + (i + 1),
+      name: m.name || '',
+      price: price,
+      selling_price: price,
+      mrp: Number(m.mrp || price),
+      category: m.category || 'Medicine',
+      drug_class: '',
+      gst: Number(String(m.gst || 5).replace('%','')) || 5,
+      stock: Number(m.stock || 0),
+      description: m.description || '',
+      photo: '',
+      image: '',
+      prescription_required: false,
+      source: 'excel'
+    };
+  });
+
+  function mergeIntoProducts(){
+    if (!Array.isArray(window.products)) return false;
+    const seen = new Set(window.products.map(function(p){
+      return String(p.name || '').trim().toLowerCase();
+    }));
+    let added = 0;
+    excel50.forEach(function(p){
+      const key = String(p.name).trim().toLowerCase();
+      if(key && !seen.has(key)){
+        window.products.push(p);
+        seen.add(key);
+        added++;
+      }
+    });
+    try { localStorage.setItem('products', JSON.stringify(window.products)); } catch(e){}
+    try { if(typeof setDB === 'function') setDB('products', window.products); } catch(e){}
+    return added;
+  }
+
+  function refreshAll(){
+    mergeIntoProducts();
+    try { if(typeof renderHomeFeatured === 'function') renderHomeFeatured(); } catch(e){}
+    try { if(typeof renderStoreCatalog === 'function') renderStoreCatalog(); } catch(e){}
+    try { if(typeof maajRenderHomeMedicines === 'function') maajRenderHomeMedicines(); } catch(e){}
+    try { if(typeof renderAdminProducts === 'function') renderAdminProducts(); } catch(e){}
+    try { if(typeof renderAdminInventory === 'function') renderAdminInventory(); } catch(e){}
+  }
+
+  // Make the 50 spreadsheet medicines part of the actual site's products array.
+  // This runs after the existing page scripts have created products.
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(refreshAll, 300);
+    setTimeout(refreshAll, 1200);
+    setTimeout(refreshAll, 3000);
+  });
+
+  // The online API loader can replace products after startup. Wrap it so the 50
+  // spreadsheet medicines remain present even when Supabase returns other products.
+  setTimeout(function(){
+    if(typeof window.maajLoadMedicinesFromAPI === 'function' && !window.__maajExcelLoaderWrapped){
+      const original = window.maajLoadMedicinesFromAPI;
+      window.maajLoadMedicinesFromAPI = async function(){
+        const result = await original.apply(this, arguments);
+        refreshAll();
+        return result;
+      };
+      window.__maajExcelLoaderWrapped = true;
+    }
+  }, 50);
+
+  // Also make the count visible to the existing UI.
+  window.MAAJ_EXCEL_MEDICINE_COUNT = excel50.length;
+})();
+</script>
+
+<!-- MAAJ CART SAFETY PATCH: all product buttons route through the same robust cart function. -->
+<script id="maaj-cart-safety-final">
+(function(){
+  window.maajAddAnyMedicineToCart = function(id){
+    try {
+      if (typeof window.addToCart === 'function') return window.addToCart(String(id));
+      if (typeof addToCart === 'function') return addToCart(String(id));
+    } catch(e) { console.error('MAAJ cart error:', e); }
+    alert('Add to cart is temporarily unavailable. Please refresh the page.');
+  };
+})();
+</script>
+
+
+<!-- MAAJ PHARMACY — FINAL CART CONSOLIDATION -->
+<script id="maaj-final-cart-consolidation">
+(function(){
+  'use strict';
+  const KEY='maaj_cart';
+  const read=()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}};
+  const paint=()=>{
+    const a=read();
+    try{document.querySelectorAll('#cartBadgeCount,.cart-badge-count,[data-cart-count]').forEach(el=>{el.textContent=String(a.reduce((n,i)=>n+Number(i.qty||0),0));el.style.display=a.length?'':'none';});}catch(e){}
+    try{if(typeof window.maajRenderCart==='function')window.maajRenderCart();}catch(e){}
+    try{if(typeof window.renderCart==='function')window.renderCart();}catch(e){}
+  };
+  window.maajCanonicalCartRead=read;
+  window.maajCanonicalCartRefresh=paint;
+  window.addEventListener('storage',function(e){if(e.key===KEY)paint();});
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(paint,80);});
 })();
 </script>
 </body>
