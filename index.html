@@ -1387,7 +1387,7 @@ img{max-width:100%;height:auto}
             <form onsubmit="adminLogin(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
-                    <input id="adminUsername" type="text" autocomplete="username" class="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Enter username" required>
+                    <input id="adminUsername" type="text" autocomplete="username" class="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Admin email" required>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
@@ -1910,94 +1910,79 @@ async function maajLoadMedicinesFromAPI() {
         let activePdfToView = null;
         let activeCategoryFilter = "All";
 
-        // --- ADMIN AUTHENTICATION (INDEX.HTML ONLY) ---
-        const ADMIN_USERNAME = "admin";
-        const ADMIN_PASSWORD_HASH = "d3dd7030c56b76939ad67b3018cfdf8d413cba62ee1d9dc734d97a7cf6455bac";
-        const ADMIN_AUTH_KEY = "maaj_admin_authenticated";
-
+        // --- ADMIN AUTHENTICATION: SUPABASE ONLY ---
+        // No admin username/password is stored in this HTML file.
         function isAdminAuthenticated() {
-            return sessionStorage.getItem(ADMIN_AUTH_KEY) === "true";
+            return !!(window.maajAdminSession && window.maajAdminSession.user);
+        }
+
+        async function maajCheckAdminSession() {
+            try {
+                const sb = window.maajSupabaseClient;
+                if (!sb) return false;
+                const { data } = await sb.auth.getSession();
+                const session = data && data.session;
+                if (!session) { window.maajAdminSession = null; return false; }
+                const { data: row, error } = await sb.from('admin_users').select('user_id,role').eq('user_id', session.user.id).maybeSingle();
+                if (error || !row) { window.maajAdminSession = null; return false; }
+                window.maajAdminSession = session;
+                return true;
+            } catch (e) {
+                window.maajAdminSession = null;
+                return false;
+            }
         }
 
         function openAdminLogin() {
-            const modal = document.getElementById("adminLoginModal");
+            const modal = document.getElementById('adminLoginModal');
             if (!modal) return;
-
-            if (isAdminAuthenticated()) {
-                navigateTo("admin-dashboard");
-                return;
-            }
-
-            modal.classList.add("active");
-            modal.style.display = "flex";
-
-            const username = document.getElementById("adminUsername");
-            const password = document.getElementById("adminPassword");
-            const error = document.getElementById("adminLoginError");
-
-            if (username) username.value = "";
-            if (password) password.value = "";
-            if (error) error.classList.add("hidden");
-
-            setTimeout(() => {
-                if (username) username.focus();
-            }, 50);
+            if (isAdminAuthenticated()) { navigateTo('admin-dashboard'); return; }
+            modal.classList.add('active'); modal.style.display='flex';
+            const username=document.getElementById('adminUsername'), password=document.getElementById('adminPassword'), error=document.getElementById('adminLoginError');
+            if(username) username.value=''; if(password) password.value=''; if(error){error.classList.add('hidden');error.textContent='Invalid admin email or password.';}
+            if(username) { username.type='email'; username.placeholder='Admin email'; }
+            setTimeout(()=>{if(username)username.focus();},50);
         }
 
-
         function closeAdminLogin() {
-            const modal = document.getElementById("adminLoginModal");
-            if (modal) {
-                modal.classList.remove("active");
-                modal.style.display = "none";
-            }
+            const modal=document.getElementById('adminLoginModal');
+            if(modal){modal.classList.remove('active');modal.style.display='none';}
         }
 
         async function adminLogin(event) {
             event.preventDefault();
-            const username = document.getElementById("adminUsername").value.trim();
-            const password = document.getElementById("adminPassword").value;
-            const error = document.getElementById("adminLoginError");
-            const data = new TextEncoder().encode(password);
-            const digest = await crypto.subtle.digest("SHA-256", data);
-            const hash = Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");
-            if (username === ADMIN_USERNAME && hash === ADMIN_PASSWORD_HASH) {
-                sessionStorage.setItem(ADMIN_AUTH_KEY, "true");
-                error.classList.add("hidden");
-                closeAdminLogin();
-                navigateTo("admin-dashboard");
-                return;
-            }
-            error.textContent = "Invalid username or password.";
-            error.classList.remove("hidden");
-            document.getElementById("adminPassword").value = "";
-            document.getElementById("adminPassword").focus();
+            const sb=window.maajSupabaseClient;
+            const email=(document.getElementById('adminUsername')?.value||'').trim();
+            const password=document.getElementById('adminPassword')?.value||'';
+            const error=document.getElementById('adminLoginError');
+            if(!sb){if(error){error.textContent='Supabase is not available.';error.classList.remove('hidden');}return;}
+            if(!email||!password){if(error){error.textContent='Enter admin email and password.';error.classList.remove('hidden');}return;}
+            const {data,error:authError}=await sb.auth.signInWithPassword({email,password});
+            if(authError||!data?.session){if(error){error.textContent=authError?.message||'Invalid admin email or password.';error.classList.remove('hidden');}return;}
+            const {data:row,error:roleError}=await sb.from('admin_users').select('user_id,role').eq('user_id',data.session.user.id).maybeSingle();
+            if(roleError||!row){await sb.auth.signOut();if(error){error.textContent='This account is not authorized as an admin.';error.classList.remove('hidden');}return;}
+            window.maajAdminSession=data.session;
+            if(error)error.classList.add('hidden');
+            if(document.getElementById('adminPassword'))document.getElementById('adminPassword').value='';
+            closeAdminLogin();
+            navigateTo('admin-dashboard');
         }
 
-        function adminLogout() {
-            sessionStorage.removeItem(ADMIN_AUTH_KEY);
-            pageHistory = ['home'];
-            history.replaceState({page:'home'}, '', '#home');
-            navigateTo("home", false);
-            updateNavigationButtons();
-            alert("Admin logged out successfully.");
+        async function adminLogout() {
+            try{if(window.maajSupabaseClient)await window.maajSupabaseClient.auth.signOut();}catch(e){}
+            window.maajAdminSession=null;
+            pageHistory=['home']; history.replaceState({page:'home'},'', '#home'); navigateTo('home',false); updateNavigationButtons();
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            currentPageId = 'home';
-            pageHistory = ['home'];
-            history.replaceState({page:'home'}, '', '#home');
-            updateNavigationButtons();
-            renderHomeFeatured();
-            renderStoreCatalog(); if(window.maajRenderHomeMedicines) maajRenderHomeMedicines();
-            maajLoadMedicinesFromAPI();
-            updateCartBadge();
-            // DO NOT open or render Admin automatically on page load.
-            // Admin is opened only when the Admin Panel button is clicked.
+        window.addEventListener('DOMContentLoaded', async () => {
+            currentPageId='home'; pageHistory=['home']; history.replaceState({page:'home'},'', '#home'); updateNavigationButtons();
+            renderHomeFeatured(); renderStoreCatalog(); if(window.maajRenderHomeMedicines)maajRenderHomeMedicines();
+            maajLoadMedicinesFromAPI(); updateCartBadge();
+            await maajCheckAdminSession();
         });
 
         function fillPrescriptionCustomerDetails() {
-            const stored = getDB("currentUser", null);
+            const stored = window.currentCustomer || null;
             if (!stored) return;
             const nameEl = document.getElementById("rxCustName");
             const phoneEl = document.getElementById("rxCustPhone");
@@ -3079,7 +3064,7 @@ async function maajLoadMedicinesFromAPI() {
     try{
       if(typeof currentCustomer!=='undefined' && currentCustomer) return currentCustomer;
     }catch(e){}
-    try{return JSON.parse(localStorage.getItem('maaj_current_customer')||'null');}catch(e){return null;}
+    return window.currentCustomer || null;
   }
   function fill(){
     var u=getCU(); if(!u)return;
@@ -3124,7 +3109,7 @@ async function maajLoadMedicinesFromAPI() {
       if(typeof currentCustomer !== 'undefined' && currentCustomer) user=currentCustomer;
     }catch(e){}
     if(!user){
-      try{ user=JSON.parse(localStorage.getItem('maaj_current_customer')||'null'); }catch(e){}
+      try{ user=window.currentCustomer || null; }catch(e){}
     }
     if(!user){
       alert('Please login to your customer account first.');
@@ -3172,7 +3157,7 @@ async function maajLoadMedicinesFromAPI() {
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
   function getUser(){
     try{ if(typeof currentCustomer!=='undefined' && currentCustomer) return currentCustomer; }catch(e){}
-    try{ return JSON.parse(localStorage.getItem('maaj_current_customer')||'null'); }catch(e){ return null; }
+    return window.currentCustomer || null;
   }
   function getArray(key, fallback){
     try{
@@ -3331,7 +3316,7 @@ async function maajLoadMedicinesFromAPI() {
 
     // Save latest customer delivery details.
     try{
-      var accounts=getArray('customerAccounts',[]);
+      var accounts=[];
       if(Array.isArray(accounts)){
         var uid=u.id||u.mobile||phone;
         var ai=accounts.findIndex(function(a){return String(a.id||a.mobile)===String(uid);});
@@ -3341,10 +3326,16 @@ async function maajLoadMedicinesFromAPI() {
           accounts[ai].mobile=accounts[ai].mobile||phone;
           accounts[ai].pincode=pin;
           accounts[ai].address=address;
-          saveArray('customerAccounts',accounts);
+          
         }
       }
-      try{u.name=name;u.mobile=u.mobile||phone;u.pincode=pin;u.address=address;localStorage.setItem('maaj_current_customer',JSON.stringify(u));}catch(e){}
+      try{
+        u.name=name; u.mobile=u.mobile||phone; u.pincode=pin; u.address=address;
+        window.currentCustomer=u;
+        if(window.maajSupabaseClient && window.maajCustomerSession?.user){
+          window.maajSupabaseClient.from('customer_profiles').update({name:name,phone:'+91'+phone,pincode:pin,address:address}).eq('user_id',window.maajCustomerSession.user.id).then(()=>{}).catch(()=>{});
+        }
+      }catch(e){}
     }catch(e){}
 
     try{cart=[];localStorage.setItem('cart','[]');}catch(e){}
@@ -3384,169 +3375,6 @@ async function maajLoadMedicinesFromAPI() {
 </script>
 
 
-<script id="maaj-first-customer-login-controller">
-(function(){
-  function maajHideFirstLogin(){
-    var box=document.getElementById('maajCustomerFirstLogin');
-    if(box)box.classList.add('hide');
-  }
-  window.maajFirstCustomerLogin=function(e){
-    e.preventDefault();
-    var mobile=(document.getElementById('maajFirstMobile').value||'').replace(/\D/g,'');
-    var password=document.getElementById('maajFirstPassword').value||'';
-    var error=document.getElementById('maajCustomerFirstError');
-    error.style.display='none';
-
-    var accounts=[];
-    try{
-      if(typeof customerAccounts!=='undefined' && Array.isArray(customerAccounts)) accounts=customerAccounts;
-      else accounts=JSON.parse(localStorage.getItem('maaj_customer_accounts')||'[]');
-    }catch(x){accounts=[];}
-
-    var user=accounts.find(function(u){
-      return String(u.mobile||'').replace(/\D/g,'')===mobile &&
-             String(u.password||'')===password;
-    });
-
-    if(!user){
-      error.textContent=accounts.length ? 'Invalid mobile number or password.' : 'Customer account not found.';
-      error.style.display='block';
-      return;
-    }
-
-    try{localStorage.setItem('maaj_current_customer',JSON.stringify(user));}catch(x){}
-    try{if(typeof currentCustomer!=='undefined')currentCustomer=user;}catch(x){}
-    maajHideFirstLogin();
-    try{if(typeof updateCustomerNav==='function')updateCustomerNav();}catch(x){}
-    try{
-      if(typeof navigateTo==='function') navigateTo('home', false);
-      else {
-        document.querySelectorAll('.page-view').forEach(function(el){el.classList.remove('active');});
-        var home=document.getElementById('page-home');
-        if(home) home.classList.add('active');
-      }
-    }catch(x){}
-    /* IMPORTANT: do not call openAdminLogin() here. */
-  };
-
-  document.addEventListener('DOMContentLoaded',function(){
-    /* FIRST SCREEN = CUSTOMER LOGIN ONLY. Never open Admin Login automatically. */
-    var box=document.getElementById('maajCustomerFirstLogin');
-    var loggedIn=false;
-    try{ loggedIn=!!JSON.parse(localStorage.getItem('maaj_current_customer')||'null'); }catch(x){ loggedIn=false; }
-
-    if(box){
-      if(loggedIn){
-        box.classList.add('hide');
-      }else{
-        box.classList.remove('hide');
-        var input=document.getElementById('maajFirstMobile');
-        if(input)setTimeout(function(){input.focus();},250);
-      }
-    }
-
-    /* Safety: Admin Login is opened ONLY by an explicit Admin Panel click. */
-    var adminModal=document.getElementById('adminLoginModal');
-    if(adminModal && !adminModal.classList.contains('active')){
-      adminModal.style.display='none';
-    }
-  });
-})();
-</script>
-
-<script id="maaj-customer-first-controller">
-(function(){
-  function customerLoggedIn(){
-    try {
-      var c = JSON.parse(localStorage.getItem('maaj_current_customer') || 'null');
-      return !!(c && (c.mobile || c.phone || c.name));
-    } catch(e) { return false; }
-  }
-
-  function showCustomerGate(){
-    var gate = document.getElementById('maajCustomerFirstLogin');
-    if(!gate) return;
-    if(customerLoggedIn()){
-      gate.style.display = 'none';
-      gate.classList.add('hidden');
-    } else {
-      gate.style.display = 'flex';
-      gate.classList.remove('hidden');
-    }
-  }
-
-  window.maajHideCustomerGate = function(){
-    var gate = document.getElementById('maajCustomerFirstLogin');
-    if(gate){
-      gate.style.display = 'none';
-      gate.classList.add('hidden');
-    }
-    try {
-      if(typeof navigateTo === 'function') navigateTo('home', false);
-    } catch(e) {}
-  };
-
-  document.addEventListener('DOMContentLoaded', function(){
-    showCustomerGate();
-
-    var form = document.getElementById('maajFirstCustomerForm');
-    if(!form) return;
-
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      var mobile = (document.getElementById('maajFirstMobile').value || '').replace(/\D/g,'');
-      var password = document.getElementById('maajFirstPassword').value || '';
-      var error = document.getElementById('maajFirstLoginError');
-
-      if(!/^\d{10}$/.test(mobile)){
-        error.textContent = 'Enter a valid 10-digit mobile number.';
-        error.classList.remove('hidden');
-        return;
-      }
-      if(!password){
-        error.textContent = 'Enter your password.';
-        error.classList.remove('hidden');
-        return;
-      }
-
-      /* Use existing customer account store when available. */
-      var accounts = [];
-      try { accounts = JSON.parse(localStorage.getItem('maaj_customers') || '[]'); } catch(x) {}
-
-      var found = accounts.find(function(a){
-        return String(a.mobile || a.phone || '') === mobile &&
-               String(a.password || '') === password;
-      });
-
-      /* If the existing site has a customerLogin function, let it handle
-         the real account authentication. */
-      if(!found && typeof customerLogin === 'function'){
-        try {
-          customerLogin(e);
-          setTimeout(showCustomerGate, 100);
-          return;
-        } catch(x) {}
-      }
-
-      if(!found && accounts.length){
-        error.textContent = 'Invalid mobile number or password.';
-        error.classList.remove('hidden');
-        return;
-      }
-
-      var customer = found || { mobile: mobile, phone: mobile };
-      localStorage.setItem('maaj_current_customer', JSON.stringify(customer));
-      error.classList.add('hidden');
-      window.maajHideCustomerGate();
-      if(typeof updateCustomerNav === 'function') {
-        try { updateCustomerNav(); } catch(x) {}
-      }
-    });
-  });
-})();
-</script>
-
-
 <script id="maaj-all-features-js">
 (function(){
   function arr(key){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch(e){return[]}}
@@ -3579,7 +3407,7 @@ async function maajLoadMedicinesFromAPI() {
       html='<div class="maaj-extra-grid"><div class="space-y-2"><input id="maajReminderName" class="maaj-extra-input" placeholder="Medicine name"><input id="maajReminderTime" type="time" class="maaj-extra-input"><select id="maajReminderDose" class="maaj-extra-input"><option>Morning</option><option>Afternoon</option><option>Night</option></select><button class="maaj-extra-btn w-full" onclick="maajAddReminder()">Save Reminder</button></div><div><h3 class="font-black text-sm">Saved reminders</h3><div class="maaj-mini-list">'+(rs.length?rs.map(function(x,i){return '<div class="maaj-mini-item"><div><b class="text-xs">'+esc(x.name)+'</b><div class="text-[10px] text-slate-500">'+esc(x.dose)+' • '+esc(x.time)+'</div></div><button class="maaj-extra-btn secondary" onclick="maajDeleteReminder('+i+')">Delete</button></div>'}).join(''):'<div class="text-xs text-slate-500 mt-3">No reminders yet.</div>')+'</div></div></div>';
     } else {
       t='My Account'; kicker.textContent='CUSTOMER ACCOUNT';
-      var c=null;try{c=JSON.parse(localStorage.getItem('maaj_current_customer')||'null')}catch(e){}
+      var c=window.currentCustomer||null
       var addresses=arr('maaj_addresses');
       html='<div class="maaj-extra-grid"><div><h3 class="font-black text-sm mb-2">Profile</h3><p class="text-xs text-slate-600"><b>Name:</b> '+esc(c&&c.name||'Customer')+'</p><p class="text-xs text-slate-600 mt-1"><b>Mobile:</b> '+esc(c&& (c.mobile||c.phone)||'')+'</p><div class="mt-4 flex gap-2"><button class="maaj-extra-btn" onclick="navigateTo(\'orders\');maajCloseFeature()">My Orders</button><button class="maaj-extra-btn secondary" onclick="maajOpenFeature(\'address\')">Addresses</button></div></div><div><h3 class="font-black text-sm mb-2">Delivery addresses</h3><div class="maaj-mini-list">'+(addresses.length?addresses.map(function(a,i){return '<div class="maaj-mini-item"><span class="text-xs">'+esc(a)+'</span><button class="maaj-extra-btn secondary" onclick="maajDeleteAddress('+i+')">Delete</button></div>'}).join(''):'<div class="text-xs text-slate-500">No saved address.</div>')+'</div><div class="flex gap-2 mt-3"><input id="maajAddressInput" class="maaj-extra-input" placeholder="Add address"><button class="maaj-extra-btn" onclick="maajAddAddress()">Save</button></div></div></div>';
     }
@@ -4930,7 +4758,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
     try {
       if (typeof currentCustomer !== 'undefined' && currentCustomer) return currentCustomer;
     } catch(e){}
-    try { return JSON.parse(localStorage.getItem('maaj_current_customer') || 'null'); } catch(e){ return null; }
+    return window.currentCustomer || null;
   }
   function syncCheckoutFields(){
     const u = getCustomerForCheckout();
@@ -5131,137 +4959,119 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   });
 })();
 
-/* CUSTOMER ACCOUNT SECURITY + OWNER-ONLY ORDERS + ADMIN CUSTOMER EXPORT
-   Single-file implementation for index.html. */
+/* SUPABASE CUSTOMER AUTH — NO CUSTOMER ACCOUNT DATA IN LOCALSTORAGE */
 (function(){
-  const CUSTOMER_KEY='maaj_customer_accounts';
-  const CURRENT_CUSTOMER_KEY='maaj_current_customer';
-  let customerAccounts = JSON.parse(localStorage.getItem(CUSTOMER_KEY)||'[]');
-  let currentCustomer = JSON.parse(localStorage.getItem(CURRENT_CUSTOMER_KEY)||'null');
+  const U='https://fywzoptldcgxatyydyec.supabase.co';
+  const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+  // Session tokens are kept in sessionStorage by Supabase, never customer profile/account data.
+  const sb=window.supabase.createClient(U,K,{auth:{storage:window.sessionStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+  window.maajSupabaseClient=sb;
+  window.maajCustomerSession=null;
+  window.currentCustomer=null;
+  window.customerAccounts=[];
 
-  function saveAccounts(){ localStorage.setItem(CUSTOMER_KEY, JSON.stringify(customerAccounts)); }
-  function saveCurrent(){ if(currentCustomer) localStorage.setItem(CURRENT_CUSTOMER_KEY,JSON.stringify(currentCustomer)); else localStorage.removeItem(CURRENT_CUSTOMER_KEY); }
-  function validMobile(v){ return /^\d{10}$/.test(v); }
-  function esc(v){ return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-  window.isCustomerLoggedIn=()=>!!currentCustomer;
-
-  function addCustomerModal(){
-    if(document.getElementById('customerAuthModal')) return;
-    const el=document.createElement('div'); el.id='customerAuthModal'; el.className='fixed inset-0 bg-slate-950/70 z-[120] hidden items-center justify-center p-4';
-    el.innerHTML=`<div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
-      <button onclick="closeCustomerAuth()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark"></i></button>
-      <div class="text-center mb-5"><div class="w-12 h-12 mx-auto bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-user"></i></div><h2 id="customerAuthTitle" class="text-xl font-black mt-2">Customer Login</h2><p class="text-xs text-slate-500">Use your mobile number and password</p></div>
-      <div id="customerLoginBox" class="space-y-3">
-        <input id="customerLoginMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="10-digit mobile number">
-        <input id="customerLoginPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="Password">
-        <button onclick="customerLogin()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Login</button>
-        <div class="flex justify-between text-xs"><button onclick="showCustomerSignup()" class="text-emerald-700 font-bold">Create account</button><button onclick="showForgotPassword()" class="text-red-600 font-bold">Forgot password?</button></div>
-        <p id="customerLoginMsg" class="hidden text-xs font-bold p-2 rounded"></p>
-      </div>
-      <div id="customerSignupBox" class="hidden space-y-3">
-        <input id="customerSignupName" class="w-full p-3 border rounded-xl" placeholder="Full name">
-        <input id="customerSignupMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="10-digit mobile number">
-        <input id="customerSignupPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="Create password (min 6 characters)">
-        <input id="customerSignupPassword2" type="password" class="w-full p-3 border rounded-xl" placeholder="Confirm password">
-        <button onclick="customerSignup()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">Create Account</button>
-        <button onclick="showCustomerLogin()" class="w-full text-xs text-slate-600 font-bold">Already have an account? Login</button>
-        <p id="customerSignupMsg" class="hidden text-xs font-bold p-2 rounded"></p>
-      </div>
-      <div id="customerForgotBox" class="hidden space-y-3">
-        <input id="customerForgotMobile" maxlength="10" inputmode="numeric" class="w-full p-3 border rounded-xl" placeholder="Registered mobile number">
-        <input id="customerNewPassword" type="password" class="w-full p-3 border rounded-xl" placeholder="New password (min 6 characters)">
-        <input id="customerNewPassword2" type="password" class="w-full p-3 border rounded-xl" placeholder="Confirm new password">
-        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded-lg">Single-file mode: password reset is local. No real SMS/OTP is sent.</p>
-        <button onclick="resetCustomerPassword()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold">Reset Password</button>
-        <button onclick="showCustomerLogin()" class="w-full text-xs text-slate-600 font-bold">Back to Login</button>
-        <p id="customerForgotMsg" class="hidden text-xs font-bold p-2 rounded"></p>
-      </div>
-    </div>`;
-    document.body.appendChild(el);
+  const clean=v=>String(v||'').replace(/\D/g,'');
+  const phone=v=>{const m=clean(v);return m.length===10?'+91'+m:m};
+  const msg=(id,text,ok=false)=>{const e=document.getElementById(id);if(e){e.textContent=text;e.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200')}};
+  const profile=async user=>{
+    if(!user)return null;
+    const {data,error}=await sb.from('customer_profiles').select('user_id,name,phone,address,pincode,created_at').eq('user_id',user.id).maybeSingle();
+    if(error)throw error;
+    return data?{id:data.user_id,name:data.name||user.user_metadata?.name||'Customer',mobile:clean(data.phone||user.phone||''),phone:clean(data.phone||user.phone||''),address:data.address||'',pincode:data.pincode||'',createdAt:data.created_at}:null;
+  };
+  async function setCustomer(session){
+    window.maajCustomerSession=session||null;
+    window.currentCustomer=session?await profile(session.user):null;
+    window.customerAccounts=window.currentCustomer?[window.currentCustomer]:[];
+    try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){}
+    return window.currentCustomer;
   }
-  window.openCustomerAuth=function(mode='login'){ addCustomerModal(); showCustomerLogin(); document.getElementById('customerAuthModal').classList.remove('hidden'); document.getElementById('customerAuthModal').classList.add('flex'); if(mode==='signup')showCustomerSignup(); if(mode==='forgot')showForgotPassword(); };
-  window.closeCustomerAuth=function(){ const m=document.getElementById('customerAuthModal'); if(m){m.classList.add('hidden');m.classList.remove('flex');} };
-  function hideBoxes(){ ['customerLoginBox','customerSignupBox','customerForgotBox'].forEach(id=>document.getElementById(id)?.classList.add('hidden')); }
-  window.showCustomerLogin=function(){hideBoxes();document.getElementById('customerLoginBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Customer Login';};
-  window.showCustomerSignup=function(){hideBoxes();document.getElementById('customerSignupBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Create Customer Account';};
-  window.showForgotPassword=function(){hideBoxes();document.getElementById('customerForgotBox').classList.remove('hidden');document.getElementById('customerAuthTitle').innerText='Forgot Password';};
-  function msg(id,text,ok=false){const e=document.getElementById(id); if(!e)return; e.innerText=text; e.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200');}
+  async function loginWithPhone(m,p,errorId){
+    if(!/^\d{10}$/.test(m))return msg(errorId,'Enter a valid 10-digit mobile number.');
+    if(!p)return msg(errorId,'Enter your password.');
+    const {data,error}=await sb.auth.signInWithPassword({phone:phone(m),password:p});
+    if(error||!data?.session)return msg(errorId,error?.message||'Invalid mobile number or password.');
+    try{await setCustomer(data.session)}catch(e){await sb.auth.signOut();return msg(errorId,'Customer profile could not be loaded. Please contact support.')}
+    return true;
+  }
+  window.isCustomerLoggedIn=()=>!!(window.maajCustomerSession&&window.maajCustomerSession.user);
+  window.getCurrentCustomer=()=>window.currentCustomer;
 
-  window.customerSignup=function(){
-    const name=document.getElementById('customerSignupName').value.trim(), mobile=document.getElementById('customerSignupMobile').value.trim(), pass=document.getElementById('customerSignupPassword').value, pass2=document.getElementById('customerSignupPassword2').value;
-    if(!name || !validMobile(mobile)) return msg('customerSignupMsg','Enter a valid name and 10-digit mobile number.');
-    if(pass.length<6) return msg('customerSignupMsg','Password must be at least 6 characters.');
-    if(pass!==pass2) return msg('customerSignupMsg','Passwords do not match.');
-    if(customerAccounts.some(u=>u.mobile===mobile)) return msg('customerSignupMsg','This mobile number already has an account. Please login.');
-    const user={id:'CUS-'+Date.now(),name,mobile,password:pass,createdAt:new Date().toLocaleString(),address:'',pincode:''};
-    customerAccounts.push(user); saveAccounts(); currentCustomer={id:user.id,name:user.name,mobile:user.mobile,address:'',pincode:''}; saveCurrent();
-    // Also keep the existing app's currentUser in sync when available.
-    if(typeof setDB==='function') setDB('currentUser',currentCustomer);
-    msg('customerSignupMsg','Account created successfully. You are now logged in.',true); updateCustomerNav(); setTimeout(()=>{closeCustomerAuth(); if(typeof navigateTo==='function')navigateTo('home');},500);
+  window.customerSignup=async function(){
+    const name=(document.getElementById('customerSignupName')?.value||'').trim(),m=clean(document.getElementById('customerSignupMobile')?.value),p=document.getElementById('customerSignupPassword')?.value||'',p2=document.getElementById('customerSignupPassword2')?.value||'';
+    if(!name||!/^\d{10}$/.test(m))return msg('customerSignupMsg','Enter a valid name and 10-digit mobile number.');
+    if(p.length<6)return msg('customerSignupMsg','Password must be at least 6 characters.');
+    if(p!==p2)return msg('customerSignupMsg','Passwords do not match.');
+    msg('customerSignupMsg','Creating your account online...',true);
+    const {data,error}=await sb.auth.signUp({phone:phone(m),password:p,options:{data:{name}}});
+    if(error)return msg('customerSignupMsg',error.message);
+    if(!data?.user)return msg('customerSignupMsg','Account could not be created.');
+    // auth.users.phone is unique; customer_profiles.phone is also unique.
+    if(data.session){
+      try{
+        const {error:pe}=await sb.from('customer_profiles').upsert({user_id:data.user.id,name,phone:phone(m),address:'',pincode:''},{onConflict:'user_id'});
+        if(pe)throw pe;
+        await setCustomer(data.session);
+      }catch(e){await sb.auth.signOut();return msg('customerSignupMsg','Account created but profile setup failed: '+e.message);}
+      msg('customerSignupMsg','Account created successfully. You are now logged in.',true);
+      setTimeout(()=>{try{closeCustomerAuth()}catch(e){};try{navigateTo('home')}catch(e){}},300);
+      return;
+    }
+    msg('customerSignupMsg','Account created. Please login. If phone confirmation is enabled in Supabase, complete that verification first.',true);
   };
-  window.customerLogin=function(){
-    const mobile=document.getElementById('customerLoginMobile').value.trim(), pass=document.getElementById('customerLoginPassword').value;
-    const user=customerAccounts.find(u=>u.mobile===mobile);
-    if(!user) return msg('customerLoginMsg','Invalid mobile number or password.');
-    if(user.password!==pass) return msg('customerLoginMsg','Invalid password. Please try again or use Forgot Password.');
-    currentCustomer={id:user.id,name:user.name,mobile:user.mobile,address:user.address||'',pincode:user.pincode||''}; saveCurrent(); if(typeof setDB==='function')setDB('currentUser',currentCustomer); updateCustomerNav(); closeCustomerAuth();
-    if(typeof navigateTo==='function')navigateTo('home');
-  };
-  window.resetCustomerPassword=function(){
-    const mobile=document.getElementById('customerForgotMobile').value.trim(), p=document.getElementById('customerNewPassword').value, p2=document.getElementById('customerNewPassword2').value;
-    const i=customerAccounts.findIndex(u=>u.mobile===mobile);
-    if(i<0)return msg('customerForgotMsg','Mobile number not found.');
-    if(p.length<6)return msg('customerForgotMsg','New password must be at least 6 characters.');
-    if(p!==p2)return msg('customerForgotMsg','Passwords do not match.');
-    customerAccounts[i].password=p; saveAccounts(); msg('customerForgotMsg','Password reset successfully. Please login.',true); setTimeout(showCustomerLogin,700);
-  };
-  window.customerLogout=function(){currentCustomer=null;saveCurrent();if(typeof setDB==='function')setDB('currentUser',null);updateCustomerNav();if(typeof navigateTo==='function')navigateTo('home');};
 
-  function updateCustomerNav(){
+  window.customerLogin=async function(){
+    const m=clean(document.getElementById('customerLoginMobile')?.value),p=document.getElementById('customerLoginPassword')?.value||'';
+    const ok=await loginWithPhone(m,p,'customerLoginMsg');
+    if(ok===true){try{closeCustomerAuth()}catch(e){};try{navigateTo('home')}catch(e){}}
+  };
+
+  window.maajFirstCustomerLogin=async function(e){
+    if(e)e.preventDefault();
+    const m=clean(document.getElementById('maajFirstMobile')?.value),p=document.getElementById('maajFirstPassword')?.value||'',err=document.getElementById('maajFirstLoginError')||document.getElementById('maajCustomerFirstError');
+    if(!/^\d{10}$/.test(m)||!p){if(err){err.textContent='Enter your 10-digit mobile number and password.';err.classList.remove('hidden');err.style.display='block'}return false}
+    const ok=await loginWithPhone(m,p,err?.id);
+    if(ok===true){const gate=document.getElementById('maajCustomerFirstLogin');if(gate){gate.classList.add('hide');gate.style.display='none'}try{navigateTo('home',false)}catch(x){}}
+    return false;
+  };
+
+  window.resetCustomerPassword=async function(){
+    // Secure password reset cannot be implemented by reading/changing passwords in the browser.
+    // Supabase must perform the recovery flow; no password is ever stored in localStorage.
+    msg('customerForgotMsg','For account security, password reset must use a verified Supabase recovery method.');
+  };
+
+  window.customerLogout=async function(){try{await sb.auth.signOut()}catch(e){}window.maajCustomerSession=null;window.currentCustomer=null;window.customerAccounts=[];try{updateCustomerNav()}catch(e){}try{navigateTo('home')}catch(e){}};
+
+  window.updateCustomerNav=function(){
     let b=document.getElementById('customerAccountBtn');
-    if(!b){ const adminBtn=[...document.querySelectorAll('button')].find(x=>x.innerText.includes('Admin Panel')); if(adminBtn){b=document.createElement('button');b.id='customerAccountBtn';adminBtn.parentNode.insertBefore(b,adminBtn);} }
+    if(!b){const adminBtn=[...document.querySelectorAll('button')].find(x=>x.innerText.includes('Admin Panel'));if(adminBtn){b=document.createElement('button');b.id='customerAccountBtn';adminBtn.parentNode.insertBefore(b,adminBtn)}}
     if(!b)return;
-    if(currentCustomer){b.className='bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg';b.innerHTML='<i class="fa-solid fa-user mr-1"></i>'+esc(currentCustomer.name.split(' ')[0]);b.onclick=()=>{ if(confirm('Logout from customer account?'))customerLogout();}; b.title='Click to logout';}
-    else {b.className='bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg';b.innerHTML='<i class="fa-solid fa-user mr-1"></i> Customer Login';b.onclick=()=>openCustomerAuth('login');}
-  }
-
-  // Require a customer account before entering My Orders, checkout, tracking or prescription upload/history.
-  const oldNavigate=window.navigateTo;
-  window.navigateTo=function(pageId,addHistory=true){
-    if(['orders','checkout','order-tracking','upload-prescription','prescription-history'].includes(pageId) && !currentCustomer){openCustomerAuth('login');return;}
-    return oldNavigate.apply(this,arguments);
-  };
-  // Customer checkout/order ownership is handled by the CUSTOMER CHECKOUT DETAILS FIX above.
-
-  window.renderCustomerOrders=function(){
-    const list=document.getElementById('customerOrdersList'); if(!list)return; list.innerHTML='';
-    if(!currentCustomer){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">Please login to view your orders.</div>';return;}
-    let allOrders=JSON.parse(localStorage.getItem('maaj_orders')||'[]');
-    const mine=allOrders.filter(o=>o.customerId===currentCustomer.id || (o.customerMobile===currentCustomer.mobile && o.customerId===currentCustomer.id));
-    if(!mine.length){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No orders found for your account.</div>';return;}
-    mine.forEach(o=>{const card=document.createElement('div');card.className='bg-white p-5 rounded-xl border space-y-3 text-xs shadow-sm';card.innerHTML=`<div class="flex justify-between items-center border-b pb-2"><div><span class="font-bold">${esc(o.id)}</span><span class="text-slate-400 ml-2">(${esc(o.date)})</span></div><span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">${esc(o.status)}</span></div><div class="space-y-1">${(o.items||[]).map(i=>`<p class="text-slate-600">${esc(i.name)} x ${i.qty} — ₹${Number(i.price||0)*Number(i.qty||0)}</p>`).join('')}</div><div class="flex justify-between items-center pt-2 border-t"><span class="font-black">Total: ₹${Number(o.amount||0).toFixed(2)} (${esc(o.paymentMode||'COD')})</span><button onclick="trackOrder('${String(o.id).replace(/'/g,"\\'")}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded">Track</button></div>`;list.appendChild(card);});
+    const c=window.currentCustomer;
+    if(c){b.className='bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg';b.innerHTML='<i class="fa-solid fa-user mr-1"></i>'+String(c.name||'Customer').split(' ')[0];b.onclick=()=>{if(confirm('Logout from customer account?'))window.customerLogout()}}
+    else{b.className='bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg';b.innerHTML='<i class="fa-solid fa-user mr-1"></i> Customer Login';b.onclick=()=>openCustomerAuth('login')}
   };
 
-  // Admin customer accounts tab + Excel-compatible CSV export.
-  function ensureAdminCustomerTab(){
-    const panel=document.getElementById('page-admin-dashboard') || document.getElementById('admin-dashboard'); if(!panel || document.getElementById('admin-tab-customers'))return;
-    const buttons=panel.querySelector('.admin-tab-btn')?.parentElement;
-    if(buttons){const btn=document.createElement('button');btn.className='admin-tab-btn bg-white border px-3 py-2 rounded-lg';btn.innerText='Customers';btn.onclick=()=>switchAdminTab('customers');buttons.appendChild(btn);}
-    const tabs=panel.querySelector('#admin-tab-coupons')?.parentElement; if(!tabs)return;
-    const div=document.createElement('div');div.id='admin-tab-customers';div.className='admin-tab space-y-4';div.innerHTML=`<div class="bg-white rounded-xl border shadow-sm overflow-hidden"><div class="p-4 flex flex-wrap gap-2 justify-between items-center border-b"><div><h3 class="font-black">Customer Accounts</h3><p class="text-[11px] text-slate-500">Registered customer name and mobile number</p></div><button onclick="exportCustomersExcel()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-file-excel mr-1"></i> Export Excel (CSV)</button></div><div class="overflow-auto"><table class="w-full text-xs"><thead class="bg-slate-50"><tr><th class="p-3 text-left">Name</th><th class="p-3 text-left">Mobile Number</th><th class="p-3 text-left">Created</th><th class="p-3 text-left">Orders</th></tr></thead><tbody id="adminCustomersTable"></tbody></table></div></div>`;tabs.appendChild(div);
-  }
-  window.renderAdminCustomers=function(){ensureAdminCustomerTab();const t=document.getElementById('adminCustomersTable');if(!t)return;const os=JSON.parse(localStorage.getItem('maaj_orders')||'[]');t.innerHTML='';customerAccounts.forEach(u=>{const count=os.filter(o=>o.customerId===u.id).length;const tr=document.createElement('tr');tr.className='border-t';tr.innerHTML=`<td class="p-3 font-bold">${esc(u.name)}</td><td class="p-3">${esc(u.mobile)}</td><td class="p-3">${esc(u.createdAt)}</td><td class="p-3 font-bold">${count}</td>`;t.appendChild(tr);});if(!customerAccounts.length)t.innerHTML='<tr><td colspan="4" class="p-5 text-center text-slate-400">No customer accounts registered yet.</td></tr>';};
-  window.exportCustomersExcel=function(){
-    if(!isAdminAuthenticated || !isAdminAuthenticated())return alert('Admin login required.');
-    const rows=[['Customer Name','Mobile Number','Created At','Customer ID']].concat(customerAccounts.map(u=>[u.name,u.mobile,u.createdAt,u.id]));
-    const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob), a=document.createElement('a');a.href=url;a.download='MAAJ_Customer_Accounts.csv';a.click();URL.revokeObjectURL(url);
-  };
-  const oldSwitch=window.switchAdminTab;
-  window.switchAdminTab=function(tab){oldSwitch.apply(this,arguments);if(tab==='customers')renderAdminCustomers();};
+  // Remove legacy account/profile keys from previous versions. New code never writes them.
+  ['maaj_customer_accounts','maaj_current_customer','maaj_customers','customerAccounts','currentCustomer','maaj_current_user'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
 
-  // If an old currentUser exists but customer accounts are empty, do NOT expose old orders to a new account.
-  document.addEventListener('DOMContentLoaded',()=>{ensureAdminCustomerTab();updateCustomerNav();});
+  window.maajLoadCustomerSession=async function(){
+    try{const {data}=await sb.auth.getSession();if(data?.session)await setCustomer(data.session);else await setCustomer(null)}catch(e){await setCustomer(null)}
+    try{sb.auth.onAuthStateChange(async(_event,session)=>{setTimeout(()=>setCustomer(session),0)})}catch(e){}
+  };
+
+  // Admin customer list now comes from Supabase, not localStorage.
+  window.renderAdminCustomers=async function(){
+    if(!isAdminAuthenticated())return;
+    if(typeof ensureAdminCustomerTab==='function')ensureAdminCustomerTab();
+    const t=document.getElementById('adminCustomersTable');if(!t)return;
+    const {data,error}=await sb.from('customer_profiles').select('user_id,name,phone,created_at').order('created_at',{ascending:false});
+    if(error){t.innerHTML='<tr><td colspan="4" class="p-5 text-center text-red-500">'+String(error.message)+'</td></tr>';return}
+    t.innerHTML=(data||[]).map(u=>'<tr class="border-t"><td class="p-3 font-bold">'+String(u.name||'').replace(/[&<>]/g,'')+'</td><td class="p-3">'+String(u.phone||'').replace(/\D/g,'').slice(-10)+'</td><td class="p-3">'+new Date(u.created_at).toLocaleString()+'</td><td class="p-3 font-bold">—</td></tr>').join('')||'<tr><td colspan="4" class="p-5 text-center text-slate-400">No customer accounts registered yet.</td></tr>';
+  };
+  window.exportCustomersExcel=function(){alert('Customer export should be generated from the secured Supabase admin view/backend so private customer data is not exposed in browser storage.');};
+
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(window.maajLoadCustomerSession,50)});
 })();
 </script>
 
@@ -5416,8 +5226,6 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   const ORDERS='maaj_orders';
   const OLD_CART='cart';
   const OLD_ORDERS='orders';
-  const CUSTOMER='maaj_customer_accounts';
-  const CURRENT='maaj_current_customer';
   const MIN=299;
   const FREE_MED=499;
 
@@ -5434,7 +5242,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   };
   const orders=()=>arr(read(ORDERS,read(OLD_ORDERS,[])));
   const saveOrders=(a)=>{a=arr(a);write(ORDERS,a);write(OLD_ORDERS,a);try{if(typeof setDB==='function')setDB('orders',a)}catch(e){};return a};
-  const customer=()=>read(CURRENT,null);
+  const customer=()=>window.currentCustomer||null;
   const products=()=>{try{return arr(window.products||read('products',[]))}catch(e){return arr(read('products',[]))}};
 
   function normalizeItem(i){
@@ -5985,6 +5793,20 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   window.maajCanonicalCartRefresh=paint;
   window.addEventListener('storage',function(e){if(e.key===KEY)paint();});
   document.addEventListener('DOMContentLoaded',function(){setTimeout(paint,80);});
+})();
+</script>
+
+<!-- MAAJ PHARMACY — SUPABASE SECURITY BOOTSTRAP -->
+<script id="maaj-supabase-security-bootstrap">
+(function(){
+  // Customer/admin account data is stored in Supabase. Only the public anon key is shipped to the browser.
+  // IMPORTANT: never place a Supabase service_role/secret key in index.html.
+  if(!window.supabase||typeof window.supabase.createClient!=='function')return;
+  if(window.maajSupabaseClient)return;
+  const U='https://fywzoptldcgxatyydyec.supabase.co';
+  const K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+  // Reuse the already-created client when available; this block only documents the security contract.
+  window.MAAJ_SUPABASE_SECURITY='auth + RLS; customer profiles in Supabase; no account credentials in localStorage';
 })();
 </script>
 </body>
