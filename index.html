@@ -4975,23 +4975,88 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   const msg=(id,text,ok=false)=>{const e=document.getElementById(id);if(e){e.textContent=text;e.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200')}};
   const profile=async user=>{
     if(!user)return null;
-    const {data,error}=await sb.from('customer_profiles').select('user_id,name,phone,address,pincode,created_at').eq('user_id',user.id).maybeSingle();
+    const {data,error}=await sb.from('customer_profiles')
+      .select('id,user_id,name,phone,address,pincode,created_at')
+      .eq('user_id',user.id)
+      .maybeSingle();
     if(error)throw error;
-    return data?{id:data.user_id,name:data.name||user.user_metadata?.name||'Customer',mobile:clean(data.phone||user.phone||''),phone:clean(data.phone||user.phone||''),address:data.address||'',pincode:data.pincode||'',createdAt:data.created_at}:null;
+    return data?{
+      id:data.user_id,
+      profileId:data.id,
+      name:data.name||user.user_metadata?.name||'Customer',
+      mobile:clean(data.phone||user.phone||''),
+      phone:clean(data.phone||user.phone||''),
+      address:data.address||'',
+      pincode:data.pincode||'',
+      createdAt:data.created_at
+    }:null;
   };
+
+  // Create/recover the customer profile after successful Supabase Auth login.
+  // This also repairs older accounts whose Auth user was created but profile insert failed.
+  async function ensureCustomerProfile(user){
+    if(!user)return null;
+    let existing=await profile(user);
+    if(existing)return existing;
+
+    const userPhone=phone(user.phone||'');
+    const userName=(user.user_metadata?.name||'Customer').trim()||'Customer';
+    const payload={
+      id:user.id,
+      user_id:user.id,
+      name:userName,
+      phone:userPhone,
+      address:'',
+      pincode:''
+    };
+
+    const {error:insertError}=await sb.from('customer_profiles').upsert(
+      payload,
+      {onConflict:'user_id'}
+    );
+    if(insertError)throw insertError;
+
+    existing=await profile(user);
+    if(!existing)throw new Error('Customer profile was not created. Please try again.');
+    return existing;
+  }
+
   async function setCustomer(session){
     window.maajCustomerSession=session||null;
-    window.currentCustomer=session?await profile(session.user):null;
+    if(!session){
+      window.currentCustomer=null;
+      window.customerAccounts=[];
+      try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){}
+      return null;
+    }
+    window.currentCustomer=await ensureCustomerProfile(session.user);
     window.customerAccounts=window.currentCustomer?[window.currentCustomer]:[];
     try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){}
     return window.currentCustomer;
   }
+
   async function loginWithPhone(m,p,errorId){
     if(!/^\d{10}$/.test(m))return msg(errorId,'Enter a valid 10-digit mobile number.');
     if(!p)return msg(errorId,'Enter your password.');
+    msg(errorId,'Signing you in securely...',true);
     const {data,error}=await sb.auth.signInWithPassword({phone:phone(m),password:p});
-    if(error||!data?.session)return msg(errorId,error?.message||'Invalid mobile number or password.');
-    try{await setCustomer(data.session)}catch(e){await sb.auth.signOut();return msg(errorId,'Customer profile could not be loaded. Please contact support.')}
+    if(error||!data?.session){
+      const raw=String(error?.message||'').toLowerCase();
+      const friendly=raw.includes('invalid login credentials')
+        ?'Incorrect mobile number or password.'
+        :raw.includes('email not confirmed')||raw.includes('phone not confirmed')
+          ?'Please complete your phone verification before logging in.'
+          :error?.message||'Unable to login. Please try again.';
+      return msg(errorId,friendly);
+    }
+    try{
+      await setCustomer(data.session);
+    }catch(e){
+      // Keep the authenticated session; report the actual profile/database issue.
+      const detail=String(e?.message||e||'Profile setup failed.');
+      return msg(errorId,'Login successful, but customer profile setup failed: '+detail);
+    }
+    msg(errorId,'Login successful. Welcome back!',true);
     return true;
   }
   window.isCustomerLoggedIn=()=>!!(window.maajCustomerSession&&window.maajCustomerSession.user);
@@ -5009,7 +5074,14 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
     // auth.users.phone is unique; customer_profiles.phone is also unique.
     if(data.session){
       try{
-        const {error:pe}=await sb.from('customer_profiles').upsert({user_id:data.user.id,name,phone:phone(m),address:'',pincode:''},{onConflict:'user_id'});
+        const {error:pe}=await sb.from('customer_profiles').upsert({
+          id:data.user.id,
+          user_id:data.user.id,
+          name,
+          phone:phone(m),
+          address:'',
+          pincode:''
+        },{onConflict:'user_id'});
         if(pe)throw pe;
         await setCustomer(data.session);
       }catch(e){await sb.auth.signOut();return msg('customerSignupMsg','Account created but profile setup failed: '+e.message);}
@@ -5020,10 +5092,21 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
     msg('customerSignupMsg','Account created. Please login. If phone confirmation is enabled in Supabase, complete that verification first.',true);
   };
 
-  window.customerLogin=async function(){
-    const m=clean(document.getElementById('customerLoginMobile')?.value),p=document.getElementById('customerLoginPassword')?.value||'';
-    const ok=await loginWithPhone(m,p,'customerLoginMsg');
-    if(ok===true){try{closeCustomerAuth()}catch(e){};try{navigateTo('home')}catch(e){}}
+  window.customerLogin=async function(e){
+    if(e)e.preventDefault();
+    const button=document.querySelector('#maajCustomerLoginPanel button[type=submit]');
+    if(button){button.disabled=true;button.dataset.originalText=button.textContent;button.textContent='Logging in...';}
+    try{
+      const m=clean(document.getElementById('customerLoginMobile')?.value),p=document.getElementById('customerLoginPassword')?.value||'';
+      const ok=await loginWithPhone(m,p,'customerLoginMsg');
+      if(ok===true){
+        try{closeCustomerAuth()}catch(e){}
+        try{navigateTo('home')}catch(e){}
+      }
+      return ok;
+    }finally{
+      if(button){button.disabled=false;button.textContent=button.dataset.originalText||'Login';}
+    }
   };
 
   window.maajFirstCustomerLogin=async function(e){
@@ -5052,8 +5135,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
     else{b.className='bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-lg';b.innerHTML='<i class="fa-solid fa-user mr-1"></i> Customer Login';b.onclick=()=>openCustomerAuth('login')}
   };
 
-  // Remove legacy account/profile keys from previous versions. New code never writes them.
-  ['maaj_customer_accounts','maaj_current_customer','maaj_customers','customerAccounts','currentCustomer','maaj_current_user'].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+  // Customer account/profile data is never stored in localStorage.
 
   window.maajLoadCustomerSession=async function(){
     try{const {data}=await sb.auth.getSession();if(data?.session)await setCustomer(data.session);else await setCustomer(null)}catch(e){await setCustomer(null)}
@@ -5089,8 +5171,6 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   const LEGACY_CART_KEY='cart';
   const ORDERS_KEY='maaj_orders';
   const LEGACY_ORDERS_KEY='orders';
-  const CUSTOMER_KEY='maaj_customer_accounts';
-  const CURRENT_KEY='maaj_current_customer';
   const ADMIN_KEY='maaj_admin_authenticated';
 
   const read=(k,f)=>{try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}};
@@ -5140,30 +5220,11 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   const oldPlace=window.maajPlaceOrder;
   window.maajPlaceOrder=function(){if(!getCart().length){alert('Your cart is empty.');return false}if(!minOrderOK())return false;return typeof oldPlace==='function'?oldPlace.apply(this,arguments):false};
 
-  // 6–8: customer auth uses one account key, hashed passwords, and no ghost login.
-  async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
-  const accounts=()=>read(CUSTOMER_KEY,[]);
-  const saveAccounts=a=>write(CUSTOMER_KEY,a);
-  window.isCustomerLoggedIn=()=>!!read(CURRENT_KEY,null);
-
-  window.customerSignup=async function(){
-    const name=(document.getElementById('customerSignupName')?.value||'').trim(),mobile=cleanMobile(document.getElementById('customerSignupMobile')?.value),p=document.getElementById('customerSignupPassword')?.value||'',p2=document.getElementById('customerSignupPassword2')?.value||'';
-    const m=document.getElementById('customerSignupMsg');const show=(t,ok=false)=>{if(m){m.textContent=t;m.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200')}};
-    if(!name||!/^[0-9]{10}$/.test(mobile))return show('Enter a valid name and 10-digit mobile number.');if(p.length<6)return show('Password must be at least 6 characters.');if(p!==p2)return show('Passwords do not match.');
-    const a=accounts();if(a.some(u=>cleanMobile(u.mobile)===mobile))return show('This mobile number already has an account. Please login.');
-    const u={id:'CUS-'+Date.now(),name,mobile,passwordHash:await hash(p),createdAt:new Date().toLocaleString(),address:'',pincode:''};a.push(u);saveAccounts(a);const c={id:u.id,name:u.name,mobile:u.mobile,address:'',pincode:''};write(CURRENT_KEY,c);try{if(typeof setDB==='function')setDB('currentUser',c)}catch(e){};show('Account created successfully. You are now logged in.',true);try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){};setTimeout(()=>{try{if(typeof closeCustomerAuth==='function')closeCustomerAuth()}catch(e){};try{if(typeof navigateTo==='function')navigateTo('home')}catch(e){}},300);
-  };
-  window.customerLogin=async function(){
-    const mobile=cleanMobile(document.getElementById('customerLoginMobile')?.value),p=document.getElementById('customerLoginPassword')?.value||'',m=document.getElementById('customerLoginMsg');const show=t=>{if(m){m.textContent=t;m.className='text-xs font-bold p-2 rounded text-red-600 bg-red-50 border border-red-200'}};
-    const a=accounts(),i=a.findIndex(u=>cleanMobile(u.mobile)===mobile);if(i<0)return show('Invalid mobile number or password.');const u=a[i],h=await hash(p);let ok=String(u.passwordHash||'')===h;
-    if(!ok&&u.password){ok=String(u.password)===p;if(ok){u.passwordHash=h;delete u.password;a[i]=u;saveAccounts(a)}}
-    if(!ok)return show('Invalid mobile number or password.');const c={id:u.id,name:u.name,mobile:u.mobile,address:u.address||'',pincode:u.pincode||''};write(CURRENT_KEY,c);try{if(typeof setDB==='function')setDB('currentUser',c)}catch(e){};try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){};try{if(typeof closeCustomerAuth==='function')closeCustomerAuth()}catch(e){};try{if(typeof navigateTo==='function')navigateTo('home')}catch(e){}
-  };
-  window.resetCustomerPassword=async function(){const mobile=cleanMobile(document.getElementById('customerForgotMobile')?.value),p=document.getElementById('customerNewPassword')?.value||'',p2=document.getElementById('customerNewPassword2')?.value||'',m=document.getElementById('customerForgotMsg');const show=(t,ok=false)=>{if(m){m.textContent=t;m.className='text-xs font-bold p-2 rounded '+(ok?'text-emerald-700 bg-emerald-50 border border-emerald-200':'text-red-600 bg-red-50 border border-red-200')}};const a=accounts(),i=a.findIndex(u=>cleanMobile(u.mobile)===mobile);if(i<0)return show('Mobile number not found.');if(p.length<6)return show('Password must be at least 6 characters.');if(p!==p2)return show('Passwords do not match.');a[i].passwordHash=await hash(p);delete a[i].password;saveAccounts(a);show('Password reset successfully. Please login.',true);setTimeout(()=>{try{showCustomerLogin()}catch(e){}},600)};
-  window.customerLogout=function(){localStorage.removeItem(CURRENT_KEY);try{if(typeof setDB==='function')setDB('currentUser',null)}catch(e){};try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(e){};try{if(typeof navigateTo==='function')navigateTo('home')}catch(e){}};
-
-  // First-screen customer gate: existing account only; never creates a fake account.
-  window.maajFirstCustomerLogin=async function(e){if(e)e.preventDefault();const mobile=cleanMobile(document.getElementById('maajFirstMobile')?.value),p=document.getElementById('maajFirstPassword')?.value||'',err=document.getElementById('maajFirstLoginError')||document.getElementById('maajCustomerFirstError');if(!/^\d{10}$/.test(mobile)||!p){if(err){err.textContent='Enter your 10-digit mobile number and password.';err.classList.remove('hidden');err.style.display='block'}return false}const a=accounts(),i=a.findIndex(u=>cleanMobile(u.mobile)===mobile);if(i<0){if(err){err.textContent='Customer account not found. Please create an account first.';err.classList.remove('hidden');err.style.display='block'}return false}const u=a[i],h=await hash(p);let ok=u.passwordHash===h;if(!ok&&u.password){ok=u.password===p;if(ok){u.passwordHash=h;delete u.password;a[i]=u;saveAccounts(a)}}if(!ok){if(err){err.textContent='Invalid mobile number or password.';err.classList.remove('hidden');err.style.display='block'}return false}const c={id:u.id,name:u.name,mobile:u.mobile,address:u.address||'',pincode:u.pincode||''};write(CURRENT_KEY,c);const gate=document.getElementById('maajCustomerFirstLogin');if(gate){gate.classList.add('hide');gate.style.display='none'}try{if(typeof updateCustomerNav==='function')updateCustomerNav()}catch(x){};try{if(typeof navigateTo==='function')navigateTo('home',false)}catch(x){};return false};
+  // 6–8: Customer authentication is handled ONLY by the Supabase Auth layer above.
+  // IMPORTANT: Do not recreate customer accounts, passwords, or login state in localStorage.
+  // window.isCustomerLoggedIn, window.customerSignup, window.customerLogin,
+  // window.maajFirstCustomerLogin, window.resetCustomerPassword and window.customerLogout
+  // are intentionally NOT overridden here.
 
   // 9: all order views use the same order store and current customer.
   function allOrders(){const a=read(ORDERS_KEY,null);const b=read(LEGACY_ORDERS_KEY,[]);if(Array.isArray(a)&&a.length)return a;return Array.isArray(b)?b:[]}
@@ -5809,5 +5870,91 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   window.MAAJ_SUPABASE_SECURITY='auth + RLS; customer profiles in Supabase; no account credentials in localStorage';
 })();
 </script>
+
+<!-- MAAJ PHARMACY — SUPABASE CUSTOMER AUTH UI -->
+<style id="maaj-supabase-auth-ui">
+#maajCustomerAuthModal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,.58);padding:16px}
+#maajCustomerAuthModal.active{display:flex}
+.maaj-auth-card{width:min(430px,100%);background:#fff;border-radius:24px;box-shadow:0 25px 80px rgba(15,23,42,.3);padding:24px;position:relative}
+.maaj-auth-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:0;border-radius:50%;background:#f1f5f9;color:#475569;font-size:18px;cursor:pointer}
+.maaj-auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f1f5f9;padding:5px;border-radius:12px;margin:18px 0}
+.maaj-auth-tabs button{border:0;padding:10px;border-radius:9px;font-weight:800;cursor:pointer;background:transparent;color:#64748b}
+.maaj-auth-tabs button.active{background:#fff;color:#047857;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+.maaj-auth-panel{display:none}.maaj-auth-panel.active{display:block}
+.maaj-auth-label{display:block;font-size:11px;font-weight:800;color:#334155;margin:11px 0 6px}
+.maaj-auth-input{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:11px;padding:12px;font-size:13px;outline:0}
+.maaj-auth-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+.maaj-auth-submit{width:100%;border:0;border-radius:12px;padding:13px;margin-top:15px;background:#059669;color:#fff;font-weight:900;cursor:pointer}
+.maaj-auth-msg{min-height:18px;margin-top:10px;font-size:11px;font-weight:800}
+.maaj-auth-note{font-size:10px;color:#64748b;text-align:center;margin-top:12px}
+</style>
+<div id="maajCustomerAuthModal" aria-hidden="true">
+  <div class="maaj-auth-card" role="dialog" aria-modal="true" aria-labelledby="maajAuthTitle">
+    <button type="button" class="maaj-auth-close" onclick="closeCustomerAuth()" aria-label="Close">×</button>
+    <div style="text-align:center">
+      <div style="width:52px;height:52px;margin:auto;border-radius:16px;background:#ecfdf5;color:#059669;display:grid;place-items:center;font-size:22px"><i class="fa-solid fa-user-lock"></i></div>
+      <h2 id="maajAuthTitle" style="font-size:22px;font-weight:900;color:#0f172a;margin:10px 0 3px">Customer Account</h2>
+      <p style="font-size:11px;color:#64748b;margin:0">Secure mobile + password account</p>
+    </div>
+    <div class="maaj-auth-tabs">
+      <button type="button" id="maajLoginTab" class="active" onclick="openCustomerAuth('login')">Login</button>
+      <button type="button" id="maajSignupTab" onclick="openCustomerAuth('signup')">Create Account</button>
+    </div>
+    <form id="maajCustomerLoginPanel" class="maaj-auth-panel active" onsubmit="return customerLogin(event)">
+      <label class="maaj-auth-label">Mobile Number</label>
+      <input id="customerLoginMobile" class="maaj-auth-input" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel" required>
+      <label class="maaj-auth-label">Password</label>
+      <input id="customerLoginPassword" class="maaj-auth-input" type="password" minlength="6" placeholder="Your password" autocomplete="current-password" required>
+      <button class="maaj-auth-submit" type="submit">Login</button>
+      <div id="customerLoginMsg" class="maaj-auth-msg"></div>
+    </form>
+    <form id="maajCustomerSignupPanel" class="maaj-auth-panel" onsubmit="return customerSignup(event)">
+      <label class="maaj-auth-label">Full Name</label>
+      <input id="customerSignupName" class="maaj-auth-input" type="text" placeholder="Your name" autocomplete="name" required>
+      <label class="maaj-auth-label">Mobile Number</label>
+      <input id="customerSignupMobile" class="maaj-auth-input" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel" required>
+      <label class="maaj-auth-label">Password</label>
+      <input id="customerSignupPassword" class="maaj-auth-input" type="password" minlength="6" placeholder="Minimum 6 characters" autocomplete="new-password" required>
+      <label class="maaj-auth-label">Confirm Password</label>
+      <input id="customerSignupPassword2" class="maaj-auth-input" type="password" minlength="6" placeholder="Re-enter password" autocomplete="new-password" required>
+      <button class="maaj-auth-submit" type="submit">Create Account</button>
+      <div id="customerSignupMsg" class="maaj-auth-msg"></div>
+    </form>
+    
+  </div>
+</div>
+<script id="maaj-supabase-auth-ui-js">
+(function(){
+  function show(mode){
+    var modal=document.getElementById('maajCustomerAuthModal'); if(!modal)return false;
+    var login=mode!=='signup';
+    modal.classList.add('active'); modal.setAttribute('aria-hidden','false');
+    var lp=document.getElementById('maajCustomerLoginPanel'), sp=document.getElementById('maajCustomerSignupPanel');
+    if(lp)lp.classList.toggle('active',login); if(sp)sp.classList.toggle('active',!login);
+    var lt=document.getElementById('maajLoginTab'), st=document.getElementById('maajSignupTab');
+    if(lt)lt.classList.toggle('active',login); if(st)st.classList.toggle('active',!login);
+    var title=document.getElementById('maajAuthTitle'); if(title)title.textContent=login?'Customer Login':'Create Customer Account';
+    setTimeout(function(){var x=document.querySelector(login?'#customerLoginMobile':'#customerSignupName');if(x)x.focus()},50);
+    return true;
+  }
+  window.openCustomerAuth=show;
+  window.showCustomerLogin=function(){return show('login')};
+  window.openCustomerLogin=function(){return show('login')};
+  window.openLogin=function(){return show('login')};
+  window.showLogin=function(){return show('login')};
+  window.closeCustomerAuth=function(){var m=document.getElementById('maajCustomerAuthModal');if(m){m.classList.remove('active');m.setAttribute('aria-hidden','true')}return false};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')window.closeCustomerAuth()});
+  document.addEventListener('click',function(e){var m=document.getElementById('maajCustomerAuthModal');if(m&&e.target===m)window.closeCustomerAuth()});
+  if(typeof window.customerLogin==='function'){
+    var realLogin=window.customerLogin;
+    window.customerLogin=async function(e){if(e)e.preventDefault();return await realLogin()};
+  }
+  if(typeof window.customerSignup==='function'){
+    var realSignup=window.customerSignup;
+    window.customerSignup=async function(e){if(e)e.preventDefault();return await realSignup()};
+  }
+})();
+</script>
+
 </body>
 </html>
