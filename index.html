@@ -160,6 +160,10 @@ html>
 </style>
 
 <style id="maaj-your-cart-design-system">
+/* MAAJ PHARMACY — SINGLE CART EXPERIENCE
+   The dedicated Cart page is the only customer cart UI. The legacy side drawer is disabled. */
+#maajCartDrawer{display:none!important}
+#maajCartDrawer.active{display:none!important}
 /* YOUR CART — token-driven storefront layer; existing cart logic remains intact */
 :root{
   --maaj-cart-text:var(--maaj-text-primary,#121414);
@@ -508,6 +512,10 @@ img{max-width:100%;height:auto}
 }
 </style>
 
+
+<style id="maaj-single-cart-only-final-fix">
+#maajCartDrawer, #maajCartDrawer.active, .maaj-order-bar { display:none!important; visibility:hidden!important; pointer-events:none!important; }
+</style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
 
@@ -2304,15 +2312,8 @@ async function maajLoadMedicinesFromAPI() {
                 const total = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
                 document.querySelectorAll('#cartBadgeCount,#maajBottomCartCount,.cart-badge-count,[data-cart-count]').forEach(el => { el.textContent = String(total); });
             } catch (e) {}
-            // Add completed: do not show an OK/confirmation alert.
-            // Open the customer cart automatically so the user can review the item immediately.
-            try {
-                if (typeof window.maajOpenCart === 'function') {
-                    window.maajOpenCart();
-                } else if (typeof maajOpenCart === 'function') {
-                    maajOpenCart();
-                }
-            } catch (e) {}
+            // Item added successfully. Stay on the current page.
+            // Customer can open the single Cart from the header whenever they want.
         }
 
         function updateCartBadge() {
@@ -3058,314 +3059,6 @@ async function maajLoadMedicinesFromAPI() {
 })();
 </script>
 
-<script id="customer-checkout-cart-fix-v2">
-(function(){
-  function getCU(){
-    try{
-      if(typeof currentCustomer!=='undefined' && currentCustomer) return currentCustomer;
-    }catch(e){}
-    return window.currentCustomer || null;
-  }
-  function fill(){
-    var u=getCU(); if(!u)return;
-    var map={
-      checkoutName:u.name||'',
-      checkoutPhone:u.mobile||u.phone||'',
-      checkoutPincode:u.pincode||'',
-      checkoutAddress:u.address||''
-    };
-    Object.keys(map).forEach(function(id){
-      var el=document.getElementById(id);
-      if(el && !el.value) el.value=map[id];
-    });
-    if(typeof renderCheckoutSummary==='function') renderCheckoutSummary();
-  }
-  var oldNav=window.navigateTo;
-  if(typeof oldNav==='function' && !oldNav.__checkoutFixed){
-    function nav(pageId){
-      var r=oldNav.apply(this,arguments);
-      if(pageId==='checkout') setTimeout(fill,60);
-      return r;
-    }
-    nav.__checkoutFixed=true;
-    window.navigateTo=nav;
-  }
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(fill,100);});
-})();
-</script>
-
-
-<script id="working-checkout-fix">
-(function(){
-  window.openCheckoutFromCart = function(){
-    try{
-      if(typeof cart !== 'undefined' && (!cart || cart.length===0)){
-        alert('Your cart is empty!');
-        return;
-      }
-    }catch(e){}
-    var user = null;
-    try{
-      if(typeof currentCustomer !== 'undefined' && currentCustomer) user=currentCustomer;
-    }catch(e){}
-    if(!user){
-      try{ user=window.currentCustomer || null; }catch(e){}
-    }
-    if(!user){
-      alert('Please login to your customer account first.');
-      try{ if(typeof openCustomerAuth==='function') openCustomerAuth('login'); }catch(e){}
-      return;
-    }
-    if(typeof window.navigateTo==='function'){
-      window.navigateTo('checkout');
-      setTimeout(function(){
-        var vals={
-          checkoutName:user.name||'',
-          checkoutPhone:user.mobile||user.phone||'',
-          checkoutPincode:user.pincode||'',
-          checkoutAddress:user.address||''
-        };
-        Object.keys(vals).forEach(function(id){
-          var el=document.getElementById(id);
-          if(el) el.value=vals[id];
-        });
-        try{ if(typeof renderCheckoutSummary==='function') renderCheckoutSummary(); }catch(e){}
-        var page=document.getElementById('page-checkout');
-        if(page) page.scrollIntoView({behavior:'smooth',block:'start'});
-      },80);
-    } else {
-      alert('Checkout page is unavailable. Please refresh the page.');
-    }
-  };
-
-  // Ensure any remaining cart "Confirm & Place Order" button opens checkout.
-  document.addEventListener('DOMContentLoaded',function(){
-    document.querySelectorAll('button').forEach(function(btn){
-      var t=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
-      if(t.includes('confirm') && t.includes('place order') && !btn.closest('#page-checkout')){
-        btn.setAttribute('onclick','openCheckoutFromCart()');
-        btn.type='button';
-      }
-    });
-  });
-})();
-</script>
-
-
-<script id="final-cod-order-handler">
-(function(){
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
-  function getUser(){
-    try{ if(typeof currentCustomer!=='undefined' && currentCustomer) return currentCustomer; }catch(e){}
-    return window.currentCustomer || null;
-  }
-  function getArray(key, fallback){
-    try{
-      var raw=localStorage.getItem(key);
-      if(raw) return JSON.parse(raw);
-    }catch(e){}
-    return fallback;
-  }
-  function saveArray(key, value){
-    try{localStorage.setItem(key, JSON.stringify(value));}catch(e){}
-    try{if(typeof setDB==='function') setDB(key,value);}catch(e){}
-  }
-
-  
-  /* RX PRESCRIPTION REQUIRED FIX */
-  function hasRxMedicine(items){
-    return (items||[]).some(function(i){
-      return i && (
-        i.prescriptionRequired===true || i.rxRequired===true ||
-        i.rx===true ||
-        i.isRx===true ||
-        String(i.prescription||'').toLowerCase()==='required' ||
-        String(i.prescriptionRequired||'').toLowerCase()==='true' ||
-        String(i.category||'').toLowerCase().includes('prescription')
-      );
-    });
-  }
-  function updateRxBox(){
-    var box=document.getElementById('rxCheckoutBox');
-    var input=document.getElementById('checkoutPrescription');
-    var items=[];
-    try{items=(typeof cart!=='undefined' && Array.isArray(cart))?cart:[];}catch(e){}
-    var required=hasRxMedicine(items);
-    if(box) box.classList.toggle('hidden',!required);
-    if(input) input.required=required;
-    return required;
-  }
-  document.addEventListener('DOMContentLoaded',function(){
-    setTimeout(updateRxBox,150);
-    var input=document.getElementById('checkoutPrescription');
-    if(input) input.addEventListener('change',function(){
-      var st=document.getElementById('checkoutPrescriptionStatus');
-      if(st) st.textContent=this.files && this.files.length ? ('Selected: '+this.files[0].name) : 'No prescription uploaded.';
-    });
-  });
-
-
-  window.finalPlaceCODOrder=function(){
-    var u=getUser();
-    if(!u){
-      alert('Please login to your customer account first.');
-      try{if(typeof openCustomerAuth==='function')openCustomerAuth('login');}catch(e){}
-      return false;
-    }
-
-    var name=(document.getElementById('checkoutName')||{}).value;
-    var phone=(document.getElementById('checkoutPhone')||{}).value;
-    var pin=(document.getElementById('checkoutPincode')||{}).value;
-    var address=(document.getElementById('checkoutAddress')||{}).value;
-
-    name=String(name||'').trim();
-    phone=String(phone||'').replace(/\D/g,'');
-    pin=String(pin||'').replace(/\D/g,'');
-    address=String(address||'').trim();
-
-    if(!name){alert('Please enter Customer Name.');return false;}
-    if(!/^\d{10}$/.test(phone)){alert('Please enter a valid 10-digit Mobile Number.');return false;}
-    if(!/^\d{6}$/.test(pin)){alert('Please enter a valid 6-digit PIN Code.');return false;}
-    if(!address){alert('Please enter complete Delivery Address.');return false;}
-
-    var items=[];
-    try{items=(typeof cart!=='undefined' && Array.isArray(cart))?cart:[];}catch(e){items=[];}
-    if(!items.length){alert('Your cart is empty.');return false;}
-    var rxRequired=hasRxMedicine(items);
-    var rxInput=document.getElementById('checkoutPrescription');
-    if(rxRequired && (!rxInput || !rxInput.files || !rxInput.files.length)){
-      var rxBox=document.getElementById('rxCheckoutBox');
-      if(rxBox) rxBox.classList.remove('hidden');
-      alert('Prescription required: your cart contains Rx medicine. Please upload the doctor prescription before placing the order.');
-      if(rxInput) rxInput.focus();
-      return false;
-    }
-    var prescriptionMeta=null;
-    if(rxRequired && rxInput && rxInput.files && rxInput.files.length){
-      var f=rxInput.files[0];
-      var allowed=['application/pdf','image/jpeg','image/png'];
-      var ext=(f.name.split('.').pop()||'').toLowerCase();
-      if(allowed.indexOf(f.type)<0 && ['pdf','jpg','jpeg','png'].indexOf(ext)<0){
-        alert('Please upload prescription as PDF, JPG or PNG.');
-        return false;
-      }
-      if(f.size>5*1024*1024){
-        alert('Prescription file must be 5 MB or smaller.');
-        return false;
-      }
-      prescriptionMeta={name:f.name,type:f.type,size:f.size,uploadedAt:new Date().toISOString()};
-    }
-
-
-    var subtotal=items.reduce(function(sum,i){return sum+Number(i.price||0)*Number(i.qty||0);},0);
-    var discount=0;
-    try{
-      if(typeof activeCoupon!=='undefined' && activeCoupon){
-        discount=activeCoupon.type==='PERCENT'
-          ? subtotal*Number(activeCoupon.value||0)/100
-          : Number(activeCoupon.value||0);
-        discount=Math.min(discount,subtotal);
-      }
-    }catch(e){}
-    var delivery=0;
-    try{
-      var freeAt=Number((typeof storeSettings!=='undefined' && storeSettings && storeSettings.freeDelivery)||499);
-      var deliveryFee=Number((typeof storeSettings!=='undefined' && storeSettings && storeSettings.delivery)||0);
-      delivery=(subtotal-discount)>=freeAt?0:deliveryFee;
-    }catch(e){}
-    var total=Math.max(0,subtotal-discount+delivery);
-
-    var orders=getArray('orders',[]);
-    if(!Array.isArray(orders))orders=[];
-
-    var order={
-      id:'ORD-'+Date.now().toString().slice(-8),
-      date:new Date().toLocaleString('en-IN'),
-      customer:name,
-      phone:phone,
-      pincode:pin,
-      address:address,
-      customerId:u.id || u.mobile || phone,
-      customerMobile:u.mobile || phone,
-      items:JSON.parse(JSON.stringify(items)),
-      subtotal:subtotal,
-      discount:discount,
-      delivery:delivery,
-      tax:0,
-      amount:total,
-      paymentMode:'COD',
-      paymentStatus:'COD - Pay on Delivery',
-      prescriptionRequired:rxRequired,
-      prescription:prescriptionMeta,
-      status:rxRequired?'Prescription Pending Review':'Pending'
-    };
-
-    orders.unshift(order);
-    saveArray('orders',orders);
-
-    // Update stock if product data exists.
-    try{
-      if(typeof products!=='undefined' && Array.isArray(products)){
-        items.forEach(function(ci){
-          var p=products.find(function(x){return String(x.id)===String(ci.id);});
-          if(p)p.stock=Math.max(0,Number(p.stock||0)-Number(ci.qty||0));
-        });
-        saveArray('products',products);
-      }
-    }catch(e){}
-
-    // Save latest customer delivery details.
-    try{
-      var accounts=[];
-      if(Array.isArray(accounts)){
-        var uid=u.id||u.mobile||phone;
-        var ai=accounts.findIndex(function(a){return String(a.id||a.mobile)===String(uid);});
-        if(ai<0) ai=accounts.findIndex(function(a){return String(a.mobile)===String(u.mobile||phone);});
-        if(ai>=0){
-          accounts[ai].name=name;
-          accounts[ai].mobile=accounts[ai].mobile||phone;
-          accounts[ai].pincode=pin;
-          accounts[ai].address=address;
-          
-        }
-      }
-      try{
-        u.name=name; u.mobile=u.mobile||phone; u.pincode=pin; u.address=address;
-        window.currentCustomer=u;
-        if(window.maajSupabaseClient && window.maajCustomerSession?.user){
-          window.maajSupabaseClient.from('customer_profiles').update({name:name,phone:'+91'+phone,pincode:pin,address:address}).eq('user_id',window.maajCustomerSession.user.id).then(()=>{}).catch(()=>{});
-        }
-      }catch(e){}
-    }catch(e){}
-
-    try{cart=[];localStorage.setItem('cart','[]');}catch(e){}
-    try{if(typeof activeCoupon!=='undefined')activeCoupon=null;}catch(e){}
-    try{if(typeof updateCartBadge==='function')updateCartBadge();}catch(e){}
-
-    alert('Order placed successfully!\\nOrder ID: '+order.id+'\\nPayment: Cash on Delivery (COD)\\nTotal: ₹'+total.toFixed(2));
-
-    try{
-      if(typeof navigateTo==='function')navigateTo('orders');
-      else window.location.hash='#orders';
-    }catch(e){window.location.hash='#orders';}
-
-    return false;
-  };
-
-  document.addEventListener('DOMContentLoaded',function(){
-    var btns=document.querySelectorAll('button');
-    btns.forEach(function(btn){
-      var t=(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
-      if(t.indexOf('confirm')>=0 && t.indexOf('place cod order')>=0){
-        btn.type='button';
-        btn.onclick=window.finalPlaceCODOrder;
-      }
-    });
-  });
-})();
-</script>
-
-
 <script id="admin-extra-medicine-categories">
 (function(){
   window.EXTRA_MEDICINE_CATEGORIES=['Power','Cream','Ointment','Belt','Syrup','Pain Oil','Balm','Condom'];
@@ -3615,44 +3308,42 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-<div id="maajCartDrawer" class="maaj-cart-drawer">
-  <div class="maaj-cart-panel">
-    <div class="flex items-center justify-between border-b pb-3">
-      <div><div class="text-[10px] font-black tracking-widest text-emerald-600">YOUR CART</div><h2 class="text-xl font-black">Review Order</h2></div>
-      <button onclick="maajCloseCart()" class="w-9 h-9 rounded-full bg-slate-100"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div id="maajCartItems" class="py-2"></div>
-    <div class="border-t pt-4 mt-3">
-      <div class="flex justify-between text-sm"><span>Subtotal</span><b id="maajCartSubtotal">₹0.00</b></div>
-      <div class="flex justify-between text-sm mt-2"><span>Delivery</span><b id="maajCartDelivery">₹0.00</b></div>
-      <div class="flex justify-between text-lg font-black mt-3"><span>Total</span><span id="maajCartTotal" class="text-emerald-600">₹0.00</span></div>
-      <button onclick="maajGoCheckout()" class="maaj-checkout-btn w-full mt-4">Proceed to Checkout</button>
-    </div>
-  </div>
-</div>
+<style id="maaj-single-cart-success-ui">
+#maajCartDrawer{display:none!important}
+#maajCartDrawer.active{display:none!important}
+.maaj-order-success-card{max-width:760px;margin:28px auto;padding:34px 28px;border:1px solid #d1fae5;border-radius:28px;background:linear-gradient(180deg,#ffffff 0%,#f0fdf9 100%);box-shadow:0 20px 55px rgba(15,118,110,.12);text-align:center}
+.maaj-success-icon{width:72px;height:72px;margin:0 auto 14px;border-radius:24px;display:grid;place-items:center;background:#10b981;color:#fff;font-size:30px;box-shadow:0 10px 25px rgba(16,185,129,.25)}
+.maaj-success-kicker{font-size:11px;font-weight:900;letter-spacing:.18em;color:#059669}
+.maaj-success-title{margin:8px 0 6px;font-size:27px;line-height:1.18;font-weight:950;color:#0f172a}
+.maaj-success-subtitle{max-width:590px;margin:0 auto;color:#64748b;font-size:13px;line-height:1.65}
+.maaj-order-id-box{margin:22px auto 16px;max-width:520px;padding:14px 16px;border:1px dashed #6ee7b7;border-radius:16px;background:#fff;display:flex;align-items:center;gap:10px;text-align:left}
+.maaj-order-id-box span{font-size:9px;font-weight:900;letter-spacing:.12em;color:#64748b}
+.maaj-order-id-box strong{font-size:15px;color:#047857;flex:1;word-break:break-all}
+.maaj-order-id-box button{border:0;border-radius:9px;padding:7px 10px;background:#ecfdf5;color:#047857;font-size:10px;font-weight:900;cursor:pointer}
+.maaj-success-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0;text-align:left}
+.maaj-success-grid>div{padding:13px 14px;border:1px solid #e2e8f0;border-radius:14px;background:#fff}
+.maaj-success-grid span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;font-weight:900}
+.maaj-success-grid b{display:block;margin-top:4px;font-size:12px;color:#0f172a}
+.maaj-success-note{display:flex;gap:12px;align-items:flex-start;margin:17px 0;padding:14px;text-align:left;border-radius:15px;background:#ecfdf5;border:1px solid #bbf7d0;color:#065f46}
+.maaj-success-note>i{margin-top:2px;font-size:16px}
+.maaj-success-note b{font-size:12px}
+.maaj-success-note p{margin:3px 0 0;font-size:10px;line-height:1.55;color:#047857}
+.maaj-success-actions{display:flex;gap:10px;justify-content:center;margin-top:20px}
+.maaj-success-primary,.maaj-success-secondary{border:0;border-radius:12px;padding:12px 17px;font-size:11px;font-weight:900;cursor:pointer}
+.maaj-success-primary{background:#059669;color:#fff}
+.maaj-success-secondary{background:#fff;color:#047857;border:1px solid #a7f3d0}
+@media(max-width:640px){
+ .maaj-order-success-card{margin:14px;padding:25px 16px;border-radius:22px}
+ .maaj-success-title{font-size:22px}
+ .maaj-success-grid{grid-template-columns:1fr}
+ .maaj-success-actions{flex-direction:column}
+ .maaj-success-primary,.maaj-success-secondary{width:100%}
+ .maaj-order-id-box{flex-wrap:wrap}
+ .maaj-order-id-box strong{min-width:100%}
+}
+</style>
 
-<div id="maajCheckoutPage" class="fixed inset-0 z-[100020] hidden bg-slate-50 overflow-y-auto">
-  <div class="sticky top-0 bg-white border-b z-10">
-    <div class="max-w-[1180px] mx-auto p-4 flex items-center gap-3"><button onclick="maajCloseCheckout()" class="w-9 h-9 rounded-full bg-slate-100"><i class="fa-solid fa-arrow-left"></i></button><b>Checkout</b></div>
-  </div>
-  <div class="maaj-checkout-box">
-    <div id="maajCheckoutContent">
-      <p class="text-[10px] font-black tracking-widest text-emerald-600">DELIVERY DETAILS</p>
-      <h2 class="text-2xl font-black mt-1">Where should we deliver?</h2>
-      <label class="maaj-form-label">Full Name *</label><input id="maajOrderName" class="maaj-form-input" placeholder="Your name">
-      <label class="maaj-form-label">Mobile Number *</label><input id="maajOrderMobile" class="maaj-form-input" maxlength="10" inputmode="numeric" placeholder="10-digit mobile number">
-      <label class="maaj-form-label">Delivery Address *</label><textarea id="maajOrderAddress" class="maaj-form-input" rows="4" placeholder="House / village / landmark / pincode"></textarea>
-      <label class="maaj-form-label">Payment Method</label><div class="border rounded-xl p-3 text-xs font-bold bg-emerald-50 border-emerald-200">Cash on Delivery (COD)</div>
-      <div class="border-t mt-5 pt-4"><div class="flex justify-between"><span>Order Total</span><b id="maajCheckoutTotal" class="text-emerald-600"></b></div>
-      <button onclick="maajPlaceOrder()" class="maaj-checkout-btn w-full mt-4">Place Order</button></div>
-      <p class="text-[10px] text-slate-500 mt-3">Prescription-required medicines are subject to pharmacy verification.</p>
-    </div>
-  </div>
-</div>
-
-<div class="maaj-order-bar">
-  <div class="maaj-order-bar-inner">
-    <div><div class="maaj-order-main"><i class="fa-solid fa-cart-shopping text-emerald-600 mr-1"></i><span id="maajBottomCartCount">0</span> items in cart</div><div class="maaj-order-sub">Review your medicines before ordering</div></div>
+<div class="maaj-order-sub">Review your medicines before ordering</div></div>
     <button class="maaj-checkout-btn" onclick="maajOpenCart()">View Cart</button>
   </div>
 </div>
@@ -3673,9 +3364,25 @@ document.addEventListener('DOMContentLoaded',function(){
  };
  window.maajHomeSearchMedicines=function(){maajRenderCustomerHome()};
  window.maajOpenCart=function(){
-   var d=document.getElementById('maajCartDrawer');d.classList.add('active');maajRenderCart();
+   /* Single-cart rule: always open the main Cart page, never the legacy side drawer. */
+   try{
+     var drawer=document.getElementById('maajCartDrawer');
+     if(drawer)drawer.classList.remove('active');
+   }catch(e){}
+   if(typeof window.navigateTo==='function'){
+     window.navigateTo('cart');
+     setTimeout(function(){
+       try{
+         if(typeof window.renderCartPage==='function')window.renderCartPage();
+         else if(typeof window.renderCart==='function')window.renderCart();
+       }catch(e){}
+     },80);
+   }
  };
- window.maajCloseCart=function(){document.getElementById('maajCartDrawer').classList.remove('active')};
+ window.maajCloseCart=function(){
+   try{var d=document.getElementById('maajCartDrawer');if(d)d.classList.remove('active')}catch(e){}
+   try{if(typeof window.navigateTo==='function')window.navigateTo('cart')}catch(e){}
+ };
  window.maajRenderCart=function(){
    var c=getCart(), box=document.getElementById('maajCartItems'), sub=0,count=0;
    box.innerHTML=c.length?c.map(function(i,idx){var q=Number(i.qty||1),price=Number(i.price||0);sub+=price*q;count+=q;return '<div class="maaj-cart-item"><img src="'+(i.photo||i.image||'')+'" onerror="this.style.display=\'none\'"><div class="flex-1"><b class="text-xs">'+i.name+'</b><div class="text-[11px] text-emerald-600 font-bold mt-1">'+money(price)+'</div><div class="maaj-qty"><button onclick="maajChangeQty('+idx+',-1)">−</button><b class="text-xs">'+q+'</b><button onclick="maajChangeQty('+idx+',1)">+</button><button onclick="maajRemoveCart('+idx+')" class="ml-2 text-red-500"><i class="fa-solid fa-trash"></i></button></div></div></div>'}).join(''):'<div class="text-center p-10 text-xs text-slate-500">Your cart is empty.</div>';
@@ -3688,14 +3395,9 @@ document.addEventListener('DOMContentLoaded',function(){
  window.maajGoCheckout=function(){if(!getCart().length)return alert('Your cart is empty.');maajCloseCart();var p=document.getElementById('maajCheckoutPage');p.classList.remove('hidden');p.classList.add('block');document.getElementById('maajCheckoutTotal').textContent=document.getElementById('maajCartTotal').textContent};
  window.maajCloseCheckout=function(){var p=document.getElementById('maajCheckoutPage');p.classList.add('hidden');p.classList.remove('block')};
  window.maajPlaceOrder=function(){
-   var n=document.getElementById('maajOrderName').value.trim(),m=document.getElementById('maajOrderMobile').value.replace(/\D/g,''),a=document.getElementById('maajOrderAddress').value.trim(),c=getCart();
-   if(!n||m.length!==10||!a)return alert('Please complete name, 10-digit mobile number and delivery address.');
-   var orders=[];try{orders=JSON.parse(localStorage.getItem('maaj_orders')||'[]')}catch(e){}
-   var id='MJ'+Date.now().toString().slice(-8);
-   var total=Number(localStorage.getItem('maaj_cart_total')||0);
-   orders.push({id:id,name:n,mobile:m,address:a,items:c,total:total,status:'Order Placed',payment:'COD',date:new Date().toISOString()});
-   localStorage.setItem('maaj_orders',JSON.stringify(orders));setCart([]);localStorage.removeItem('maaj_cart_total');
-   document.getElementById('maajCheckoutContent').innerHTML='<div class="maaj-success"><div class="text-5xl text-emerald-600">✓</div><h2 class="text-2xl font-black mt-3">Order placed successfully</h2><p class="text-sm text-slate-600 mt-2">Your order <b>'+id+'</b> has been received.</p><p class="text-xs text-slate-500 mt-1">Payment: Cash on Delivery</p><button onclick="maajCloseCheckout();location.reload()" class="maaj-checkout-btn mt-5">Continue Shopping</button></div>';
+   if(typeof window.finalPlaceCODOrder==='function') return window.finalPlaceCODOrder();
+   alert('Order service is not ready. Please refresh the page.');
+   return false;
  };
   document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){maajRenderCustomerHome();maajRenderCart()},300)});
 })();
@@ -3728,206 +3430,12 @@ window.maajTriggerPrescriptionUpload=function(){
 })();
 </script>
 
-<script id="maaj-empty-cart-handler">
-(function(){
-  function getCartCount(){
-    try{
-      var cart=JSON.parse(localStorage.getItem('maaj_cart')||'[]');
-      return cart.reduce(function(total,item){
-        return total+Number(item.qty||1);
-      },0);
-    }catch(e){return 0;}
-  }
-
-  function updateEmptyCartBar(){
-    var bar=document.querySelector('.maaj-order-bar');
-    if(!bar)return;
-    var count=getCartCount();
-    bar.classList.toggle('maaj-cart-empty',count===0);
-  }
-
-  document.addEventListener('DOMContentLoaded',function(){
-    setTimeout(updateEmptyCartBar,300);
-  });
-
-  var oldRenderCart=window.maajRenderCart;
-  if(typeof oldRenderCart==='function'){
-    window.maajRenderCart=function(){
-      var result=oldRenderCart.apply(this,arguments);
-      setTimeout(updateEmptyCartBar,0);
-      return result;
-    };
-  }
-
-  var oldSetItem=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(key,value){
-    var result=oldSetItem.call(this,key,value);
-    if(key==='maaj_cart')setTimeout(updateEmptyCartBar,0);
-    return result;
-  };
-
-  var oldRemoveItem=Storage.prototype.removeItem;
-  Storage.prototype.removeItem=function(key){
-    var result=oldRemoveItem.call(this,key);
-    if(key==='maaj_cart')setTimeout(updateEmptyCartBar,0);
-    return result;
-  };
-})();
-</script>
-
 <style id="maaj-delivery-gst-style">
 .maaj-delivery-box{margin-top:14px;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px}
 .maaj-delivery-ok{color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:10px;border-radius:10px;font-size:11px;font-weight:800}
 .maaj-delivery-warn{color:#92400e;background:#fffbeb;border:1px solid #fde68a;padding:10px;border-radius:10px;font-size:11px;font-weight:800}
 .maaj-gst-line{font-size:12px;color:#475569}
 </style>
-<script id="maaj-delivery-gst-system">
-(function(){
-  /* Store-area delivery configuration.
-     Known local PINs are treated as the under-10-km local zone.
-     Distance band can be refined here when exact route distance is known. */
-  var PIN_ZONES={
-    "767022":{place:"Agalpur",distance:5,days:"Same-day / 1 day"},
-    "767061":{place:"Duduka",distance:5,days:"Same-day / 1 day"},
-    "767021":{place:"Salebhata",distance:5,days:"Same-day / 1 day"}
-  };
-
-  function cart(){try{return JSON.parse(localStorage.getItem('maaj_cart')||'[]')}catch(e){return[]}}
-  function money(n){return '₹'+Number(n||0).toFixed(2)}
-  function isCosmetic(p){
-    var x=[p.category,p.type,p.productType,p.name].join(' ').toLowerCase();
-    return x.indexOf('cosmetic')>=0;
-  }
-  function gstFor(p){return isCosmetic(p)?18:5}
-  function calc(){
-    var c=cart(),subtotal=0,tax=0,medicineSubtotal=0;
-    c.forEach(function(i){
-      var q=Number(i.qty||1),v=Number(i.price||0)*q;
-      subtotal+=v;
-      tax+=v*gstFor(i)/100;
-      if(!isCosmetic(i))medicineSubtotal+=v;
-    });
-    return {subtotal:subtotal,tax:tax,medicineSubtotal:medicineSubtotal};
-  }
-  function pinInfo(pin){
-    pin=String(pin||'').replace(/\D/g,'');
-    if(PIN_ZONES[pin])return PIN_ZONES[pin];
-    if(pin.length===6)return {place:"Outside mapped local zone",distance:11,days:"3–7 days depending on route"};
-    return null;
-  }
-  function deliveryFee(info,medicineSubtotal){
-    if(!info)return 0;
-    /* ₹499+ medicine-only order: delivery FREE. */
-    if(medicineSubtotal>=499)return 0;
-    if(info.distance<5)return 0;
-    if(info.distance<=10)return 20;
-    return 29;
-  }
-  function updateCheckoutDelivery(){
-    var pin=document.getElementById('maajOrderPincode');
-    var msg=document.getElementById('maajDeliveryMsg');
-    if(!pin||!msg)return;
-    var info=pinInfo(pin.value);
-    var c=calc();
-    if(!info){
-      msg.innerHTML='Enter your 6-digit PIN code.';
-      msg.className='maaj-delivery-warn';
-      return;
-    }
-    var fee=deliveryFee(info,c.medicineSubtotal);
-    var free=c.medicineSubtotal>=499;
-    msg.innerHTML='<b>'+info.place+'</b> · '+info.days+'<br>Delivery charge: '+(free?'FREE — medicine-only order ₹499+':money(fee));
-    msg.className='maaj-delivery-ok';
-    var total=c.subtotal+c.tax+fee;
-    var t=document.getElementById('maajCheckoutTotal');if(t)t.textContent=money(total);
-    localStorage.setItem('maaj_checkout_total',String(total));
-  }
-
-  window.maajRenderCart=function(){
-    var c=cart(),box=document.getElementById('maajCartItems'),sub=0,tax=0,medicine=0,count=0;
-    if(!box)return;
-    box.innerHTML=c.length?c.map(function(i,idx){
-      var q=Number(i.qty||1),price=Number(i.price||0),v=price*q,rate=gstFor(i);
-      sub+=v;tax+=v*rate/100;count+=q;if(!isCosmetic(i))medicine+=v;
-      return '<div class="maaj-cart-item"><img src="'+(i.photo||i.image||'')+'" onerror="this.style.display=\'none\'"><div class="flex-1"><b class="text-xs">'+i.name+'</b><div class="text-[11px] text-emerald-600 font-bold mt-1">'+money(price)+'</div><div class="maaj-gst-line mt-1">GST '+rate+'%</div><div class="maaj-qty"><button onclick="maajChangeQty('+idx+',-1)">−</button><b class="text-xs">'+q+'</b><button onclick="maajChangeQty('+idx+',1)">+</button><button onclick="maajRemoveCart('+idx+')" class="ml-2 text-red-500"><i class="fa-solid fa-trash"></i></button></div></div></div>';
-    }).join(''):'<div class="text-center p-10 text-xs text-slate-500">Your cart is empty.</div>';
-    var fee=medicine>=499?0:29,total=sub+tax+fee;
-    document.getElementById('maajCartSubtotal').textContent=money(sub);
-    document.getElementById('maajCartDelivery').textContent=fee?'From '+money(fee):'FREE';
-    document.getElementById('maajCartTotal').textContent=money(total);
-    document.getElementById('maajBottomCartCount').textContent=count;
-    localStorage.setItem('maaj_cart_total',String(total));
-  };
-
-  /* MAAJ PHARMACY — Mandatory minimum order value */
-  var MAAJ_MIN_ORDER = 299;
-  window.maajMinimumOrderCheck = function(){
-    var c = (typeof calc === 'function') ? calc() : {subtotal:0};
-    var value = Number(c.subtotal || 0);
-    if(value < MAAJ_MIN_ORDER){
-      alert('Minimum order value is ₹299. Please add ₹' + (MAAJ_MIN_ORDER - value).toFixed(2) + ' more to continue.');
-      return false;
-    }
-    return true;
-  };
-
-  /* Replace checkout with pincode-aware delivery + GST summary. */
-  window.maajGoCheckout=function(){
-    if(!cart().length)return alert('Your cart is empty.');
-    var minimumCart = calc();
-    if(Number(minimumCart.subtotal||0) < MAAJ_MIN_ORDER){
-      return alert('Minimum order value is ₹299. Please add ₹' + (MAAJ_MIN_ORDER - Number(minimumCart.subtotal||0)).toFixed(2) + ' more to continue.');
-    }
-    maajCloseCart();
-    var p=document.getElementById('maajCheckoutPage');p.classList.remove('hidden');p.classList.add('block');
-    var c=calc();
-    var total=c.subtotal+c.tax;
-    var content=document.getElementById('maajCheckoutContent');
-    content.innerHTML='<p class="text-[10px] font-black tracking-widest text-emerald-600">DELIVERY DETAILS</p>'+
-      '<h2 class="text-2xl font-black mt-1">Where should we deliver?</h2>'+
-      '<label class="maaj-form-label">Full Name *</label><input id="maajOrderName" class="maaj-form-input" placeholder="Your name">'+
-      '<label class="maaj-form-label">Mobile Number *</label><input id="maajOrderMobile" class="maaj-form-input" maxlength="10" inputmode="numeric" placeholder="10-digit mobile number">'+
-      '<label class="maaj-form-label">PIN Code *</label><input id="maajOrderPincode" class="maaj-form-input" maxlength="6" inputmode="numeric" placeholder="6-digit delivery PIN code" oninput="maajUpdateDeliveryCheck()">'+
-      '<div id="maajDeliveryMsg" class="maaj-delivery-box">Enter PIN code to check delivery.</div>'+
-      '<label class="maaj-form-label">Delivery Address *</label><textarea id="maajOrderAddress" class="maaj-form-input" rows="4" placeholder="House / village / landmark"></textarea>'+
-      '<label class="maaj-form-label">Payment Method</label><div class="border rounded-xl p-3 text-xs font-bold bg-emerald-50 border-emerald-200">Cash on Delivery (COD)</div>'+
-      '<div class="border-t mt-5 pt-4"><div class="flex justify-between py-1 text-sm"><span>Medicine Subtotal</span><b>'+money(c.subtotal)+'</b></div>'+
-      '<div class="flex justify-between py-1 text-sm"><span>GST (Medicine 5% / Cosmetic 18%)</span><b id="maajCheckoutGST">'+money(c.tax)+'</b></div>'+
-      '<div class="flex justify-between py-1 text-sm"><span>Delivery</span><b id="maajCheckoutDelivery">Enter PIN</b></div>'+
-      '<div class="flex justify-between mt-2 pt-2 border-t text-lg font-black"><span>Total</span><b id="maajCheckoutTotal" class="text-emerald-600">'+money(total)+'</b></div>'+
-      '<button onclick="maajPlaceOrder()" class="maaj-checkout-btn w-full mt-4">Place Order</button></div>'+
-      '<p class="text-[10px] text-slate-500 mt-3">Prescription-required medicines are subject to pharmacy verification.</p>';
-  };
-  window.maajUpdateDeliveryCheck=function(){
-    var pin=document.getElementById('maajOrderPincode'),msg=document.getElementById('maajDeliveryMsg');
-    if(!pin||!msg)return;
-    var info=pinInfo(pin.value),c=calc();
-    if(!info){msg.textContent='Enter a valid 6-digit PIN code.';msg.className='maaj-delivery-warn';return}
-    var fee=deliveryFee(info,c.medicineSubtotal),free=c.medicineSubtotal>=499,total=c.subtotal+c.tax+fee;
-    msg.innerHTML='<b>'+info.place+'</b> · '+info.days+'<br>'+ (info.distance<=10?'Local delivery zone: within 10 km.':'Delivery outside local 10 km zone: route-dependent.')+'<br>Delivery charge: '+(free?'FREE — medicine-only order ₹499+':money(fee));
-    msg.className='maaj-delivery-ok';
-    document.getElementById('maajCheckoutDelivery').textContent=free?'FREE':money(fee);
-    document.getElementById('maajCheckoutTotal').textContent=money(total);
-    localStorage.setItem('maaj_checkout_total',String(total));
-  };
-  window.maajPlaceOrder=function(){
-    var n=document.getElementById('maajOrderName').value.trim(),m=document.getElementById('maajOrderMobile').value.replace(/\D/g,''),pin=document.getElementById('maajOrderPincode').value.replace(/\D/g,''),a=document.getElementById('maajOrderAddress').value.trim(),c=cart();
-    if(!n||m.length!==10||pin.length!==6||!a)return alert('Please complete name, 10-digit mobile number, PIN code and delivery address.');
-    var info=pinInfo(pin);if(!info)return alert('Enter a valid 6-digit PIN code.');
-    var x=calc();
-    if(Number(x.subtotal||0) < MAAJ_MIN_ORDER){
-      return alert('Minimum order value is ₹299. Please add ₹' + (MAAJ_MIN_ORDER - Number(x.subtotal||0)).toFixed(2) + ' more before placing the order.');
-    }
-    var fee=deliveryFee(info,x.medicineSubtotal),free=x.medicineSubtotal>=499,total=x.subtotal+x.tax+fee;
-    var orders=[];try{orders=JSON.parse(localStorage.getItem('maaj_orders')||'[]')}catch(e){}
-    var id='MJ'+Date.now().toString().slice(-8);
-    orders.push({id:id,name:n,mobile:m,pincode:pin,address:a,items:c,subtotal:x.subtotal,gst:x.tax,delivery:fee,total:total,status:'Order Placed',payment:'COD',deliveryEstimate:info.days,date:new Date().toISOString()});
-    localStorage.setItem('maaj_orders',JSON.stringify(orders));localStorage.setItem('maaj_last_order',JSON.stringify(orders[orders.length-1]));localStorage.removeItem('maaj_cart');localStorage.removeItem('maaj_cart_total');
-    document.getElementById('maajCheckoutContent').innerHTML='<div class="maaj-success"><div class="text-5xl text-emerald-600">✓</div><h2 class="text-2xl font-black mt-3">Order placed successfully</h2><p class="text-sm text-slate-600 mt-2">Your order <b>'+id+'</b> has been received.</p><p class="text-xs text-slate-500 mt-1">Delivery: '+info.days+' · Payment: Cash on Delivery</p><p class="text-xs text-slate-500 mt-1">GST: '+money(x.tax)+' · Delivery: '+(free?'FREE':money(fee))+'</p><button onclick="maajCloseCheckout();location.reload()" class="maaj-checkout-btn mt-5">Continue Shopping</button></div>';
-  };
-})();
-</script>
-
 <script id="maaj-admin-medicine-manager-guard">
 (function(){
   var old=window.switchAdminTab;
@@ -3944,144 +3452,6 @@ window.maajTriggerPrescriptionUpload=function(){
 </script>
 
 
-<script id="maaj-your-cart-enhancement">
-(function(){
-  function money(n){return '₹'+Number(n||0).toFixed(2);}
-  function escCart(v){return String(v??'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
-  function getItems(){try{return (typeof cart!=='undefined' && Array.isArray(cart))?cart:[]}catch(e){return[]}}
-  function itemMeta(item){
-    var bits=[];
-    if(item.brand) bits.push(escCart(item.brand));
-    if(item.category) bits.push(escCart(item.category));
-    if(item.packSize) bits.push(escCart(item.packSize));
-    return bits.join(' • ');
-  }
-  window.maajRenderEnhancedCart=function(){
-    var items=getItems();
-    var list=document.getElementById('cartItemsList');
-    var count=items.reduce(function(s,i){return s+Number(i.qty||0)},0);
-    var labels=[document.getElementById('maajCartItemCountLabel'),document.getElementById('maajCartSummaryCount')];
-    labels.forEach(function(el){if(el)el.textContent=count+' '+(count===1?'item':'items')});
-    if(!list)return;
-    if(!items.length){
-      list.innerHTML='<div class="maaj-cart-empty-state"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i><h3>Your cart is empty</h3><p>Add medicines and healthcare essentials to continue.</p><button type="button" class="maaj-cart-primary-btn" style="max-width:220px" onclick="navigateTo(\'store\')">Browse Medicines</button></div>';
-    }else{
-      list.innerHTML=items.map(function(item,index){
-        var image=item.image||item.img||item.photo||'https://placehold.co/160x160?text=Medicine';
-        var meta=itemMeta(item);
-        var price=Number(item.price||0);
-        var mrp=Number(item.mrp||0);
-        return '<article class="maaj-cart-item-row" aria-label="'+escCart(item.name||'Medicine')+'">' +
-          '<div class="maaj-cart-item-image"><img src="'+escCart(image)+'" alt="'+escCart(item.name||'Medicine')+'" onerror="this.src=\'https://placehold.co/160x160?text=Medicine\'"></div>' +
-          '<div class="min-w-0"><div class="maaj-cart-item-name">'+escCart(item.name||'Medicine')+'</div>' +
-          (meta?'<div class="maaj-cart-item-meta">'+meta+'</div>':'') +
-          '<div class="maaj-cart-item-price">'+money(price)+(mrp>price?'<span class="maaj-cart-item-mrp">'+money(mrp)+'</span>':'')+'</div>' +
-          '<div class="maaj-cart-qty" aria-label="Quantity controls"><button type="button" aria-label="Decrease quantity" onclick="updateQty('+index+',-1)">−</button><span aria-live="polite">'+Number(item.qty||0)+'</span><button type="button" aria-label="Increase quantity" onclick="updateQty('+index+',1)">+</button></div>' +
-          '</div>' +
-          '<div class="maaj-cart-item-actions text-right"><div class="text-[10px] text-slate-500">'+money(price*Number(item.qty||0))+'</div><button type="button" class="maaj-cart-remove" onclick="removeItem('+index+')"><i class="fa-solid fa-trash mr-1" aria-hidden="true"></i>Remove</button></div>' +
-          '</article>';
-      }).join('');
-    }
-    maajUpdateEnhancedTotals();
-  };
-  window.maajUpdateEnhancedTotals=function(){
-    var items=getItems();
-    var subtotal=items.reduce(function(s,i){return s+(Number(i.price||0)*Number(i.qty||0))},0);
-    var discount=0;
-    try{if(typeof activeCoupon!=='undefined' && activeCoupon){discount=activeCoupon.type==='PERCENT'?(subtotal*Number(activeCoupon.value||0)/100):Number(activeCoupon.value||0)}}catch(e){}
-    discount=Math.min(Math.max(0,discount),subtotal);
-    var taxable=Math.max(0,subtotal-discount);
-    var tax=taxable*0.05;
-    var delivery=0;
-    var total=Math.max(0,taxable+tax+delivery);
-    var set=function(id,val){var el=document.getElementById(id);if(el)el.textContent=val};
-    set('cartSubtotal',money(subtotal)); set('cartDiscount','-'+money(discount)); set('cartTax',money(tax)); set('cartDeliveryFee',money(delivery)); set('cartGrandTotal',money(total));
-    var note=document.getElementById('maajCartSavingsNote');
-    if(note){note.textContent=discount>0?'You saved '+money(discount)+' with your coupon.':'';}
-    var progress=document.getElementById('maajCartFreeDelivery');
-    if(progress){
-      if(!items.length) progress.innerHTML='<i class="fa-solid fa-bag-shopping mr-2" aria-hidden="true"></i>Add medicines to unlock cart benefits.';
-      else if(subtotal>=499) progress.innerHTML='<i class="fa-solid fa-circle-check mr-2" aria-hidden="true"></i>Great! Your medicine order qualifies for <strong class="ml-1">free delivery above ₹499</strong>.';
-      else progress.innerHTML='<i class="fa-solid fa-truck-fast mr-2" aria-hidden="true"></i>Add <strong class="ml-1">'+money(499-subtotal)+'</strong>&nbsp;more to reach ₹499 and unlock free delivery.';
-    }
-  };
-  window.renderCart=function(){window.maajRenderEnhancedCart();};
-  window.calculateTotals=function(){window.maajUpdateEnhancedTotals();};
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){window.maajRenderEnhancedCart();},50);});
-})();
-</script>
-
-<script id="maaj-unified-cart-engine">
-(function(){
-  const KEY = 'maaj_cart';
-  const LEGACY_KEYS = ['cart','maajCart','maaj_cart_items'];
-
-  function read(){
-    let found = null;
-    for(const k of [KEY,...LEGACY_KEYS]){
-      try{
-        const v = JSON.parse(localStorage.getItem(k) || 'null');
-        if(Array.isArray(v)){ found = v; break; }
-      }catch(e){}
-    }
-    return found || [];
-  }
-  function normalize(items){
-    return (Array.isArray(items)?items:[]).map((i,idx)=>({
-      ...i,
-      id: String(i.id ?? i.medicineId ?? i.productId ?? i.sku ?? idx),
-      qty: Math.max(1, Number(i.qty ?? i.quantity ?? 1) || 1),
-      price: Number(i.price ?? i.salePrice ?? i.sellingPrice ?? 0) || 0,
-      mrp: Number(i.mrp ?? i.MRP ?? i.price ?? 0) || 0,
-      name: i.name ?? i.title ?? 'Medicine'
-    }));
-  }
-  function write(items){
-    const data = normalize(items);
-    localStorage.setItem(KEY, JSON.stringify(data));
-    // Keep legacy cart storage synchronized so older modules still work.
-    for(const k of LEGACY_KEYS) localStorage.setItem(k, JSON.stringify(data));
-    window.dispatchEvent(new CustomEvent('maaj:cart-updated',{detail:{cart:data}}));
-    return data;
-  }
-  function current(){ return normalize(read()); }
-
-  window.MAAJ_CART = {
-    get: current,
-    save: write,
-    count(){ return current().reduce((n,i)=>n+Number(i.qty||0),0); },
-    subtotal(){ return current().reduce((n,i)=>n+Number(i.price||0)*Number(i.qty||0),0); },
-    setQty(id,qty){
-      const items=current();
-      const x=items.find(i=>String(i.id)===String(id));
-      if(!x)return items;
-      x.qty=Math.max(1,Math.min(999,Number(qty)||1));
-      return write(items);
-    },
-    inc(id){ const x=current().find(i=>String(i.id)===String(id)); return this.setQty(id,(x?.qty||1)+1); },
-    dec(id){ const x=current().find(i=>String(i.id)===String(id)); return x ? this.setQty(id,(x.qty||1)-1) : current(); },
-    remove(id){ return write(current().filter(i=>String(i.id)!==String(id))); },
-    clear(){ return write([]); },
-    minOrder: 299
-  };
-
-  function refresh(){
-    const c=MAAJ_CART.get(), count=MAAJ_CART.count(), sub=MAAJ_CART.subtotal();
-    document.querySelectorAll('[data-maaj-cart-count],#cartCount,#cartBadge,.cart-count').forEach(el=>el.textContent=count);
-    document.querySelectorAll('[data-maaj-cart-subtotal]').forEach(el=>el.textContent='₹'+sub.toFixed(2));
-    document.querySelectorAll('[data-maaj-min-order]').forEach(el=>{
-      const remaining=Math.max(0,299-sub);
-      el.textContent=remaining
-        ? 'Minimum order ₹299 • Add ₹'+remaining.toFixed(2)+' more'
-        : 'Minimum order ₹299 ✓';
-      el.classList.toggle('is-ready',remaining===0);
-    });
-  }
-  window.addEventListener('storage',refresh);
-  window.addEventListener('maaj:cart-updated',refresh);
-  document.addEventListener('DOMContentLoaded',refresh);
-})();
-</script>
 <style id="maaj-unified-cart-next-level">
 :root{
   --maaj-cart-bg:#f7faf9;
@@ -4123,57 +3493,6 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   .maaj-cart-next-card .qty-control button{width:38px}
 }
 </style>
-
-
-<script id="maaj-cart-control-sync">
-(function(){
-  function findId(el){
-    return el?.dataset?.cartId || el?.closest('[data-cart-id]')?.dataset?.cartId ||
-      el?.dataset?.id || el?.closest('[data-id]')?.dataset?.id || null;
-  }
-  document.addEventListener('click',function(e){
-    const btn=e.target.closest('[data-cart-action]');
-    if(!btn)return;
-    const id=findId(btn); if(id==null)return;
-    const action=btn.dataset.cartAction;
-    if(action==='inc'){ e.preventDefault(); MAAJ_CART.inc(id); }
-    if(action==='dec'){ e.preventDefault(); MAAJ_CART.dec(id); }
-    if(action==='remove'){ e.preventDefault(); MAAJ_CART.remove(id); }
-  },true);
-})();
-</script>
-
-
-<script id="maaj-cart-next-level-render">
-(function(){
-  function money(n){return '₹'+Number(n||0).toFixed(2)}
-  window.maajRenderUnifiedCartSummary=function(root){
-    root=root||document;
-    const subtotal=MAAJ_CART.subtotal(), remaining=Math.max(0,299-subtotal);
-    root.querySelectorAll('[data-maaj-unified-summary]').forEach(box=>{
-      box.innerHTML=
-        '<div class="maaj-cart-next-card p-5 sm:p-6">'+
-          '<div class="flex items-center justify-between gap-3 mb-4">'+
-            '<div><div class="text-xs font-bold uppercase tracking-wider text-slate-500">Order summary</div>'+
-            '<div class="text-xl font-black text-slate-900">Your Cart</div></div>'+
-            '<div class="text-sm font-black text-slate-700">'+MAAJ_CART.count()+' item'+(MAAJ_CART.count()===1?'':'s')+'</div></div>'+
-          '<div class="space-y-3 text-sm">'+
-            '<div class="flex justify-between"><span class="text-slate-500">Subtotal</span><b>'+money(subtotal)+'</b></div>'+
-            '<div class="flex justify-between"><span class="text-slate-500">Minimum order</span><b>₹299</b></div>'+
-          '</div>'+
-          '<div class="mt-4 maaj-cart-min-note '+(remaining===0?'is-ready':'')+'">'+
-            (remaining ? 'Add '+money(remaining)+' more to unlock checkout' : 'Minimum order reached — ready for checkout')+
-          '</div>'+
-          '<div class="mt-3 maaj-cart-progress"><i style="width:'+Math.min(100,subtotal/299*100)+'%"></i></div>'+
-          '<button type="button" class="mt-5 w-full rounded-xl px-4 py-3 font-black text-white '+(remaining?'opacity-60 cursor-not-allowed':'')+'" '+
-          'style="background:var(--maaj-cart-green)" '+(remaining?'disabled':'')+' onclick="if(window.maajGoCheckout)maajGoCheckout();">Proceed to Checkout</button>'+
-        '</div>';
-    });
-  }
-  document.addEventListener('DOMContentLoaded',()=>maajRenderUnifiedCartSummary());
-  window.addEventListener('maaj:cart-updated',()=>maajRenderUnifiedCartSummary());
-})();
-</script>
 
 
 <!-- MAAJ PHARMACY — Complete Footer / Information Center -->
@@ -4774,48 +4093,31 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   }
   function renderCheckoutSummary(){
     const list = document.getElementById('checkoutItemsList');
-    if(!list || typeof cart === 'undefined') return;
-    if(!cart.length){
+    const items = (typeof window.maajCanonicalCart==='function') ? window.maajCanonicalCart() : (typeof window.MAAJ_CART?.get==='function' ? window.MAAJ_CART.get() : []);
+    if(!list) return;
+    if(!items.length){
       list.innerHTML='<div class="text-slate-400 text-center py-5">Your cart is empty.</div>';
       ['checkoutSubtotal','checkoutDiscount','checkoutDelivery','checkoutTax','checkoutGrandTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='₹0.00';});
       return;
     }
-    list.innerHTML = cart.map(i => `
+    list.innerHTML = items.map(i => `
       <div class="flex justify-between gap-3">
         <span>${esc2(i.name)} × ${Number(i.qty||0)}</span>
         <b>₹${(Number(i.price||0)*Number(i.qty||0)).toFixed(2)}</b>
       </div>`).join('');
-    const subtotal = cart.reduce((a,i)=>a+Number(i.price||0)*Number(i.qty||0),0);
-    let discount = 0;
-    try{
-      if(typeof activeCoupon !== 'undefined' && activeCoupon){
-        discount = activeCoupon.type === 'PERCENT'
-          ? subtotal*Number(activeCoupon.value||0)/100
-          : Number(activeCoupon.value||0);
-        discount = Math.min(discount, subtotal);
-      }
-    }catch(e){}
-    let delivery = 0;
-    try { delivery = subtotal-discount >= Number(storeSettings?.freeDelivery||0) ? 0 : Number(storeSettings?.delivery||0); } catch(e){}
-    const tax = 0;
-    const total = Math.max(0, subtotal-discount+delivery+tax);
+    const t = typeof window.maajCanonicalTotals==='function' ? window.maajCanonicalTotals(items) : {subtotal:items.reduce((a,i)=>a+Number(i.price||0)*Number(i.qty||0),0),discount:0,delivery:0,tax:0,total:0};
     const minOrderNote = document.getElementById('checkoutMinimumOrderNote');
     if(minOrderNote){
-      const remaining = Math.max(0, 299 - subtotal);
-      minOrderNote.textContent = remaining > 0
-        ? `Minimum order ₹299 • Add ₹${remaining.toFixed(2)} more to continue`
-        : 'Minimum order ₹299 ✓';
-      minOrderNote.className = remaining > 0
-        ? 'mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800'
-        : 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700';
+      const remaining = Math.max(0, 299 - Number(t.subtotal||0));
+      minOrderNote.textContent = remaining > 0 ? `Minimum order ₹299 • Add ₹${remaining.toFixed(2)} more to continue` : 'Minimum order ₹299 ✓';
+      minOrderNote.className = remaining > 0 ? 'mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800' : 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700';
     }
-
     const vals = {
-      checkoutSubtotal: `₹${subtotal.toFixed(2)}`,
-      checkoutDiscount: `-₹${discount.toFixed(2)}`,
-      checkoutDelivery: delivery===0 ? 'FREE' : `₹${delivery.toFixed(2)}`,
-      checkoutTax: `₹${tax.toFixed(2)}`,
-      checkoutGrandTotal: `₹${total.toFixed(2)}`
+      checkoutSubtotal: `₹${Number(t.subtotal||0).toFixed(2)}`,
+      checkoutDiscount: `-₹${Number(t.discount||0).toFixed(2)}`,
+      checkoutDelivery: Number(t.delivery||0)===0 ? 'FREE' : `₹${Number(t.delivery||0).toFixed(2)}`,
+      checkoutTax: `₹${Number(t.tax||0).toFixed(2)}`,
+      checkoutGrandTotal: `₹${Number(t.total||0).toFixed(2)}`
     };
     Object.entries(vals).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=v;});
   }
@@ -5163,98 +4465,6 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   #maajCartMinimumLock.ok{background:#ecfdf5;border-color:#a7f3d0;color:#047857}
   .maaj-auth-error{display:block!important}
 </style>
-<script id="maaj-authoritative-fix-js">
-(function(){
-  'use strict';
-  const MIN_ORDER=299;
-  const CART_KEY='maaj_cart';
-  const LEGACY_CART_KEY='cart';
-  const ORDERS_KEY='maaj_orders';
-  const LEGACY_ORDERS_KEY='orders';
-  const ADMIN_KEY='maaj_admin_authenticated';
-
-  const read=(k,f)=>{try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}};
-  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-  const cleanMobile=v=>String(v||'').replace(/\D/g,'');
-  const money=n=>'₹'+Number(n||0).toFixed(2);
-  const getCart=()=>{const a=read(CART_KEY,null);if(Array.isArray(a))return a;const legacy=read(LEGACY_CART_KEY,[]);return Array.isArray(legacy)?legacy:[]};
-  const saveCart=a=>{a=Array.isArray(a)?a:[];write(CART_KEY,a);write(LEGACY_CART_KEY,a);try{if(typeof setDB==='function')setDB('cart',a)}catch(e){}};
-  const cartSubtotal=()=>getCart().reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||0),0);
-  const minOrderOK=()=>{const v=cartSubtotal();if(v<MIN_ORDER){alert('Minimum order value is ₹299. Please add '+money(MIN_ORDER-v)+' more to continue.');return false}return true};
-  window.maajMinimumOrderCheck=minOrderOK;
-
-  // 1–2: one cart source of truth + one minimum-order gate.
-  function syncCart(){const a=getCart();saveCart(a);try{if(typeof cart!=='undefined')cart=a}catch(e){};try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){};try{if(typeof renderCart==='function')renderCart()}catch(e){};try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}}
-  window.maajSyncCarts=syncCart;
-  window.updateQty=function(index,delta){let a=getCart();if(!a[index])return;const stock=Number(a[index].stock||999999);a[index].qty=Number(a[index].qty||0)+Number(delta||0);if(a[index].qty>stock)a[index].qty=stock;if(a[index].qty<=0)a.splice(index,1);saveCart(a);syncCart()};
-  window.removeItem=function(index){let a=getCart();if(a[index])a.splice(index,1);saveCart(a);syncCart()};
-  window.maajChangeQty=function(index,delta){window.updateQty(index,delta)};
-  window.maajRemoveCart=function(index){window.removeItem(index)};
-
-  window.calculateTotals=function(){
-    const a=getCart();let sub=0,discount=0,tax=0;
-    a.forEach(i=>sub+=Number(i.price||0)*Number(i.qty||0));
-    try{if(typeof activeCoupon!=='undefined'&&activeCoupon){discount=activeCoupon.type==='PERCENT'?sub*Number(activeCoupon.value||0)/100:Number(activeCoupon.value||0)}}catch(e){}
-    // Product-level GST: medicines 5%, cosmetic/other categories 18%.
-    a.forEach(i=>{const cosmetic=/cream|ointment|cosmetic|belt|personal care/i.test(String(i.category||''));tax+=Math.max(0,Number(i.price||0)*Number(i.qty||0)-discount*(Number(i.price||0)*Number(i.qty||0)/Math.max(sub,1)))*(cosmetic?0.18:0.05)});
-    const total=Math.max(0,sub-discount+tax);
-    ['cartSubtotal','cartDiscount','cartTax','cartGrandTotal'].forEach((id)=>{const e=document.getElementById(id);if(e)e.innerText=money(id==='cartSubtotal'?sub:id==='cartDiscount'?discount:id==='cartTax'?tax:total)});
-    const lock=document.getElementById('maajCartMinimumLock');if(lock){const rem=Math.max(0,MIN_ORDER-sub);lock.classList.toggle('ok',rem===0);lock.textContent=rem?'Minimum order ₹299 • Add '+money(rem)+' more to continue':'Minimum order ₹299 ✓';}
-    return {subtotal:sub,discount,tax,total};
-  };
-  window.renderCart=function(){
-    const list=document.getElementById('cartItemsList');if(!list){try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){};return}
-    const a=getCart();list.innerHTML='';
-    if(!a.length)list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">Your cart is empty.</div>';
-    else a.forEach((item,index)=>{const row=document.createElement('div');row.className='bg-white p-4 rounded-xl border flex justify-between items-center text-xs shadow-sm';row.innerHTML='<div><h4 class="font-bold text-slate-800">'+String(item.name||'Medicine')+'</h4><p class="text-slate-400">'+money(item.price)+' × '+Number(item.qty||0)+'</p></div><div class="flex items-center gap-2"><button onclick="updateQty('+index+',-1)" class="w-6 h-6 bg-slate-100 font-bold rounded">−</button><span class="font-bold">'+Number(item.qty||0)+'</span><button onclick="updateQty('+index+',1)" class="w-6 h-6 bg-slate-100 font-bold rounded">+</button><button onclick="removeItem('+index+')" class="text-red-500 ml-2"><i class="fa-solid fa-trash"></i></button></div>';list.appendChild(row)});
-    window.calculateTotals();try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
-  };
-
-  // 3–5: every checkout entry point uses the same guard and COD-only flow.
-  window.togglePaymentMode=function(){const e=document.getElementById('onlinePaymentSim');if(e)e.classList.add('hidden')};
-  function gate(fn){return function(){if(!getCart().length){alert('Your cart is empty.');return false}if(!minOrderOK())return false;return fn.apply(this,arguments)}}
-  if(typeof window.processOrderCheckout==='function')window.processOrderCheckout=gate(window.processOrderCheckout);
-
-  const oldGo=window.maajGoCheckout;
-  window.maajGoCheckout=function(){if(!getCart().length){alert('Your cart is empty.');return false}if(!minOrderOK())return false;return typeof oldGo==='function'?oldGo.apply(this,arguments):false};
-  const oldPlace=window.maajPlaceOrder;
-  window.maajPlaceOrder=function(){if(!getCart().length){alert('Your cart is empty.');return false}if(!minOrderOK())return false;return typeof oldPlace==='function'?oldPlace.apply(this,arguments):false};
-
-  // 6–8: Customer authentication is handled ONLY by the Supabase Auth layer above.
-  // IMPORTANT: Do not recreate customer accounts, passwords, or login state in localStorage.
-  // window.isCustomerLoggedIn, window.customerSignup, window.customerLogin,
-  // window.maajFirstCustomerLogin, window.resetCustomerPassword and window.customerLogout
-  // are intentionally NOT overridden here.
-
-  // 9: all order views use the same order store and current customer.
-  function allOrders(){const a=read(ORDERS_KEY,null);const b=read(LEGACY_ORDERS_KEY,[]);if(Array.isArray(a)&&a.length)return a;return Array.isArray(b)?b:[]}
-  function saveOrders(a){write(ORDERS_KEY,a);write(LEGACY_ORDERS_KEY,a);try{if(typeof setDB==='function')setDB('orders',a)}catch(e){}}
-  window.maajGetOrders=allOrders;
-  window.maajSaveOrders=saveOrders;
-
-  // 10: canonical navigation aliases, so old links still land on the correct page.
-  const aliases={medicines:'store',catalog:'store',tracking:'order-tracking',prescription:'upload-prescription',prescriptionupload:'upload-prescription',prescriptionhistory:'prescription-history',myorders:'orders',account:'home'};
-  const navBase=window.navigateTo;
-  window.navigateTo=function(pageId){pageId=aliases[String(pageId||'').toLowerCase()]||pageId;return navBase.apply(this,[pageId].concat([].slice.call(arguments,1)))};
-
-  // 11: keep online payment UI hidden; only COD is selectable.
-  document.addEventListener('click',function(e){const b=e.target.closest('button,[role="button"],label');if(!b)return;const t=String(b.textContent||'').toLowerCase();if(t.includes('online payment')||t.includes('upi')||t.includes('card payment')){e.preventDefault();e.stopImmediatePropagation();alert('Cash on Delivery is the available payment method.');}},true);
-
-  // 12: neutralize unsupported guarantee language in any dynamically rendered text.
-  function softenClaims(root){if(!root||root.nodeType!==1)return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=walker.nextNode()){n.nodeValue=n.nodeValue.replace(/100%\s+certified\s+genuine/gi,'Healthcare product information and quality checks').replace(/guaranteed\s+1-day/gi,'target 1-day').replace(/guaranteed\s+delivery/gi,'delivery target');}}
-
-  document.addEventListener('DOMContentLoaded',function(){
-    // Migrate the best available cart/order store once.
-    const c=getCart();saveCart(c);const o=allOrders();saveOrders(o);
-    try{window.calculateTotals();}catch(e){}
-    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
-    try{softenClaims(document.body)}catch(e){}
-    // Correct any stale admin auth written to localStorage by older versions.
-    try{localStorage.removeItem(ADMIN_KEY)}catch(e){}
-  });
-})();
-</script>
-
 <script>
 (function(){
 const U='https://fywzoptldcgxatyydyec.supabase.co',K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
@@ -5280,172 +4490,6 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   #maajRealDetailsBox{scrollbar-width:thin}
   .maaj-clean-status{font-size:12px;font-weight:800;margin-top:8px}
 </style>
-<script id="maaj-final-clean-layer-js">
-(function(){
-  'use strict';
-  const CART='maaj_cart';
-  const ORDERS='maaj_orders';
-  const OLD_CART='cart';
-  const OLD_ORDERS='orders';
-  const MIN=299;
-  const FREE_MED=499;
-
-  const read=(k,f)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?f:v}catch(e){return f}};
-  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
-  const arr=(v)=>Array.isArray(v)?v:[];
-  const num=(v)=>Number(v)||0;
-  const cart=()=>arr(read(CART,[]));
-  const saveCart=(a)=>{
-    a=arr(a); write(CART,a); write(OLD_CART,a);
-    try{if(typeof setDB==='function')setDB('cart',a)}catch(e){}
-    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
-    return a;
-  };
-  const orders=()=>arr(read(ORDERS,read(OLD_ORDERS,[])));
-  const saveOrders=(a)=>{a=arr(a);write(ORDERS,a);write(OLD_ORDERS,a);try{if(typeof setDB==='function')setDB('orders',a)}catch(e){};return a};
-  const customer=()=>window.currentCustomer||null;
-  const products=()=>{try{return arr(window.products||read('products',[]))}catch(e){return arr(read('products',[]))}};
-
-  function normalizeItem(i){
-    return Object.assign({},i,{qty:Math.max(1,Math.floor(num(i.qty)||1)),price:num(i.price||i.sellingPrice||0),id:i.id});
-  }
-  function sameItem(a,b){return String(a.id)===String(b.id)}
-  function canonicalCart(){
-    let a=cart().map(normalizeItem);
-    if(!a.length){
-      try{const old=typeof getDB==='function'?getDB('cart',[]):[]; if(arr(old).length)a=arr(old).map(normalizeItem)}catch(e){}
-    }
-    return a;
-  }
-
-  window.maajCanonicalCart=canonicalCart;
-  window.maajCanonicalOrders=orders;
-  window.maajSaveCanonicalOrders=saveOrders;
-  window.maajGetCanonicalCustomer=customer;
-
-  function totals(a){
-    a=arr(a).map(normalizeItem);
-    const subtotal=a.reduce((s,i)=>s+i.price*i.qty,0);
-    let discount=0;
-    try{
-      const c=window.activeCoupon;
-      if(c){discount=c.type==='PERCENT'?subtotal*num(c.value)/100:num(c.value);discount=Math.min(Math.max(0,discount),subtotal)}
-    }catch(e){}
-    const after=Math.max(0,subtotal-discount);
-    let medicineOnly=a.length>0;
-    let tax=0;
-    a.forEach(i=>{
-      const cat=String(i.category||i.type||'medicine').toLowerCase();
-      const rate=(cat.includes('cosmetic')||cat.includes('personal care'))?0.18:0.05;
-      if(!(cat.includes('medicine')||cat.includes('drug')||cat.includes('tablet')||cat.includes('syrup')||cat.includes('capsule')||cat.includes('ointment')||cat.includes('cream')||cat.includes('balm')||cat.includes('pain')||cat.includes('vitamin')||cat.includes('first aid')))medicineOnly=false;
-      tax += i.price*i.qty*rate;
-    });
-    // Delivery: medicine-only >= ₹499 free; otherwise distance rule from the active PIN if available.
-    let distance=null;
-    try{distance=num(document.getElementById('deliveryDistance')?.value||window.maajDeliveryDistance||0)||null}catch(e){}
-    let delivery=0;
-    if(after>=FREE_MED && medicineOnly) delivery=0;
-    else if(distance!==null){delivery=distance<5?0:(distance<=10?20:29)}
-    else {try{delivery=after>=num(window.storeSettings?.freeDelivery||Infinity)?0:num(window.storeSettings?.delivery||0)}catch(e){delivery=0}}
-    return {subtotal,discount,tax,delivery,total:Math.max(0,after+tax+delivery),medicineOnly};
-  }
-  window.maajCanonicalTotals=totals;
-  window.updateQty=function(index,delta){
-    const a=canonicalCart(); if(!a[index])return;
-    a[index].qty+=Math.trunc(num(delta)); if(a[index].qty<=0)a.splice(index,1); saveCart(a);
-    try{if(typeof window.renderCart==='function')window.renderCart()}catch(e){}
-    try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}
-  };
-  window.removeItem=function(index){const a=canonicalCart();if(index<0||index>=a.length)return;a.splice(index,1);saveCart(a);try{if(typeof window.renderCart==='function')window.renderCart()}catch(e){}try{if(typeof window.maajRenderCart==='function')window.maajRenderCart()}catch(e){}};
-
-  function minimumOK(){
-    const t=totals(canonicalCart());
-    if(t.subtotal<MIN){alert('Minimum order value is ₹299. Please add ₹'+(MIN-t.subtotal).toFixed(2)+' more.');return false}
-    return true;
-  }
-  window.maajMinimumOrderCheck=minimumOK;
-
-  // Canonical customer auth state. No OTP and no ghost account creation.
-  window.isCustomerLoggedIn=()=>!!customer();
-  window.maajRequireCustomer=function(){if(customer())return true;try{if(typeof openCustomerAuth==='function')openCustomerAuth('login')}catch(e){}return false};
-
-  // Canonical order placement used by every public order entry point.
-  window.maajCanonicalPlaceOrder=function(){
-    const u=customer(); if(!u)return window.maajRequireCustomer();
-    const a=canonicalCart(); if(!a.length){alert('Your cart is empty.');return false}
-    if(!minimumOK())return false;
-    const name=(document.getElementById('checkoutName')?.value||u.name||'').trim();
-    const phone=(document.getElementById('checkoutPhone')?.value||u.mobile||u.phone||'').replace(/\D/g,'');
-    const pin=(document.getElementById('checkoutPincode')?.value||u.pincode||'').replace(/\D/g,'');
-    const address=(document.getElementById('checkoutAddress')?.value||u.address||'').trim();
-    if(!name||!/^[0-9]{10}$/.test(phone)||!/^[0-9]{6}$/.test(pin)||!address){alert('Please enter valid customer name, 10-digit mobile number, 6-digit PIN code and complete delivery address.');return false}
-    // Rx validation: every prescription-required item must have an uploaded prescription before placement.
-    const rx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true');
-    if(rx){
-      const file=document.querySelector('#prescriptionFile, #rxFile, input[type="file"][name*="prescription" i]');
-      const hasUpload=!!(file&&file.files&&file.files.length)||!!read('maaj_latest_prescription',null);
-      if(!hasUpload){alert('A valid prescription is required for one or more medicines in your cart. Please upload it before placing the order.');return false}
-    }
-    const t=totals(a);
-    const id='ORD-'+Date.now().toString().slice(-8)+'-'+Math.floor(100+Math.random()*900);
-    const o={id,date:new Date().toLocaleString(),customer:name,phone,pincode:pin,address,customerId:u.id,customerMobile:u.mobile||phone,items:JSON.parse(JSON.stringify(a)),subtotal:t.subtotal,discount:t.discount,tax:t.tax,delivery:t.delivery,amount:t.total,paymentMode:'COD',status:'Pending',deliveryEstimate:(pin==='767022'||pin==='767061'||pin==='767021')?'Up to 1 day':'3–7 days'};
-    const os=orders();os.unshift(o);saveOrders(os);
-    // Stock deduction in the single product store.
-    const ps=products();a.forEach(i=>{const p=ps.find(x=>String(x.id)===String(i.id));if(p)p.stock=Math.max(0,num(p.stock)-i.qty)});write('products',ps);try{if(typeof setDB==='function')setDB('products',ps)}catch(e){}
-    saveCart([]);
-    try{window.activeCoupon=null}catch(e){}
-    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
-    alert('Order placed successfully!\nOrder ID: '+id+'\nPayment: Cash on Delivery');
-    try{window.navigateTo('orders')}catch(e){}
-    return true;
-  };
-
-  // Replace all common placement functions with the same canonical path.
-  ['processOrderCheckout','finalPlaceCODOrder','maajPlaceOrder'].forEach(name=>{window[name]=window.maajCanonicalPlaceOrder});
-  window.maajGoCheckout=function(){if(!window.maajRequireCustomer())return false;if(!canonicalCart().length){alert('Your cart is empty.');return false}if(!minimumOK())return false;try{window.navigateTo('checkout')}catch(e){};return true};
-
-  // Canonical navigation aliases. Functional controls with onclick/forms are not intercepted by the details layer.
-  const alias={medicines:'store',catalog:'store',tracking:'order-tracking',prescription:'upload-prescription',prescriptionupload:'upload-prescription',prescriptionhistory:'prescription-history',myorders:'orders'};
-  const baseNav=window.navigateTo;
-  if(baseNav)window.navigateTo=function(page){page=alias[String(page||'').toLowerCase()]||page;return baseNav.apply(this,[page].concat([].slice.call(arguments,1)))};
-
-  // Admin UI: page is not opened unless authenticated. Frontend auth is a UI gate, not production security.
-  const adminOpen=window.isAdminAuthenticated;
-  window.maajAdminGate=function(){return !!(adminOpen&&adminOpen())};
-
-  // Footer/policy behavior: NEVER render the policy center below the footer. Open details in modal only.
-  function openPolicy(k){
-    try{if(typeof window.maajShowRealDetails==='function'){window.maajShowRealDetails(k);return true}}catch(e){}
-    return false;
-  }
-  document.addEventListener('click',function(e){
-    const el=e.target.closest('#maajCompleteFooter a'); if(!el)return;
-    const h=(el.getAttribute('href')||'').toLowerCase();
-    const text=(el.textContent||'').toLowerCase();
-    let k=null;
-    if(h.includes('editorial')||text.includes('editorial'))k='editorial';
-    else if(h.includes('privacy')||text.includes('privacy'))k='privacy';
-    else if(h.includes('terms')||text.includes('terms'))k='terms';
-    else if(h.includes('returns')||text.includes('return'))k='returns';
-    else if(h.includes('delivery')||text.includes('delivery'))k='delivery';
-    else if(text.includes('prescription'))k='prescription';
-    else if(h.includes('about')||text.includes('about'))k='about';
-    else if(h.includes('faq')||text.includes('faq'))k='faq';
-    else if(h.includes('contact')||text.includes('support'))k='contact';
-    if(k){e.preventDefault();e.stopImmediatePropagation();openPolicy(k)}
-  },true);
-
-  // Kill old iframe target if an old DOM fragment ever exists.
-  document.addEventListener('DOMContentLoaded',function(){
-    document.querySelectorAll('iframe[src*="medicine-manager.html"], iframe[src*="medicine-manager"]').forEach(f=>f.remove());
-    const pc=document.getElementById('maajPolicyCenter');if(pc)pc.setAttribute('aria-hidden','true');
-    saveCart(canonicalCart());saveOrders(orders());
-    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
-  });
-})();
-</script>
-
-
 <style>
 #mmBulkRows .mm-bulk-input{width:100%;min-width:105px;border:1px solid #dbe3ea;border-radius:9px;padding:8px 9px;font-size:12px;background:#fff;outline:none}
 #mmBulkRows .mm-bulk-input:focus{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.10)}
@@ -5825,38 +4869,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
 </script>
 
 <!-- MAAJ CART SAFETY PATCH: all product buttons route through the same robust cart function. -->
-<script id="maaj-cart-safety-final">
-(function(){
-  window.maajAddAnyMedicineToCart = function(id){
-    try {
-      if (typeof window.addToCart === 'function') return window.addToCart(String(id));
-      if (typeof addToCart === 'function') return addToCart(String(id));
-    } catch(e) { console.error('MAAJ cart error:', e); }
-    alert('Add to cart is temporarily unavailable. Please refresh the page.');
-  };
-})();
-</script>
-
-
 <!-- MAAJ PHARMACY — FINAL CART CONSOLIDATION -->
-<script id="maaj-final-cart-consolidation">
-(function(){
-  'use strict';
-  const KEY='maaj_cart';
-  const read=()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}};
-  const paint=()=>{
-    const a=read();
-    try{document.querySelectorAll('#cartBadgeCount,.cart-badge-count,[data-cart-count]').forEach(el=>{el.textContent=String(a.reduce((n,i)=>n+Number(i.qty||0),0));el.style.display=a.length?'':'none';});}catch(e){}
-    try{if(typeof window.maajRenderCart==='function')window.maajRenderCart();}catch(e){}
-    try{if(typeof window.renderCart==='function')window.renderCart();}catch(e){}
-  };
-  window.maajCanonicalCartRead=read;
-  window.maajCanonicalCartRefresh=paint;
-  window.addEventListener('storage',function(e){if(e.key===KEY)paint();});
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(paint,80);});
-})();
-</script>
-
 <!-- MAAJ PHARMACY — SUPABASE SECURITY BOOTSTRAP -->
 <script id="maaj-supabase-security-bootstrap">
 (function(){
@@ -5956,8 +4969,9 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
 })();
 </script>
 
-</body>
-</html>
+
+
+
 
 <!-- MAAJ PHARMACY — SUPABASE ORDERS + CUSTOMER NOTIFICATIONS -->
 <style id="maaj-supabase-orders-ui-css">
@@ -6128,43 +5142,6 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     }catch(e){if(cell){cell.textContent='Update failed';cell.className='maaj-order-sync err'}alert('Order update failed: '+e.message);renderAdminOrders()}
   };
 
-  // Canonical placement: write the order to Supabase first. LocalStorage is only a temporary cart/cache,
-  // never the order database of record.
-  window.maajCanonicalPlaceOrder=async function(){
-    const u=customer();if(!u)return window.maajRequireCustomer();
-    const a=(typeof window.maajCanonicalCart==='function'?window.maajCanonicalCart():[]);if(!a.length){alert('Your cart is empty.');return false}
-    if(typeof window.maajMinimumOrderCheck==='function'&&!window.maajMinimumOrderCheck())return false;
-    const name=(document.getElementById('checkoutName')?.value||u.name||'').trim();
-    const phone=(document.getElementById('checkoutPhone')?.value||u.mobile||u.phone||'').replace(/\D/g,'');
-    const pin=(document.getElementById('checkoutPincode')?.value||u.pincode||'').replace(/\D/g,'');
-    const address=(document.getElementById('checkoutAddress')?.value||u.address||'').trim();
-    if(!name||!/^[0-9]{10}$/.test(phone)||!/^[0-9]{6}$/.test(pin)||!address){alert('Please enter valid customer name, 10-digit mobile number, 6-digit PIN code and complete delivery address.');return false}
-    const rx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true');
-    if(rx){const file=document.querySelector('#prescriptionFile,#rxFile,input[type="file"][name*="prescription" i]');const hasUpload=!!(file&&file.files&&file.files.length)||!!localRead('maaj_latest_prescription',null);if(!hasUpload){alert('A valid prescription is required for one or more medicines in your cart. Please upload it before placing the order.');return false}}
-    const totals=typeof window.maajCanonicalTotals==='function'?window.maajCanonicalTotals(a):{subtotal:0,discount:0,tax:0,delivery:0,total:0};
-    const id='ORD-'+Date.now().toString().slice(-8)+'-'+Math.floor(100+Math.random()*900);
-    const payload={id,user_id:u.id,customer_name:name,customer_phone:phone,pincode:pin,address,items:a,subtotal:Number(totals.subtotal||0),discount:Number(totals.discount||0),tax:Number(totals.tax||0),delivery:Number(totals.delivery||0),total:Number(totals.total||0),payment_mode:'COD',status:'Pending',delivery_estimate:(pin==='767022'||pin==='767061'||pin==='767021')?'Up to 1 day':'3–7 days'};
-    try{
-      const {data,error}=await sb.from('orders').insert(payload).select('*').single();
-      if(error)throw error;
-      // Supabase is the order database of record. No order is written to localStorage.
-      const ps=Array.isArray(window.products)?window.products:[];a.forEach(i=>{const p=ps.find(x=>String(x.id)===String(i.id));if(p)p.stock=Math.max(0,Number(p.stock||0)-Number(i.qty||1))});
-      try{localStorage.removeItem('maaj_cart');localStorage.removeItem('maaj_cart_total');localStorage.removeItem('cart');localStorage.removeItem('maaj_last_order')}catch(e){}
-      try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
-      try{await createNotification(u.id,id,'Order Placed','Your order '+id+' has been received successfully. We will update you when it is confirmed.','order_placed')}catch(e){}
-      const box=document.getElementById('checkoutContent')||document.getElementById('maajCheckoutContent');
-      if(box)box.innerHTML='<div class="maaj-success"><div class="text-5xl text-emerald-600">✓</div><h2 class="text-2xl font-black mt-3">Order placed successfully</h2><p class="text-sm text-slate-600 mt-2">Your order <b>'+esc(id)+'</b> has been received.</p><p class="text-xs text-slate-500 mt-1">Payment: Cash on Delivery · Total: '+money(payload.total)+'</p><button onclick="try{maajCloseCheckout()}catch(e){};navigateTo(\'orders\')" class="maaj-checkout-btn mt-5">View My Order</button></div>';
-      else alert('Order placed successfully! Order ID: '+id+'\nPayment: Cash on Delivery');
-      try{if(typeof window.navigateTo==='function')window.navigateTo('orders')}catch(e){}
-      try{if(typeof window.renderCustomerOrders==='function')window.renderCustomerOrders()}catch(e){}
-      return true;
-    }catch(e){
-      alert('Order could not be submitted to Supabase.\n\n'+e.message+'\n\nPlease ask admin to run the supplied Orders SQL setup. Your cart has not been treated as a confirmed order.');
-      return false;
-    }
-  };
-  ['processOrderCheckout','finalPlaceCODOrder','maajPlaceOrder'].forEach(n=>window[n]=window.maajCanonicalPlaceOrder);
-
   // Poll for new status notifications so the customer sees admin updates without refreshing.
   let lastNotificationRefresh=0;
   async function refreshCustomerData(){
@@ -6187,4 +5164,180 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   }
   setInterval(function(){if(typeof window.isAdminAuthenticated==='function'&&window.isAdminAuthenticated()){const tab=document.getElementById('admin-tab-orders');if(tab&&tab.classList.contains('active'))window.renderAdminOrders()}},10000);
 })();
-</script>s
+</script>
+
+<!-- MAAJ PHARMACY — EXPERT CART / CHECKOUT / ORDER CONSOLIDATION -->
+<style id="maaj-expert-cart-order-css">
+  /* One cart UI only: keep the main #page-cart, hide legacy drawer/bottom bar/overlay. */
+  #maajCartDrawer,#maajCheckoutPage,.maaj-order-bar{display:none!important}
+  .maaj-expert-busy{opacity:.65!important;pointer-events:none!important}
+  .maaj-expert-success{max-width:760px;margin:30px auto;padding:34px;border-radius:24px;background:#fff;border:1px solid #dbe7e2;box-shadow:0 20px 60px rgba(15,23,42,.10);text-align:center}
+  .maaj-expert-success-icon{width:72px;height:72px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:#dcfce7;color:#059669;font-size:32px}
+  .maaj-expert-order-id{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px auto;padding:14px 16px;border:1px dashed #10b981;border-radius:14px;background:#f0fdf4}
+  .maaj-expert-order-id strong{font-size:20px;letter-spacing:.5px}
+  .maaj-expert-order-id button{border:1px solid #10b981;border-radius:9px;padding:7px 11px;font-weight:800;background:#fff;color:#047857;cursor:pointer}
+  .maaj-expert-success-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:left;margin-top:18px}
+  .maaj-expert-success-grid>div{padding:12px;border:1px solid #e2e8f0;border-radius:12px}.maaj-expert-success-grid span{display:block;font-size:10px;color:#64748b}.maaj-expert-success-grid b{display:block;margin-top:4px;font-size:12px}
+  .maaj-expert-actions{display:flex;justify-content:center;gap:10px;margin-top:22px;flex-wrap:wrap}.maaj-expert-actions button{border:0;border-radius:11px;padding:11px 17px;font-weight:900;cursor:pointer}.maaj-expert-primary{background:#059669;color:#fff}.maaj-expert-secondary{background:#f1f5f9;color:#0f172a}
+  @media(max-width:640px){.maaj-expert-success{margin:16px;padding:24px 16px}.maaj-expert-success-grid{grid-template-columns:1fr}.maaj-expert-actions button{width:100%}}
+</style>
+<script id="maaj-expert-cart-order-consolidation">
+(function(){
+  'use strict';
+  const CART_KEY='maaj_cart', LEGACY_CART='cart', MIN_ORDER=299, FREE_MED=499;
+  const read=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  const arr=v=>Array.isArray(v)?v:[];
+  const num=v=>Number(v)||0;
+  const money=v=>'₹'+num(v).toFixed(2);
+  const clean=v=>String(v||'').replace(/\D/g,'');
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  /* SINGLE SOURCE OF TRUTH: maaj_cart. Legacy cart is only synchronized for old UI compatibility. */
+  function getCart(){
+    let a=arr(read(CART_KEY,null));
+    if(!a.length){const legacy=arr(read(LEGACY_CART,[]));if(legacy.length)a=legacy;}
+    return a.map(i=>Object.assign({},i,{qty:Math.max(1,Math.floor(num(i.qty)||1)),price:num(i.price||i.sellingPrice||0)}));
+  }
+  function setCart(a){
+    a=arr(a);write(CART_KEY,a);write(LEGACY_CART,a);
+    try{if(typeof setDB==='function')setDB('cart',a)}catch(e){}
+    /* Synchronize the original global lexical cart when available. */
+    try{cart=a}catch(e){}
+    try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
+    try{document.querySelectorAll('#cartBadgeCount').forEach(x=>x.textContent=String(a.reduce((n,i)=>n+num(i.qty),0)))}catch(e){}
+    return a;
+  }
+  function totals(a){
+    a=arr(a);let subtotal=0,discount=0,tax=0,medicineSubtotal=0;
+    a.forEach(i=>{
+      const v=num(i.price)*num(i.qty);subtotal+=v;
+      const cat=String(i.category||i.type||'medicine').toLowerCase();
+      const cosmetic=/cosmetic|personal care|beauty|belt|condom/.test(cat);
+      tax+=v*(cosmetic?.18:.05);
+      if(!cosmetic)medicineSubtotal+=v;
+    });
+    try{if(typeof activeCoupon!=='undefined'&&activeCoupon){discount=activeCoupon.type==='PERCENT'?subtotal*num(activeCoupon.value)/100:num(activeCoupon.value);discount=Math.min(Math.max(0,discount),subtotal)}}catch(e){}
+    const taxable=Math.max(0,subtotal-discount);
+    /* Recompute tax proportionally after discount so Cart and Checkout agree. */
+    if(discount>0){tax=0;a.forEach(i=>{const v=num(i.price)*num(i.qty),share=subtotal?v/subtotal:0,after=v-discount*share;const cat=String(i.category||i.type||'medicine').toLowerCase();tax+=Math.max(0,after)*( /cosmetic|personal care|beauty|belt|condom/.test(cat)?.18:.05)})}
+    let distance=null;
+    try{const pin=document.getElementById('checkoutPincode');if(pin&&/^\d{6}$/.test(clean(pin.value))){const p=clean(pin.value);distance=(p==='767022'||p==='767061'||p==='767021')?5:null}}catch(e){}
+    let delivery=0;
+    if(medicineSubtotal>=FREE_MED && medicineSubtotal>0)delivery=0;
+    else if(distance!==null)delivery=distance<5?0:(distance<=10?20:29);
+    else delivery=0;
+    return {subtotal,discount,tax,delivery,medicineSubtotal,total:Math.max(0,tax+taxable+delivery)};
+  }
+
+  function renderCart(){
+    const list=document.getElementById('cartItemsList');if(!list)return;
+    const a=getCart();setCart(a);
+    const count=a.reduce((n,i)=>n+num(i.qty),0);
+    list.innerHTML=a.length?a.map((i,index)=>{
+      const q=num(i.qty),price=num(i.price);return '<div class="bg-white p-4 rounded-xl border flex justify-between items-center text-xs shadow-sm">'+
+      '<div><h4 class="font-bold text-slate-800">'+esc(i.name||'Medicine')+'</h4><p class="text-slate-400">'+money(price)+' × '+q+'</p></div>'+ 
+      '<div class="flex items-center gap-2"><button type="button" onclick="updateQty('+index+',-1)" class="w-7 h-7 bg-slate-100 font-bold rounded">−</button><span class="font-bold min-w-[18px] text-center">'+q+'</span><button type="button" onclick="updateQty('+index+',1)" class="w-7 h-7 bg-slate-100 font-bold rounded">+</button><button type="button" onclick="removeItem('+index+')" class="text-red-500 ml-2" aria-label="Remove item"><i class="fa-solid fa-trash"></i></button></div></div>';
+    }).join(''):'<div class="bg-white p-8 rounded-xl border text-center text-xs text-slate-400">Your cart is empty.</div>';
+    const t=totals(a);
+    const values={cartSubtotal:money(t.subtotal),cartDiscount:'-'+money(t.discount),cartTax:money(t.tax),cartGrandTotal:money(t.total)};
+    Object.keys(values).forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=values[id]});
+    const c1=document.getElementById('maajCartItemCountLabel');if(c1)c1.textContent=count+' item'+(count===1?'':'s');
+    const c2=document.getElementById('maajCartSummaryCount');if(c2)c2.textContent=count+' item'+(count===1?'':'s');
+    const free=document.getElementById('maajCartFreeDelivery');if(free){if(t.medicineSubtotal>=FREE_MED)free.innerHTML='<b>Free local delivery unlocked.</b>';else if(t.medicineSubtotal>0)free.innerHTML='Add '+money(FREE_MED-t.medicineSubtotal)+' more in medicines for free delivery.';else free.innerHTML='Add medicines to unlock cart benefits.'}
+  }
+
+  function updateQty(index,delta){const a=getCart();if(!a[index])return;a[index].qty+=Math.trunc(num(delta));if(a[index].qty<=0)a.splice(index,1);setCart(a);renderCart()}
+  function removeItem(index){const a=getCart();if(index<0||index>=a.length)return;a.splice(index,1);setCart(a);renderCart()}
+  window.renderCart=renderCart;window.updateQty=updateQty;window.removeItem=removeItem;window.maajChangeQty=updateQty;window.maajRemoveCart=removeItem;
+  window.maajCanonicalCart=getCart;window.maajCanonicalTotals=totals;
+
+  /* Header cart always opens the ONE main cart page. Never open the legacy drawer. */
+  window.maajOpenCart=function(){try{window.navigateTo('cart')}catch(e){location.hash='cart'};renderCart()};
+  window.maajCloseCart=function(){try{window.navigateTo('cart')}catch(e){}};
+  window.maajGoCheckout=function(){
+    const a=getCart();if(!a.length){alert('Your cart is empty.');return false}
+    const t=totals(a);if(t.subtotal<MIN_ORDER){alert('Minimum order value is ₹299. Please add '+money(MIN_ORDER-t.subtotal)+' more.');return false}
+    try{window.navigateTo('checkout');setTimeout(renderCheckout,80)}catch(e){return false}return true;
+  };
+
+  function currentCustomer(){return window.currentCustomer||window.maajCustomerSession?.user||null}
+  function renderCheckout(){
+    const a=getCart(),list=document.getElementById('checkoutItemsList');if(!list)return;
+    if(!a.length){list.innerHTML='<div class="text-slate-400 text-center py-5">Your cart is empty.</div>';return}
+    list.innerHTML=a.map(i=>'<div class="flex justify-between gap-3"><span>'+esc(i.name)+' × '+num(i.qty)+'</span><b>'+money(num(i.price)*num(i.qty))+'</b></div>').join('');
+    const t=totals(a),v={checkoutSubtotal:money(t.subtotal),checkoutDiscount:'-'+money(t.discount),checkoutDelivery:t.delivery?money(t.delivery):'FREE',checkoutTax:money(t.tax),checkoutGrandTotal:money(t.total)};
+    Object.keys(v).forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=v[id]});
+    const u=currentCustomer();if(u){const fields={checkoutName:u.name||u.user_metadata?.name||'',checkoutPhone:clean(u.mobile||u.phone||''),checkoutPincode:u.pincode||'',checkoutAddress:u.address||''};Object.keys(fields).forEach(id=>{const e=document.getElementById(id);if(e&&!e.value)e.value=fields[id]})}
+  }
+  window.renderCheckoutSummary=renderCheckout;
+  window.renderCheckoutPage=renderCheckout;
+
+  async function placeOrder(){
+    const sb=window.maajSupabaseClient,u=currentCustomer();if(!sb){alert('Online order service is unavailable.');return false}
+    if(!u){try{openCustomerAuth('login')}catch(e){alert('Please login to your customer account first.')}return false}
+    const a=getCart();if(!a.length){alert('Your cart is empty.');return false}
+    const t=totals(a);if(t.subtotal<MIN_ORDER){alert('Minimum order value is ₹299. Please add '+money(MIN_ORDER-t.subtotal)+' more.');return false}
+    const name=(document.getElementById('checkoutName')?.value||u.name||u.user_metadata?.name||'').trim();
+    const phone=clean(document.getElementById('checkoutPhone')?.value||u.mobile||u.phone||'');
+    const pin=clean(document.getElementById('checkoutPincode')?.value||u.pincode||'');
+    const address=(document.getElementById('checkoutAddress')?.value||u.address||'').trim();
+    if(!name||!/^\d{10}$/.test(phone)||!/^\d{6}$/.test(pin)||!address){alert('Please enter valid customer name, 10-digit mobile number, 6-digit PIN code and complete delivery address.');return false}
+    const rx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true');
+    if(rx){const f=document.getElementById('checkoutPrescription');if(!f?.files?.length){alert('A valid prescription is required for one or more medicines in your cart.');return false}}
+    const id='ORD-'+Date.now().toString().slice(-8)+'-'+Math.floor(100+Math.random()*900);
+    const localInfo=(pin==='767022'||pin==='767061'||pin==='767021');
+    const payload={id,user_id:u.id,customer_name:name,customer_phone:phone,pincode:pin,address,items:a,subtotal:t.subtotal,discount:t.discount,tax:t.tax,delivery:t.delivery,total:t.total,payment_mode:'COD',status:'Pending',delivery_estimate:localInfo?'Up to 1 day':'3–7 days'};
+    const btn=document.querySelector('#page-checkout button[onclick*="finalPlaceCODOrder"],#page-checkout button[onclick*="maajPlaceOrder"]');if(btn){btn.classList.add('maaj-expert-busy');btn.disabled=true;btn.textContent='Submitting Order...'}
+    try{
+      const {data,error}=await sb.from('orders').insert(payload).select('*').single();if(error)throw error;
+      setCart([]);
+      try{if(typeof window.maajCreateCustomerNotification==='function')await window.maajCreateCustomerNotification(u.id,id,'Order Placed','Your order '+id+' has been received successfully. We will notify you when it is confirmed.','order_placed')}catch(e){console.warn('Notification insert failed',e)}
+      showSuccess(payload);
+      try{if(typeof window.renderCustomerOrders==='function')window.renderCustomerOrders()}catch(e){}
+      return true;
+    }catch(e){alert('Order could not be submitted to Supabase.\n\n'+(e.message||e)+'\n\nYour cart has not been cleared.');return false}
+    finally{if(btn){btn.classList.remove('maaj-expert-busy');btn.disabled=false}}
+  }
+  function showSuccess(o){
+    const page=document.getElementById('page-checkout');if(!page)return;
+    page.innerHTML='<div class="maaj-expert-success" role="status" aria-live="polite">'+
+      '<div class="maaj-expert-success-icon"><i class="fa-solid fa-check"></i></div>'+ 
+      '<div class="text-[10px] font-black tracking-[.2em] text-emerald-600">ORDER SUCCESSFULLY PLACED</div>'+ 
+      '<h2 class="text-2xl font-black text-slate-900 mt-2">Thank you! Your order has been received.</h2>'+ 
+      '<p class="text-sm text-slate-500 mt-2">Your COD order is now waiting for pharmacy confirmation.</p>'+ 
+      '<div class="maaj-expert-order-id"><span class="text-[10px] font-black text-slate-500">ORDER ID</span><strong>'+esc(o.id)+'</strong><button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+esc(o.id)+'\').then(function(){this.textContent=\'Copied ✓\'}.bind(this))">Copy</button></div>'+ 
+      '<div class="maaj-expert-success-grid"><div><span>Status</span><b>Pending Confirmation</b></div><div><span>Payment</span><b>Cash on Delivery</b></div><div><span>Total</span><b>'+money(o.total)+'</b></div><div><span>Delivery</span><b>'+esc(o.delivery_estimate)+'</b></div></div>'+ 
+      '<div class="mt-4 p-4 rounded-xl bg-emerald-50 text-left text-xs text-emerald-800"><b><i class="fa-solid fa-bell mr-1"></i> Notifications enabled</b><p class="mt-1">When admin confirms, processes, ships, delivers or cancels your order, the update will appear in Notifications.</p></div>'+ 
+      '<div class="maaj-expert-actions"><button class="maaj-expert-secondary" onclick="navigateTo(\'orders\')">View My Orders</button><button class="maaj-expert-primary" onclick="navigateTo(\'home\')">Continue Shopping <i class="fa-solid fa-arrow-right ml-1"></i></button></div>'+ 
+      '</div>';
+  }
+  window.maajCanonicalPlaceOrder=placeOrder;window.finalPlaceCODOrder=placeOrder;window.processOrderCheckout=placeOrder;window.maajPlaceOrder=placeOrder;
+
+  /* Keep navigation single-source: cart and checkout are the main pages. */
+  const baseNav=window.navigateTo;
+  if(typeof baseNav==='function'&&!baseNav.__maajExpert){
+    const nav=function(page){
+      page=String(page||'');
+      if(page==='cart'){const d=document.getElementById('maajCartDrawer');if(d)d.classList.remove('active');const r=baseNav.apply(this,arguments);setTimeout(renderCart,30);return r}
+      if(page==='checkout'){
+        if(!getCart().length){alert('Your cart is empty.');return false}
+        const r=baseNav.apply(this,arguments);setTimeout(renderCheckout,40);return r
+      }
+      const r=baseNav.apply(this,arguments);if(page==='orders')setTimeout(function(){try{window.renderCustomerOrders()}catch(e){}},50);return r;
+    };nav.__maajExpert=true;window.navigateTo=nav;
+  }
+
+  /* Prevent any legacy bottom bar/drawer click from opening. */
+  document.addEventListener('click',function(e){
+    const b=e.target.closest('.maaj-order-bar,#maajCartDrawer');if(b){e.preventDefault();e.stopPropagation();return false}
+  },true);
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){setCart(getCart());renderCart();renderCheckout()},150);
+  });
+})();
+</script>
+
+
+</body>
+</html>
