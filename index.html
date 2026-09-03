@@ -552,7 +552,7 @@ img{max-width:100%;height:auto}
                 <button id="navHomeBtn" onclick="goHomePage()" class="nav-home-btn bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-100" title="Go to Home">
                     <i class="fa-solid fa-house mr-1"></i> Home
                 </button>
-                <a href="https://wa.me/8984728003?text=Hello%20MAAJ%20Pharmacy,%20I%20want%20to%20order%20medicines" target="_blank" class="hidden sm:flex items-center gap-1.5 bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-600">
+                <a href="https://wa.me/6372556219?text=Hello%20MAAJ%20Pharmacy,%20I%20want%20to%20order%20medicines" target="_blank" class="hidden sm:flex items-center gap-1.5 bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-600">
                     <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp Order
                 </a>
                 <button onclick="navigateTo('upload-prescription')" class="hidden lg:flex items-center gap-2 bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100">
@@ -603,7 +603,7 @@ img{max-width:100%;height:auto}
                     <i class="fa-solid fa-truck-medical text-4xl text-emerald-300"></i>
                     <h3 class="font-bold text-base">Express Home Delivery</h3>
                     <p class="text-xs text-emerald-100">Same-day delivery for all local pin codes.</p>
-                    <a href="tel:+918984728003" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xs px-4 py-2 rounded-lg w-full">
+                    <a href="tel:+916372556219" class="inline-block bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xs px-4 py-2 rounded-lg w-full">
                         <i class="fa-solid fa-phone mr-1"></i> Call Pharmacist Now
                     </a>
                 </div>
@@ -1177,9 +1177,9 @@ img{max-width:100%;height:auto}
         <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-envelope"></i></span>
         <span><b class="block text-sm text-slate-900">Email</b><span class="text-xs text-slate-500">maajpharmacyhelp@gmail.com</span></span>
       </a>
-      <a href="tel:8984728003" class="border rounded-xl p-4 flex items-center gap-3 no-underline">
+      <a href="tel:6372556219" class="border rounded-xl p-4 flex items-center gap-3 no-underline">
         <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-phone"></i></span>
-        <span><b class="block text-sm text-slate-900">Care Number</b><span class="text-xs text-slate-500">8984728003</span></span>
+        <span><b class="block text-sm text-slate-900">Care Number</b><span class="text-xs text-slate-500">6372556219</span></span>
       </a>
     </div>
   </div>
@@ -3001,7 +3001,7 @@ async function maajLoadMedicinesFromAPI() {
                             <div class="text-right"><div class="text-lg font-black">TAX INVOICE</div><div class="text-[10px]">Invoice No: <b>${invoiceNo}</b></div><div class="text-[10px]">Order ID: <b>${o.id}</b></div><div class="text-[10px]">Date: ${o.date}</div></div>
                         </div>
                         <div class="grid md:grid-cols-2 border-b">
-                            <div class="p-4 border-b md:border-b-0 md:border-r"><div class="font-black text-emerald-700 mb-1">BILL FROM</div><div class="font-bold">MAA JHARBANDLI AND MEDICINE STORE</div><div>Drug Licence: BOWZ 2860 R, 2861 RC, 2862 R</div><div>PAN: NMOPS6945B</div><div>Phone: 8984728003</div></div>
+                            <div class="p-4 border-b md:border-b-0 md:border-r"><div class="font-black text-emerald-700 mb-1">BILL FROM</div><div class="font-bold">MAA JHARBANDLI AND MEDICINE STORE</div><div>Drug Licence: BOWZ 2860 R, 2861 RC, 2862 R</div><div>PAN: NMOPS6945B</div><div>Phone: 6372556219</div></div>
                             <div class="p-4"><div class="font-black text-emerald-700 mb-1">BILL TO</div><div class="font-bold text-sm">${o.customer || 'Customer'}</div><div>Mobile: ${o.phone || '—'}</div><div>Address: ${o.address || '—'}</div><div>PIN: ${o.pincode || '—'}</div></div>
                         </div>
                         <div class="p-3 overflow-x-auto"><table class="w-full border-collapse"><thead><tr class="bg-slate-100 border-y border-slate-300"><th class="p-2">#</th><th class="p-2 text-left">Medicine</th><th class="p-2">Batch</th><th class="p-2">Expiry</th><th class="p-2">MRP</th><th class="p-2">Qty</th><th class="p-2">Rate</th><th class="p-2 text-right">Amount</th></tr></thead><tbody>${itemRows}</tbody></table></div>
@@ -5958,3 +5958,233 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
 
 </body>
 </html>
+
+<!-- MAAJ PHARMACY — SUPABASE ORDERS + CUSTOMER NOTIFICATIONS -->
+<style id="maaj-supabase-orders-ui-css">
+  #maajNotificationButton{position:relative;display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #dbe3ea;color:#334155;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer}
+  #maajNotificationButton:hover{border-color:#10b981;color:#047857}
+  #maajNotificationCount{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#ef4444;color:#fff;font-size:9px;line-height:17px;text-align:center;font-weight:900;display:none}
+  #maajNotificationPanel{position:fixed;right:18px;top:82px;width:min(390px,calc(100vw - 28px));max-height:70vh;overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 25px 70px rgba(15,23,42,.22);z-index:100050;display:none}
+  #maajNotificationPanel.active{display:block}
+  .maaj-notif-head{padding:14px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .maaj-notif-item{padding:13px 16px;border-bottom:1px solid #f1f5f9;cursor:pointer}
+  .maaj-notif-item.unread{background:#ecfdf5}
+  .maaj-notif-title{font-size:12px;font-weight:900;color:#0f172a}
+  .maaj-notif-message{font-size:11px;color:#475569;line-height:1.5;margin-top:3px}
+  .maaj-notif-time{font-size:9px;color:#94a3b8;margin-top:5px}
+  .maaj-order-sync{font-size:10px;font-weight:800;color:#64748b;margin-top:6px}
+  .maaj-order-sync.ok{color:#047857}
+  .maaj-order-sync.err{color:#dc2626}
+  @media(max-width:640px){#maajNotificationButton{padding:8px}.maaj-notif-label{display:none}#maajNotificationPanel{right:10px;top:74px}}
+</style>
+<script id="maaj-supabase-orders-notifications-js">
+(function(){
+  'use strict';
+  const sb=window.maajSupabaseClient;
+  if(!sb)return;
+
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money=v=>'₹'+Number(v||0).toFixed(2);
+  const customer=()=>window.currentCustomer||null;
+  const localRead=(k,f)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?f:v}catch(e){return f}};
+
+  function orderRow(o){
+    return {
+      id:o.id,date:o.created_at||o.date,customer:o.customer_name||o.customer||'',phone:o.customer_phone||o.phone||'',pincode:o.pincode||'',address:o.address||'',customerId:o.user_id||o.customerId||'',customerMobile:o.customer_phone||o.customerMobile||'',items:Array.isArray(o.items)?o.items:[],subtotal:Number(o.subtotal||0),discount:Number(o.discount||0),tax:Number(o.tax||0),delivery:Number(o.delivery||0),amount:Number(o.total||o.amount||0),paymentMode:o.payment_mode||o.paymentMode||'COD',status:o.status||'Pending',deliveryEstimate:o.delivery_estimate||o.deliveryEstimate||''
+    };
+  }
+
+  async function fetchCustomerOrders(){
+    const u=customer(); if(!u)return [];
+    const {data,error}=await sb.from('orders').select('*').eq('user_id',u.id).order('created_at',{ascending:false});
+    if(error)throw error;
+    return (data||[]).map(orderRow);
+  }
+  window.maajFetchSupabaseCustomerOrders=fetchCustomerOrders;
+
+  async function fetchAdminOrders(){
+    if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return [];
+    const {data,error}=await sb.from('orders').select('*').order('created_at',{ascending:false});
+    if(error)throw error;
+    return (data||[]).map(orderRow);
+  }
+  window.maajFetchSupabaseAdminOrders=fetchAdminOrders;
+
+  async function createNotification(userId,orderId,title,message,type){
+    if(!userId)return;
+    const {error}=await sb.from('customer_notifications').insert({user_id:userId,order_id:orderId||null,title,message,type:type||'order_update',is_read:false});
+    if(error)throw error;
+  }
+  window.maajCreateCustomerNotification=createNotification;
+
+  async function fetchNotifications(){
+    const u=customer();if(!u)return [];
+    const {data,error}=await sb.from('customer_notifications').select('*').eq('user_id',u.id).order('created_at',{ascending:false}).limit(50);
+    if(error)throw error;
+    return data||[];
+  }
+
+  function ensureNotificationUI(){
+    if(document.getElementById('maajNotificationButton'))return;
+    const header=document.querySelector('header .flex.items-center.gap-2');
+    if(!header)return;
+    const b=document.createElement('button');
+    b.id='maajNotificationButton';b.type='button';b.title='Notifications';
+    b.innerHTML='<i class="fa-solid fa-bell"></i><span class="maaj-notif-label">Notifications</span><span id="maajNotificationCount">0</span>';
+    b.onclick=()=>window.maajToggleNotifications();
+    const admin=header.querySelector('button[onclick="openAdminLogin()"]');
+    if(admin)header.insertBefore(b,admin);else header.appendChild(b);
+
+    const p=document.createElement('div');p.id='maajNotificationPanel';p.innerHTML='<div class="maaj-notif-head"><div><div class="font-black text-sm">Notifications</div><div class="text-[10px] text-slate-500">Order updates from MAAJ PHARMACY</div></div><button type="button" onclick="maajMarkAllNotificationsRead()" class="text-[10px] font-black text-emerald-700">Mark all read</button></div><div id="maajNotificationList"></div>';
+    document.body.appendChild(p);
+  }
+
+  async function renderNotifications(){
+    ensureNotificationUI();
+    const list=document.getElementById('maajNotificationList'),count=document.getElementById('maajNotificationCount');
+    if(!list||!count)return;
+    if(!customer()){count.style.display='none';list.innerHTML='<div class="p-5 text-center text-xs text-slate-400">Login to see your order notifications.</div>';return;}
+    try{
+      const data=await fetchNotifications();
+      const unread=data.filter(x=>!x.is_read).length;
+      count.textContent=unread>99?'99+':String(unread);count.style.display=unread?'block':'none';
+      list.innerHTML=data.length?data.map(n=>'<div class="maaj-notif-item '+(!n.is_read?'unread':'')+'" onclick="maajOpenNotification(\''+esc(n.order_id||'')+'\',\''+esc(n.id||'')+'\')"><div class="maaj-notif-title">'+esc(n.title||'Order Update')+'</div><div class="maaj-notif-message">'+esc(n.message||'')+'</div><div class="maaj-notif-time">'+(n.created_at?new Date(n.created_at).toLocaleString():'')+'</div></div>').join(''):'<div class="p-6 text-center text-xs text-slate-400">No notifications yet.</div>';
+    }catch(e){list.innerHTML='<div class="p-5 text-center text-xs text-red-500">Unable to load notifications.</div>';count.style.display='none'}
+  }
+  window.maajRenderNotifications=renderNotifications;
+
+  window.maajToggleNotifications=function(){
+    ensureNotificationUI();
+    const p=document.getElementById('maajNotificationPanel');if(!p)return;
+    p.classList.toggle('active');
+    if(p.classList.contains('active'))renderNotifications();
+  };
+  window.maajOpenNotification=async function(orderId,notificationId){
+    if(notificationId){try{await sb.from('customer_notifications').update({is_read:true}).eq('id',notificationId).eq('user_id',customer()?.id)}catch(e){}}
+    if(orderId&&typeof window.trackOrder==='function')window.trackOrder(orderId);
+    renderNotifications();
+  };
+  window.maajMarkAllNotificationsRead=async function(){
+    const u=customer();if(!u)return;
+    try{await sb.from('customer_notifications').update({is_read:true}).eq('user_id',u.id).eq('is_read',false);renderNotifications()}catch(e){}
+  };
+
+  // Supabase is now the source of truth for customer order history.
+  window.renderCustomerOrders=async function(){
+    const list=document.getElementById('customerOrdersList');if(!list)return;
+    const u=customer();
+    if(!u){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">Please login to view your orders.</div>';return;}
+    list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-500">Loading your orders securely...</div>';
+    try{
+      const data=await fetchCustomerOrders();
+      if(!data.length){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No previous orders found.</div>';return;}
+      list.innerHTML=data.map(o=>'<div class="bg-white p-5 rounded-xl border space-y-3 text-xs shadow-sm"><div class="flex justify-between items-center border-b pb-2 gap-3"><div><span class="font-bold text-slate-800">'+esc(o.id)+'</span><span class="text-slate-400 ml-2">('+esc(o.date?new Date(o.date).toLocaleString():'')+')</span></div><span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">'+esc(o.status)+'</span></div><div class="space-y-1">'+o.items.map(i=>'<p class="text-slate-600">'+esc(i.name||'Medicine')+' x '+Number(i.qty||1)+' — '+money(Number(i.price||0)*Number(i.qty||1))+'</p>').join('')+'</div><div class="flex justify-between items-center pt-2 border-t"><span class="font-black text-slate-800">Total: '+money(o.amount)+' ('+esc(o.paymentMode)+')</span><div class="flex gap-2"><button onclick="trackOrder(\''+esc(o.id)+'\')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded hover:bg-emerald-700">Track</button></div></div></div>').join('');
+    }catch(e){list.innerHTML='<div class="bg-red-50 text-red-700 p-5 rounded-xl border border-red-200 text-xs font-bold">Orders could not be loaded from Supabase: '+esc(e.message)+'</div>'}
+  };
+
+  window.trackOrder=async function(orderId){
+    try{
+      const {data,error}=await sb.from('orders').select('*').eq('id',orderId).eq('user_id',customer()?.id).maybeSingle();
+      if(error||!data){alert('Order not found.');return;}
+      const o=orderRow(data);
+      const idEl=document.getElementById('trackingOrderId'),dateEl=document.getElementById('trackingOrderDate'),badge=document.getElementById('trackingStatusBadge'),pipeline=document.getElementById('trackingPipeline');
+      if(idEl)idEl.innerText='Order ID: '+o.id;if(dateEl)dateEl.innerText='Date: '+(o.date?new Date(o.date).toLocaleString():'N/A');if(badge)badge.innerText='Status: '+o.status;
+      const stages=['Pending','Confirmed','Processing','Packed','Shipped','Out for Delivery','Delivered'];
+      if(pipeline){pipeline.innerHTML='';let idx=stages.indexOf(o.status);if(idx<0&&o.status==='Cancelled')idx=-1;stages.forEach((st,i)=>{const d=document.createElement('div');d.className='p-3 rounded-lg border font-bold '+(i<=idx?'bg-emerald-600 text-white border-emerald-600':'bg-slate-50 text-slate-400');d.innerText=(i+1)+'. '+st;pipeline.appendChild(d)});if(o.status==='Cancelled'){const d=document.createElement('div');d.className='p-3 rounded-lg border font-bold bg-red-600 text-white border-red-600 col-span-2 md:col-span-5';d.innerText='Order Cancelled';pipeline.appendChild(d)}}
+      navigateTo('order-tracking');
+    }catch(e){alert('Unable to load order: '+e.message)}
+  };
+
+  // Supabase is now the source of truth for admin order processing.
+  window.renderAdminOrders=async function(){
+    const tbody=document.getElementById('adminOrdersTable');if(!tbody)return;
+    if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated()){tbody.innerHTML='<tr><td colspan="5" class="p-5 text-center text-red-500">Admin login required.</td></tr>';return;}
+    tbody.innerHTML='<tr><td colspan="5" class="p-5 text-center text-slate-500">Loading online orders...</td></tr>';
+    try{
+      const data=await fetchAdminOrders();
+      if(!data.length){tbody.innerHTML='<tr><td colspan="5" class="p-5 text-center text-slate-400">No customer orders received yet.</td></tr>';return;}
+      tbody.innerHTML=data.map(o=>'<tr class="border-t align-top"><td class="p-3 font-bold text-slate-800">'+esc(o.id)+'<div class="text-[9px] text-slate-400 mt-1">'+esc(o.date?new Date(o.date).toLocaleString():'')+'</div></td><td class="p-3"><b>'+esc(o.customer)+'</b><div>'+esc(o.phone)+'</div><div>'+esc(o.pincode)+'</div><div class="text-[10px] text-slate-500 max-w-[220px]">'+esc(o.address)+'</div></td><td class="p-3 font-bold">'+money(o.amount)+'<div class="text-[10px] text-slate-500">COD</div><div class="text-[10px] text-slate-600 mt-1">'+o.items.length+' item(s)</div></td><td class="p-3"><select onchange="updateOrderStatus(\''+esc(o.id)+'\',this.value)" class="p-1 border rounded bg-white font-bold">'+['Pending','Confirmed','Processing','Packed','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>'<option value="'+esc(s)+'" '+(o.status===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select><div id="orderSync-'+esc(o.id)+'" class="maaj-order-sync">Online</div></td><td class="p-3 text-right"><button onclick="viewInvoice(\''+esc(o.id)+'\')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-emerald-700"><i class="fa-solid fa-file-invoice mr-1"></i> Generate Invoice</button></td></tr>').join('');
+    }catch(e){tbody.innerHTML='<tr><td colspan="5" class="p-5 text-center text-red-600 font-bold">Online orders could not be loaded: '+esc(e.message)+'<div class="text-[10px] mt-2 font-normal">Run the supplied Supabase Orders SQL once, then refresh.</div></td></tr>'}
+  };
+
+  window.updateOrderStatus=async function(orderId,newStatus){
+    if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated()){alert('Admin login required.');return}
+    const allowed=['Pending','Confirmed','Processing','Packed','Shipped','Out for Delivery','Delivered','Cancelled'];
+    if(!allowed.includes(newStatus))return;
+    const cell=document.getElementById('orderSync-'+orderId);if(cell){cell.textContent='Updating...';cell.className='maaj-order-sync'}
+    try{
+      const {data,error}=await sb.from('orders').update({status:newStatus,updated_at:new Date().toISOString()}).eq('id',orderId).select('*').single();
+      if(error)throw error;
+      const o=orderRow(data);
+      let title='Order Update',message='Your order '+o.id+' status has been updated to '+newStatus+'.';
+      if(newStatus==='Confirmed')message='Your order '+o.id+' is confirmed and will be processed for delivery.';
+      else if(newStatus==='Out for Delivery')message='Your order '+o.id+' is out for delivery. Please keep your phone available.';
+      else if(newStatus==='Delivered')message='Your order '+o.id+' has been delivered. Thank you for choosing MAAJ PHARMACY.';
+      else if(newStatus==='Cancelled')message='Your order '+o.id+' has been cancelled. Please contact MAAJ PHARMACY support if you need help.';
+      await createNotification(o.customerId,o.id,title,message,newStatus==='Cancelled'?'order_cancelled':'order_update');
+      if(cell){cell.textContent='Updated ✓';cell.className='maaj-order-sync ok'}
+      alert('Order '+o.id+' updated to '+newStatus+'. Customer notification sent.');
+      renderAdminOrders();
+    }catch(e){if(cell){cell.textContent='Update failed';cell.className='maaj-order-sync err'}alert('Order update failed: '+e.message);renderAdminOrders()}
+  };
+
+  // Canonical placement: write the order to Supabase first. LocalStorage is only a temporary cart/cache,
+  // never the order database of record.
+  window.maajCanonicalPlaceOrder=async function(){
+    const u=customer();if(!u)return window.maajRequireCustomer();
+    const a=(typeof window.maajCanonicalCart==='function'?window.maajCanonicalCart():[]);if(!a.length){alert('Your cart is empty.');return false}
+    if(typeof window.maajMinimumOrderCheck==='function'&&!window.maajMinimumOrderCheck())return false;
+    const name=(document.getElementById('checkoutName')?.value||u.name||'').trim();
+    const phone=(document.getElementById('checkoutPhone')?.value||u.mobile||u.phone||'').replace(/\D/g,'');
+    const pin=(document.getElementById('checkoutPincode')?.value||u.pincode||'').replace(/\D/g,'');
+    const address=(document.getElementById('checkoutAddress')?.value||u.address||'').trim();
+    if(!name||!/^[0-9]{10}$/.test(phone)||!/^[0-9]{6}$/.test(pin)||!address){alert('Please enter valid customer name, 10-digit mobile number, 6-digit PIN code and complete delivery address.');return false}
+    const rx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true');
+    if(rx){const file=document.querySelector('#prescriptionFile,#rxFile,input[type="file"][name*="prescription" i]');const hasUpload=!!(file&&file.files&&file.files.length)||!!localRead('maaj_latest_prescription',null);if(!hasUpload){alert('A valid prescription is required for one or more medicines in your cart. Please upload it before placing the order.');return false}}
+    const totals=typeof window.maajCanonicalTotals==='function'?window.maajCanonicalTotals(a):{subtotal:0,discount:0,tax:0,delivery:0,total:0};
+    const id='ORD-'+Date.now().toString().slice(-8)+'-'+Math.floor(100+Math.random()*900);
+    const payload={id,user_id:u.id,customer_name:name,customer_phone:phone,pincode:pin,address,items:a,subtotal:Number(totals.subtotal||0),discount:Number(totals.discount||0),tax:Number(totals.tax||0),delivery:Number(totals.delivery||0),total:Number(totals.total||0),payment_mode:'COD',status:'Pending',delivery_estimate:(pin==='767022'||pin==='767061'||pin==='767021')?'Up to 1 day':'3–7 days'};
+    try{
+      const {data,error}=await sb.from('orders').insert(payload).select('*').single();
+      if(error)throw error;
+      // Supabase is the order database of record. No order is written to localStorage.
+      const ps=Array.isArray(window.products)?window.products:[];a.forEach(i=>{const p=ps.find(x=>String(x.id)===String(i.id));if(p)p.stock=Math.max(0,Number(p.stock||0)-Number(i.qty||1))});
+      try{localStorage.removeItem('maaj_cart');localStorage.removeItem('maaj_cart_total');localStorage.removeItem('cart');localStorage.removeItem('maaj_last_order')}catch(e){}
+      try{if(typeof updateCartBadge==='function')updateCartBadge()}catch(e){}
+      try{await createNotification(u.id,id,'Order Placed','Your order '+id+' has been received successfully. We will update you when it is confirmed.','order_placed')}catch(e){}
+      const box=document.getElementById('checkoutContent')||document.getElementById('maajCheckoutContent');
+      if(box)box.innerHTML='<div class="maaj-success"><div class="text-5xl text-emerald-600">✓</div><h2 class="text-2xl font-black mt-3">Order placed successfully</h2><p class="text-sm text-slate-600 mt-2">Your order <b>'+esc(id)+'</b> has been received.</p><p class="text-xs text-slate-500 mt-1">Payment: Cash on Delivery · Total: '+money(payload.total)+'</p><button onclick="try{maajCloseCheckout()}catch(e){};navigateTo(\'orders\')" class="maaj-checkout-btn mt-5">View My Order</button></div>';
+      else alert('Order placed successfully! Order ID: '+id+'\nPayment: Cash on Delivery');
+      try{if(typeof window.navigateTo==='function')window.navigateTo('orders')}catch(e){}
+      try{if(typeof window.renderCustomerOrders==='function')window.renderCustomerOrders()}catch(e){}
+      return true;
+    }catch(e){
+      alert('Order could not be submitted to Supabase.\n\n'+e.message+'\n\nPlease ask admin to run the supplied Orders SQL setup. Your cart has not been treated as a confirmed order.');
+      return false;
+    }
+  };
+  ['processOrderCheckout','finalPlaceCODOrder','maajPlaceOrder'].forEach(n=>window[n]=window.maajCanonicalPlaceOrder);
+
+  // Poll for new status notifications so the customer sees admin updates without refreshing.
+  let lastNotificationRefresh=0;
+  async function refreshCustomerData(){
+    if(!customer())return;
+    const now=Date.now();if(now-lastNotificationRefresh<4000)return;lastNotificationRefresh=now;
+    await renderNotifications();
+    const page=document.getElementById('page-orders');if(page&&page.classList.contains('active'))try{await window.renderCustomerOrders()}catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){ensureNotificationUI();renderNotifications();},500);
+    setInterval(refreshCustomerData,5000);
+    document.addEventListener('click',function(e){const p=document.getElementById('maajNotificationPanel'),b=document.getElementById('maajNotificationButton');if(p&&p.classList.contains('active')&&e.target!==p&&!p.contains(e.target)&&e.target!==b&&!b?.contains(e.target))p.classList.remove('active')});
+  });
+
+  // Refresh admin order list when the Orders tab is opened.
+  const oldSwitch=window.switchAdminTab;
+  if(typeof oldSwitch==='function'){
+    window.switchAdminTab=function(tab){const r=oldSwitch.apply(this,arguments);if(tab==='orders')setTimeout(()=>window.renderAdminOrders(),150);return r};
+  }
+  setInterval(function(){if(typeof window.isAdminAuthenticated==='function'&&window.isAdminAuthenticated()){const tab=document.getElementById('admin-tab-orders');if(tab&&tab.classList.contains('active'))window.renderAdminOrders()}},10000);
+})();
+</script>s
