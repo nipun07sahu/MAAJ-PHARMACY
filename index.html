@@ -45,6 +45,15 @@ html>
 .promo-slide{min-width:100%;min-height:180px;display:flex;align-items:center;justify-content:space-between;padding:28px 42px;color:white;box-sizing:border-box;}
 @media(max-width:640px){.promo-slide{padding:22px;min-height:160px;}.promo-slide h2{font-size:1.25rem!important}.promo-slide p{font-size:.8rem!important}}
 </style>
+<style id="maaj-promo-full-photo-final">
+#homePromoSlider{background:#0f172a!important;overflow:hidden!important;}
+#homePromoTrack{height:100%!important;min-height:180px!important;}
+#homePromoTrack .promo-slide{position:relative!important;width:100%!important;min-width:100%!important;height:100%!important;min-height:180px!important;padding:0!important;overflow:hidden!important;background:#0f172a!important;display:block!important;}
+#homePromoTrack .promo-slide>img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;display:block!important;opacity:1!important;filter:none!important;border-radius:0!important;}
+#homePromoTrack .promo-slide>.promo-slide-content{position:absolute!important;left:0!important;right:0!important;bottom:0!important;z-index:3!important;padding:18px 22px!important;display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;background:linear-gradient(to top,rgba(0,0,0,.58),rgba(0,0,0,0))!important;}
+#homePromoTrack .promo-slide .promo-slide-btn{background:#fff!important;color:#047857!important;border:0!important;padding:10px 18px!important;border-radius:10px!important;font-weight:900!important;font-size:12px!important;box-shadow:0 5px 16px rgba(0,0,0,.22)!important;cursor:pointer!important;}
+@media(max-width:640px){#homePromoTrack,#homePromoTrack .promo-slide,#homePromoSlider{min-height:160px!important;}#homePromoTrack .promo-slide>.promo-slide-content{padding:12px 14px!important;}#homePromoTrack .promo-slide .promo-slide-btn{padding:9px 15px!important;font-size:11px!important;}}
+</style>
 <style id="cod-only-fix">#onlinePaymentOption,[data-payment="online"],.online-payment-option{display:none!important}</style>
 <style id="maaj-customer-login-style">
 #maajCustomerFirstLogin{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,#ecfdf5,#eff6ff 55%,#dbeafe)}
@@ -567,6 +576,194 @@ body.maaj-non-home-customer #maajFeatureModal{display:none!important}
 #trackingPipeline>div{transition:transform .15s ease,box-shadow .15s ease}
 #trackingPipeline>div:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(15,23,42,.06)}
 @media(max-width:640px){#page-order-tracking{padding-bottom:1rem}#trackingPipeline>div{padding:.7rem}.maaj-tracking-hide-mobile{display:none}}
+</style>
+
+<style id="maaj-responsive-final-v2">
+/* =========================================================
+   MAAJ PHARMACY — FINAL RESPONSIVE SYSTEM v2
+   Mobile 320–767px | Tablet 768–1023px | Desktop 1024px+
+   Additive CSS only. Existing functionality is preserved.
+   ========================================================= */
+*,*::before,*::after{box-sizing:border-box}
+html{width:100%;max-width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
+body,main,header,section,article,aside,div,form{min-width:0}
+img,video,canvas,svg{max-width:100%}
+input,select,textarea,button{max-width:100%;font:inherit}
+textarea{resize:vertical}
+button,a{touch-action:manipulation}
+
+/* Dynamic content must never create horizontal page overflow. */
+.page-view,.admin-tab,.maaj-cart-page,#page-checkout,#page-admin-dashboard{max-width:100%;min-width:0;overflow-wrap:anywhere}
+
+/* ---------------- PHONE ---------------- */
+@media (max-width:767px){
+  body{font-size:14px}
+  body>div:first-child{width:100%;min-height:34px;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px!important;text-align:center;flex-wrap:wrap}
+  body>div:first-child span{max-width:100%;overflow-wrap:anywhere}
+
+  /* Header: brand row + selector row + action row, never overflow. */
+  header{width:100%;max-width:100%;overflow:visible}
+  header>div{width:100%!important;max-width:100%!important;padding:9px 10px!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"brand actions" "selector selector"!important;gap:8px!important;align-items:center!important}
+  header>div>div:first-child{grid-area:brand;display:flex!important;min-width:0!important;width:auto!important;flex:initial!important}
+  header>div>div:first-child h1{font-size:15px!important;line-height:1.05!important;white-space:nowrap}
+  header>div>div:first-child p{font-size:7.5px!important;line-height:1.2!important;white-space:normal!important}
+  header>div>div:first-child>div:first-child{width:34px!important;height:34px!important;min-width:34px!important;font-size:16px!important}
+
+  header>div>div:nth-child(2){grid-area:selector;width:100%!important;max-width:100%!important;display:flex!important;padding:0!important}
+  #pageSelector{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:38px!important;padding:7px 30px 7px 10px!important;font-size:11px!important;border-radius:10px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  header>div>div:nth-child(3){grid-area:actions;width:auto!important;max-width:100%!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:5px!important;min-width:0!important}
+  #navBackBtn,#navHomeBtn{min-width:38px!important;width:38px!important;height:38px!important;padding:0!important;font-size:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+  #navBackBtn i,#navHomeBtn i{font-size:14px!important;margin:0!important}
+  header>div>div:nth-child(3)>button[onclick="openAdminLogin()"]{height:38px!important;padding:0 9px!important;font-size:9px!important;white-space:nowrap!important}
+  #maajHeaderCartButton{width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+
+  main{width:100%!important;max-width:100%!important;margin:0!important;padding:12px 10px 24px!important;overflow:visible!important}
+  .page-view{width:100%!important;max-width:100%!important}
+
+  /* Home hero / promo */
+  #page-home>.bg-gradient-to-br{width:100%!important;max-width:100%!important;padding:18px!important;border-radius:18px!important;gap:14px!important}
+  #page-home>.bg-gradient-to-br h2{font-size:24px!important;line-height:1.15!important}
+  #page-home>.bg-gradient-to-br p{font-size:12px!important;line-height:1.45!important}
+  #homePromoSlider{width:100%!important;max-width:100%!important;min-height:155px!important;border-radius:16px!important;overflow:hidden!important}
+  #homePromoTrack{width:100%!important;min-height:155px!important}
+  .promo-slide{width:100%!important;min-width:100%!important;min-height:155px!important;height:auto!important;padding:18px!important;gap:10px!important;overflow:hidden!important}
+  .promo-slide>div:first-child{min-width:0!important;max-width:78%!important}
+  .promo-slide h2{font-size:21px!important;line-height:1.12!important;overflow-wrap:anywhere}
+  .promo-slide p{font-size:11px!important;line-height:1.35!important;overflow-wrap:anywhere}
+  .promo-slide img{width:92px!important;height:92px!important;object-fit:cover!important;border-radius:12px!important;flex:0 0 92px!important}
+
+  /* Generic grids: stack only page-specific layouts that need it. */
+  #page-home .grid.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #homeFeaturedProducts,.maaj-home-meds{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #page-store .grid{grid-template-columns:1fr!important}
+  #page-checkout .grid{grid-template-columns:1fr!important}
+  #page-admin-dashboard>.grid.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+  /* Store filters / search */
+  #page-store input,#page-store select,#page-store button{min-height:40px}
+  #page-store .flex{min-width:0}
+  #catalogSearch{width:100%!important;min-width:0!important}
+
+  /* Cards */
+  .maaj-ai-category-section{width:100%!important;max-width:100%!important;padding:15px 10px!important;border-radius:16px!important}
+  .maaj-ai-section-head{align-items:flex-start!important;gap:8px!important;flex-wrap:wrap!important}
+  .maaj-ai-section-head h3{font-size:18px!important}
+  .maaj-ai-viewall{padding:7px 10px!important;font-size:10px!important}
+  .maaj-ai-cat-scroller{width:100%!important;max-width:100%!important;gap:9px!important;overflow-x:auto!important}
+  .maaj-ai-cat-card{flex:0 0 118px!important;width:118px!important;padding:7px!important}
+  .maaj-ai-cat-img{height:118px!important}
+
+  /* Cart */
+  .maaj-cart-page{width:100%!important;max-width:100%!important}
+  .maaj-cart-page-head{flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+  .maaj-cart-item-row{grid-template-columns:52px minmax(0,1fr)!important;gap:8px!important}
+  .maaj-cart-item-image{width:52px!important;height:52px!important}
+  .maaj-cart-summary{width:100%!important;max-width:100%!important}
+  .maaj-cart-coupon-row,.maaj-coupon-row{display:flex!important;flex-direction:column!important;gap:7px!important}
+  .maaj-cart-coupon-row>* ,.maaj-coupon-row>*{width:100%!important;min-width:0!important}
+
+  /* Checkout */
+  #page-checkout .p-5{padding:13px!important}
+  #page-checkout input,#page-checkout select,#page-checkout textarea{width:100%!important;min-width:0!important;font-size:14px!important}
+  #checkoutItemsList{width:100%!important;max-width:100%!important;overflow:hidden}
+
+  /* Admin header + tabs */
+  #page-admin-dashboard>.bg-slate-900{padding:16px!important;border-radius:16px!important}
+  #page-admin-dashboard>.bg-slate-900 h2{font-size:20px!important;line-height:1.2!important}
+  #page-admin-dashboard>.bg-slate-900 .flex{width:100%!important;flex-wrap:wrap!important}
+  #page-admin-dashboard>.bg-slate-900 button{flex:1 1 140px!important;min-height:40px!important}
+  #page-admin-dashboard .admin-tab-btn{min-height:40px!important;white-space:normal!important;line-height:1.15!important}
+  #page-admin-dashboard .flex.flex-wrap{width:100%!important;max-width:100%!important}
+
+  /* Admin tables: horizontal scroll belongs to the table container, not the page. */
+  #page-admin-dashboard .overflow-x-auto{width:100%!important;max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  #page-admin-dashboard table{width:max-content!important;min-width:720px!important;max-width:none!important}
+  #page-admin-dashboard td,#page-admin-dashboard th{white-space:nowrap}
+
+  /* Admin forms / medicine manager / promo banners */
+  #admin-tab-medicine-manager form,
+  #admin-tab-promo-banners form,
+  #admin-tab-home-categories form{width:100%!important;max-width:100%!important}
+  #admin-tab-medicine-manager .grid,
+  #admin-tab-promo-banners .grid,
+  #admin-tab-home-categories .grid{grid-template-columns:1fr!important}
+  #admin-tab-medicine-manager input,
+  #admin-tab-medicine-manager select,
+  #admin-tab-medicine-manager textarea,
+  #admin-tab-promo-banners input,
+  #admin-tab-promo-banners select,
+  #admin-tab-promo-banners textarea,
+  #admin-tab-home-categories input,
+  #admin-tab-home-categories select,
+  #admin-tab-home-categories textarea{width:100%!important;min-width:0!important}
+  #admin-tab-promo-banners .flex{flex-wrap:wrap!important}
+  #admin-tab-promo-banners .flex>button{min-height:42px!important;flex:1 1 140px!important}
+
+  /* All dialogs fit inside the phone viewport. */
+  .modal,.modal.active{padding:10px!important}
+  .modal>div,#maajFeatureModal>div,#maajProModal>div,#maajRealDetailsBox{width:100%!important;max-width:100%!important;max-height:calc(100dvh - 20px)!important;margin:0!important;overflow:auto!important;border-radius:16px!important}
+  #maajProductDetailsPage .maaj-pdp-wrap{width:100%!important;max-width:100%!important;padding:10px!important}
+
+  /* Profile/address pages */
+  #maajEditProfileMount,.maaj-profile-card{width:100%!important;max-width:100%!important}
+  .maaj-location-options{grid-template-columns:1fr!important}
+  .maaj-checkout-location-row{grid-template-columns:1fr!important}
+
+  /* Never allow long IDs, URLs or status text to widen the page. */
+  .order-id,.tracking-id,[id*="order"],[class*="order"]{overflow-wrap:anywhere;word-break:break-word}
+}
+
+/* ---------------- VERY SMALL PHONES ---------------- */
+@media (max-width:380px){
+  header>div{padding:8px!important;gap:7px!important}
+  header>div>div:first-child h1{font-size:13px!important}
+  header>div>div:first-child p{font-size:6.5px!important}
+  header>div>div:first-child>div:first-child{width:30px!important;height:30px!important;min-width:30px!important}
+  #navBackBtn,#navHomeBtn,#maajHeaderCartButton{width:34px!important;min-width:34px!important;height:34px!important}
+  header>div>div:nth-child(3)>button[onclick="openAdminLogin()"]{padding:0 6px!important;font-size:8px!important}
+  #pageSelector{min-height:36px!important;font-size:10px!important}
+  main{padding-left:8px!important;padding-right:8px!important}
+  #page-home>.bg-gradient-to-br{padding:15px!important}
+  #page-home>.bg-gradient-to-br h2{font-size:21px!important}
+  .promo-slide{padding:14px!important;min-height:145px!important}
+  .promo-slide h2{font-size:18px!important}
+  .promo-slide p{font-size:10px!important}
+  .promo-slide img{width:72px!important;height:72px!important;flex-basis:72px!important}
+  #page-home .grid.grid-cols-2,#homeFeaturedProducts,.maaj-home-meds{gap:7px!important}
+}
+
+/* ---------------- TABLET ---------------- */
+@media (min-width:768px) and (max-width:1023px){
+  main{padding-left:16px!important;padding-right:16px!important}
+  header>div{gap:10px!important}
+  header>div>div:nth-child(3){flex-wrap:wrap!important;justify-content:flex-end!important}
+  #page-admin-dashboard .admin-tab-btn{font-size:11px!important}
+  #page-admin-dashboard .overflow-x-auto{max-width:100%!important;overflow-x:auto!important}
+  #page-admin-dashboard table{min-width:720px!important}
+  #page-checkout .grid{min-width:0}
+}
+
+/* ---------------- DESKTOP SAFETY ---------------- */
+@media (min-width:1024px){
+  main{width:100%;max-width:1280px;margin-inline:auto}
+  #page-admin-dashboard{width:100%;max-width:1280px;margin-inline:auto}
+}
+
+/* Prevent horizontal overflow from Tailwind/flex children. */
+.flex>*{min-width:0}
+.grid>*{min-width:0}
+.max-w-7xl{max-width:min(100%,80rem)}
+</style>
+
+
+<style id="maaj-promo-upload-bucket-fix">
+#homePromoSlider,#homePromoTrack{width:100%!important;overflow:hidden!important}
+#homePromoTrack .promo-slide>img{object-fit:cover!important;object-position:center!important}
+#homePromoTrack .promo-slide-content{pointer-events:none!important}
+#homePromoTrack .promo-slide-content .promo-slide-btn{pointer-events:auto!important;position:relative!important;z-index:20!important}
+#homePromoTrack .promo-slide-btn{cursor:pointer!important;touch-action:manipulation!important}
 </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
@@ -1186,22 +1383,43 @@ body.maaj-non-home-customer #maajFeatureModal{display:none!important}
               </div>
             </div>
 
-            <!-- TAB: PROMOTIONAL BANNERS — ONLINE SUPABASE -->
+            
+
+<!-- TAB: PROMOTIONAL BANNERS — SUPABASE + STORAGE -->
             <div id="admin-tab-promo-banners" class="admin-tab space-y-4">
               <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
                 <div class="p-4 border-b bg-slate-50">
                   <h3 class="font-black text-sm">🎁 Promotional Banner Slider</h3>
-                  <p class="text-[11px] text-slate-500 mt-1">Add, edit, reorder, activate or delete homepage offer slides. Everything is stored in Supabase and shown to all customers.</p>
+                  <p class="text-[11px] text-slate-500 mt-1">Upload promotional photo, button text and action. Data is saved online in Supabase.</p>
                 </div>
                 <div class="p-5 space-y-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Offer / Slide Title *</label><input id="maajPromoTitle" class="w-full border rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. 10% OFF FIRST ORDER"></div>
-                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Button Text</label><input id="maajPromoButton" class="w-full border rounded-xl px-3 py-2.5 text-sm" value="SHOP NOW"></div>
-                    <div class="md:col-span-2"><label class="block text-[11px] font-black text-slate-600 mb-1">Offer Description</label><input id="maajPromoText" class="w-full border rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. Save 10% on your first medicine order"></div>
-                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Button Action</label><select id="maajPromoAction" class="w-full border rounded-xl px-3 py-2.5 text-sm"><option value="store">Open Medicine Store</option><option value="prescription">Upload Prescription</option><option value="offers">Open Offers</option><option value="orders">My Orders</option><option value="none">No Action</option></select></div>
-                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Sort Order</label><input id="maajPromoOrder" type="number" value="99" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div>
-                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Background (CSS gradient / color)</label><input id="maajPromoBg" class="w-full border rounded-xl px-3 py-2.5 text-sm" value="linear-gradient(135deg,#047857,#10b981)"></div>
-                    <div><label class="block text-[11px] font-black text-slate-600 mb-1">Slide Image (optional)</label><input id="maajPromoImage" type="file" accept="image/png,image/jpeg,image/webp" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></div>
+                    <input id="maajPromoTitle" type="hidden" value="Promotional Banner">
+                    <input id="maajPromoText" type="hidden" value="">
+                    <input id="maajPromoOrder" type="hidden" value="99">
+                    <input id="maajPromoBg" type="hidden" value="#0f172a">
+                    <div class="md:col-span-2">
+                      <label class="block text-[11px] font-black text-slate-600 mb-1">Promotional Slide Photo *</label>
+                      <input id="maajPromoImage" type="file" accept="image/png,image/jpeg,image/webp" class="w-full border rounded-xl px-3 py-3 text-sm bg-white">
+                      <div id="maajPromoImagePreviewWrap" class="hidden mt-2 rounded-xl border bg-slate-50 p-2">
+                        <img id="maajPromoImagePreview" alt="Selected promotional slide preview" class="w-full h-40 md:h-56 object-cover rounded-lg">
+                      </div>
+                      <p class="text-[10px] text-slate-500 mt-1">The uploaded photo will cover the entire promotional slide.</p>
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-black text-slate-600 mb-1">Button Text</label>
+                      <input id="maajPromoButton" class="w-full border rounded-xl px-3 py-2.5 text-sm" value="SHOP NOW" placeholder="SHOP NOW">
+                    </div>
+                    <div>
+                      <label class="block text-[11px] font-black text-slate-600 mb-1">Button Action</label>
+                      <select id="maajPromoAction" class="w-full border rounded-xl px-3 py-2.5 text-sm">
+                        <option value="store">Open Medicine Store</option>
+                        <option value="prescription">Upload Prescription</option>
+                        <option value="offers">Open Offers</option>
+                        <option value="orders">My Orders</option>
+                        <option value="none">No Action</option>
+                      </select>
+                    </div>
                   </div>
                   <div class="flex flex-wrap gap-2">
                     <button type="button" id="maajPromoSaveBtn" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">+ Add Offer Slide Online</button>
@@ -1214,7 +1432,9 @@ body.maaj-non-home-customer #maajFeatureModal{display:none!important}
               </div>
             </div>
 
-            <!-- TAB: MEDICINE MANAGER — ONLINE SUPABASE CATALOGUE -->
+            
+
+<!-- TAB: MEDICINE MANAGER — ONLINE SUPABASE CATALOGUE -->
             <div id="admin-tab-medicine-manager" class="admin-tab space-y-4">
               <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
                 <div class="p-4 border-b bg-slate-50 flex items-center justify-between gap-3">
@@ -3185,13 +3405,24 @@ async function maajLoadMedicinesFromAPI() {
  'use strict';
  let promos=[],i=0,timer=null;
  const PROMO_U='https://fywzoptldcgxatyydyec.supabase.co';
- const PROMO_K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneXJ0eXlkeWVjIiwiaWF0IjoxNzg4MDc5NTU1LCJleHAiOjIxMDM2NTU1NTV9.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+ const PROMO_K='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+ const PROMO_BUCKET='medicine-images';
  function getPromoSB(){
    if(window.maajSupabaseClient) return window.maajSupabaseClient;
    if(window.supabase && typeof window.supabase.createClient==='function'){
-     try{return window.supabase.createClient(PROMO_U,PROMO_K,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})}catch(e){}
+     try{return window.supabase.createClient(PROMO_U,PROMO_K,{auth:{storage:window.sessionStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}})}catch(e){}
    }
    return null;
+ }
+ function promoPublicUrl(path){
+   const client=getPromoSB();
+   return client?client.storage.from(PROMO_BUCKET).getPublicUrl(path).data.publicUrl:'';
+ }
+ function promoImagePathFromUrl(url){
+   if(!url)return null;
+   const marker='/storage/v1/object/public/'+PROMO_BUCKET+'/';
+   const ix=url.indexOf(marker);
+   return ix>=0?decodeURIComponent(url.slice(ix+marker.length)):null;
  }
  const fallback=[
   {title:'FIRST ORDER OFFER',text:'Get 10% OFF on your first order',button:'SHOP NOW',bg:'linear-gradient(135deg,#047857,#10b981)',action:'store'},
@@ -3201,17 +3432,19 @@ async function maajLoadMedicinesFromAPI() {
   {title:'PRESCRIPTION SERVICE',text:'Upload your prescription and order easily',button:'UPLOAD PRESCRIPTION',bg:'linear-gradient(135deg,#be123c,#f43f5e)',action:'prescription'}
  ];
  function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
- function render(){const track=document.getElementById('homePromoTrack'),dots=document.getElementById('promoDots');if(!track)return;if(!promos.length){track.innerHTML='';if(dots)dots.innerHTML='';return}if(i>=promos.length)i=0;track.innerHTML=promos.map((p,n)=>`<div class="promo-slide" style="background:${esc(p.bg||fallback[0].bg)}"><div style="position:relative;z-index:2;max-width:78%"><div style="font-size:11px;font-weight:800;letter-spacing:1px;opacity:.9">MAAJ PHARMACY</div><h2 style="font-size:28px;font-weight:900;margin:5px 0">${esc(p.title)}</h2><p style="font-size:15px;margin:0 0 14px">${esc(p.text||'')}</p>${p.button?`<button onclick="promoAction(${n})" style="background:white;color:#064e3b;border:0;padding:9px 16px;border-radius:9px;font-weight:800;font-size:12px">${esc(p.button)}</button>`:''}</div>${p.image_url?`<img src="${esc(p.image_url)}" alt="${esc(p.title)}" loading="lazy" style="position:absolute;right:20px;top:12px;width:170px;height:156px;object-fit:contain;filter:drop-shadow(0 10px 12px rgba(0,0,0,.12));opacity:.96">`:'<div style="font-size:58px;opacity:.18">💊</div>'}</div>`).join('');dots.innerHTML=promos.map((_,n)=>`<button onclick="promoGo(${n})" aria-label="Slide ${n+1}" style="width:8px;height:8px;border-radius:50%;border:0;padding:0;background:${n===i?'white':'rgba(255,255,255,.45)'}"></button>`).join('');track.style.transform=`translateX(-${i*100}%)`;track.style.width=`${promos.length*100}%`;track.style.transition='transform .6s ease';}
+ function render(){const track=document.getElementById('homePromoTrack'),dots=document.getElementById('promoDots');if(!track)return;if(!promos.length){track.innerHTML='';if(dots)dots.innerHTML='';return}if(i>=promos.length)i=0;track.innerHTML=promos.map((p,n)=>{const image=p.image_url||'';return `<div class="promo-slide" role="group" aria-label="${esc(p.title||'Promotional Banner')}" onclick="promoAction(${n})" style="cursor:pointer">${image?`<img src="${esc(image)}${String(image).includes('?')?'&':'?'}v=${Date.now()}" alt="${esc(p.title||'Promotional Banner')}" loading="lazy" onerror="this.style.display='none'">`:'<div style="position:absolute;inset:0;background:#0f172a"></div>'}<div class="promo-slide-content">${p.button?`<button type="button" class="promo-slide-btn" onclick="event.stopPropagation();promoAction(${n})">${esc(p.button)}</button>`:''}</div></div>`}).join('');dots.innerHTML=promos.map((_,n)=>`<button onclick="promoGo(${n})" aria-label="Slide ${n+1}" style="width:8px;height:8px;border-radius:50%;border:0;padding:0;background:${n===i?'white':'rgba(255,255,255,.45)'}"></button>`).join('');track.style.transform=`translateX(-${i*100}%)`;track.style.width=`${promos.length*100}%`;track.style.transition='transform .6s ease';}
  function go(n){if(!promos.length)return;i=(n+promos.length)%promos.length;render();clearInterval(timer);timer=setInterval(()=>go(i+1),5000)}
  async function load(){try{const client=getPromoSB();if(!client){promos=fallback;render();return}const {data,error}=await client.from('promo_banners').select('id,title,text,button_text,action,bg,image_url,sort_order,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;promos=(data&&data.length)?data.map(x=>({id:x.id,title:x.title,text:x.text,button:x.button_text,bg:x.bg,action:x.action,image_url:x.image_url})):fallback;render();}catch(e){console.warn('Promo banners unavailable:',e.message);promos=fallback;render()}}
  window.promoNext=()=>go(i+1);window.promoPrev=()=>go(i-1);window.promoGo=n=>go(n);
- window.promoAction=function(n){const a=promos[n]?.action||'store';if(a==='prescription')navigateTo('prescription');else if(a==='orders')navigateTo('orders');else if(a==='offers'){try{maajPro('offers')}catch(e){navigateTo('store')}}else if(a!=='none')navigateTo('store');};
- window.maajLoadPromoBanners=async function(show){const box=document.getElementById('maajPromoAdminList'),status=document.getElementById('maajPromoStatus'),client=getPromoSB();if(!box)return;if(!client){box.innerHTML='<div class="text-xs text-red-600 font-bold">Supabase connection unavailable. Please reload the page.</div>';return}try{const {data,error}=await client.from('promo_banners').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="border rounded-2xl p-3 bg-white flex flex-col md:flex-row gap-3 items-start md:items-center"><div class="w-full md:w-36 h-20 rounded-xl overflow-hidden" style="background:${esc(r.bg||'#047857')}">${r.image_url?`<img src="${esc(r.image_url)}" class="w-full h-full object-contain">`:'<div class="h-full flex items-center justify-center text-white text-2xl">💊</div>'}</div><div class="flex-1"><div class="font-black text-sm">${esc(r.title)}</div><div class="text-[11px] text-slate-500">${esc(r.text||'')}</div><div class="text-[10px] mt-1">Order ${esc(r.sort_order)} • ${r.is_active?'Live':'Hidden'} • ${esc(r.action||'store')}</div></div><div class="flex gap-2"><button type="button" class="bg-slate-100 px-3 py-2 rounded-lg text-xs font-black" onclick="maajEditPromoBanner('${String(r.id).replace(/'/g,"\'")}')">✏️ Edit</button><button type="button" class="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-xs font-black" onclick="maajDeletePromoBanner('${String(r.id).replace(/'/g,"\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No promotional slides saved yet.</div>';if(show&&status)status.textContent='Refreshed from Supabase.'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}};
- window.maajAddPromoBanner=async function(){const st=document.getElementById('maajPromoStatus');const set=t=>{if(st)st.textContent=t};const client=getPromoSB();if(!client)return set('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return set('Admin login required.');const title=(document.getElementById('maajPromoTitle')?.value||'').trim(),text=(document.getElementById('maajPromoText')?.value||'').trim(),button=(document.getElementById('maajPromoButton')?.value||'SHOP NOW').trim(),action=document.getElementById('maajPromoAction')?.value||'store',bg=(document.getElementById('maajPromoBg')?.value||'linear-gradient(135deg,#047857,#10b981)').trim(),order=Number(document.getElementById('maajPromoOrder')?.value||99),file=document.getElementById('maajPromoImage')?.files?.[0];if(!title)return set('Slide title is required.');try{set('Saving online in Supabase...');let image_url=null;if(file){const path='promo-banners/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+((file.name.split('.').pop()||'jpg').toLowerCase());const up=await client.storage.from('medicine-images').upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});if(up.error)throw up.error;image_url=client.storage.from('medicine-images').getPublicUrl(path).data.publicUrl}const ins=await client.from('promo_banners').insert({title,text,button_text:button,action,bg,image_url,sort_order:order,is_active:true}).select('*').single();if(ins.error)throw ins.error;['maajPromoTitle','maajPromoText','maajPromoButton','maajPromoImage'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});set('Saved online in Supabase.');await maajLoadPromoBanners(false);await load();}catch(e){set('Save Error: '+e.message)}};
- window.maajEditPromoBanner=async function(id){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return alert('Admin login required.');try{const q=await client.from('promo_banners').select('*').eq('id',id).single();if(q.error)throw q.error;const r=q.data;document.getElementById('maajPromoTitle').value=r.title||'';document.getElementById('maajPromoText').value=r.text||'';document.getElementById('maajPromoButton').value=r.button_text||'SHOP NOW';document.getElementById('maajPromoAction').value=r.action||'store';document.getElementById('maajPromoBg').value=r.bg||'';document.getElementById('maajPromoOrder').value=r.sort_order||99;const b=document.getElementById('maajPromoSaveBtn');if(b){b.textContent='💾 Update Offer Slide';b.onclick=()=>maajUpdatePromoBanner(id)}document.getElementById('maajPromoStatus').textContent='Editing '+r.title+'. Change details and click Update.';document.getElementById('admin-tab-promo-banners')?.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){alert('Could not open slide: '+e.message)}};
- window.maajUpdatePromoBanner=async function(id){const client=getPromoSB();try{if(!client)throw new Error('Supabase connection unavailable.');const p={title:(document.getElementById('maajPromoTitle').value||'').trim(),text:(document.getElementById('maajPromoText').value||'').trim(),button_text:(document.getElementById('maajPromoButton').value||'SHOP NOW').trim(),action:document.getElementById('maajPromoAction').value,bg:(document.getElementById('maajPromoBg').value||'').trim(),sort_order:Number(document.getElementById('maajPromoOrder').value||99)};const file=document.getElementById('maajPromoImage')?.files?.[0];if(file){const path='promo-banners/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+((file.name.split('.').pop()||'jpg').toLowerCase());const up=await client.storage.from('medicine-images').upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});if(up.error)throw up.error;p.image_url=client.storage.from('medicine-images').getPublicUrl(path).data.publicUrl}const {error}=await client.from('promo_banners').update(p).eq('id',id);if(error)throw error;const b=document.getElementById('maajPromoSaveBtn');if(b){b.textContent='+ Add Offer Slide Online';b.onclick=maajAddPromoBanner}document.getElementById('maajPromoStatus').textContent='Updated online in Supabase.';document.getElementById('maajPromoImage').value='';await maajLoadPromoBanners(false);await load();}catch(e){alert('Update failed: '+e.message)}};
- window.maajDeletePromoBanner=async function(id){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(!confirm('Delete this promotional slide permanently?'))return;try{const q=await client.from('promo_banners').select('image_url').eq('id',id).maybeSingle();if(q.error)throw q.error;const {error}=await client.from('promo_banners').delete().eq('id',id);if(error)throw error;if(q.data?.image_url){const marker='/storage/v1/object/public/medicine-images/';const ix=q.data.image_url.indexOf(marker);if(ix>=0)await client.storage.from('medicine-images').remove([decodeURIComponent(q.data.image_url.slice(ix+marker.length))])}await maajLoadPromoBanners(false);await load();}catch(e){alert('Delete failed: '+e.message)}};
- window.maajDeleteAllPromoBanners=async function(){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return alert('Admin login required.');if(!confirm('Delete ALL promotional slides permanently from Supabase?'))return;try{const q=await client.from('promo_banners').select('id,image_url');if(q.error)throw q.error;const rows=q.data||[];const {error}=await client.from('promo_banners').delete().gte('created_at','1900-01-01T00:00:00Z');if(error)throw error;const paths=rows.map(r=>{if(!r.image_url)return null;const marker='/storage/v1/object/public/medicine-images/';const ix=r.image_url.indexOf(marker);return ix>=0?decodeURIComponent(r.image_url.slice(ix+marker.length)):null}).filter(Boolean);if(paths.length)await client.storage.from('medicine-images').remove(paths);const st=document.getElementById('maajPromoStatus');if(st)st.textContent='All promotional slides deleted permanently from Supabase.';await maajLoadPromoBanners(false);await load();}catch(e){alert('Delete all failed: '+e.message)}};
+ window.promoAction=function(n){const a=promos[n]?.action||'store';if(a==='prescription'){window.navigateTo('upload-prescription');}else if(a==='orders'){window.navigateTo('orders');}else if(a==='offers'){try{window.maajPro('offers')}catch(e){window.navigateTo('store');}}else if(a!=='none'){window.navigateTo('store');}};
+ window.maajLoadPromoBanners=async function(show){const box=document.getElementById('maajPromoAdminList'),status=document.getElementById('maajPromoStatus'),client=getPromoSB();if(!box)return;if(!client){box.innerHTML='<div class="text-xs text-red-600 font-bold">Supabase connection unavailable. Please reload the page.</div>';return}try{const {data,error}=await client.from('promo_banners').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="border rounded-2xl p-3 bg-white flex flex-col md:flex-row gap-3 items-start md:items-center"><div class="w-full md:w-56 h-32 rounded-xl overflow-hidden" style="background:${esc(r.bg||'#047857')}">${r.image_url?`<img src="${esc(r.image_url)}${String(r.image_url||'').includes('?')?'&':'?'}v=${Date.now()}" class="w-full h-full object-cover" onerror="this.style.display='none'">`:'<div class="h-full flex items-center justify-center text-white text-2xl">💊</div>'}</div><div class="flex-1"><div class="font-black text-sm">${esc(r.title)}</div><div class="text-[11px] text-slate-500">${esc(r.text||'')}</div><div class="text-[10px] mt-1">Order ${esc(r.sort_order)} • ${r.is_active?'Live':'Hidden'} • ${esc(r.action||'store')}</div></div><div class="flex gap-2"><button type="button" class="bg-slate-100 px-3 py-2 rounded-lg text-xs font-black" onclick="maajEditPromoBanner('${String(r.id).replace(/'/g,"\'")}')">✏️ Edit</button><button type="button" class="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-xs font-black" onclick="maajDeletePromoBanner('${String(r.id).replace(/'/g,"\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No promotional slides saved yet.</div>';if(show&&status)status.textContent='Refreshed from Supabase.'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}};
+ window.maajAddPromoBanner=async function(){const st=document.getElementById('maajPromoStatus');const set=t=>{if(st)st.textContent=t};const client=getPromoSB();if(!client)return set('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return set('Admin login required.');const file=document.getElementById('maajPromoImage')?.files?.[0],button=(document.getElementById('maajPromoButton')?.value||'SHOP NOW').trim(),action=document.getElementById('maajPromoAction')?.value||'store';if(!file)return set('Please select a promotional slide photo.');try{set('Uploading photo and saving online...');const ext=((file.name.split('.').pop()||'jpg').toLowerCase());const path='promo-banners/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+ext;const up=await client.storage.from(PROMO_BUCKET).upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});if(up.error)throw up.error;const image_url=client.storage.from(PROMO_BUCKET).getPublicUrl(path).data.publicUrl;if(!image_url)throw new Error('Could not create public image URL. Check the promo-banners Storage bucket and its public read policy.');const title=(file.name||'Promotional Banner').replace(/\.[^.]+$/,'').slice(0,120)||'Promotional Banner';const ins=await client.from('promo_banners').insert({title,text:'',button_text:button||'SHOP NOW',action,bg:'#0f172a',image_url,sort_order:99,is_active:true}).select('*').single();if(ins.error)throw ins.error;document.getElementById('maajPromoImage').value='';document.getElementById('maajPromoButton').value='SHOP NOW';document.getElementById('maajPromoAction').value='store';document.getElementById('maajPromoImagePreviewWrap')?.classList.add('hidden');document.getElementById('maajPromoImagePreview')?.removeAttribute('src');set('Promotional photo saved online in Supabase.');await maajLoadPromoBanners(false);await load();}catch(e){set('Save Error: '+e.message)}};
+ window.maajEditPromoBanner=async function(id){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return alert('Admin login required.');try{const q=await client.from('promo_banners').select('*').eq('id',id).single();if(q.error)throw q.error;const r=q.data;document.getElementById('maajPromoTitle').value=r.title||'Promotional Banner';document.getElementById('maajPromoText').value='';document.getElementById('maajPromoButton').value=r.button_text||'SHOP NOW';document.getElementById('maajPromoAction').value=r.action||'store';document.getElementById('maajPromoBg').value='#0f172a';document.getElementById('maajPromoOrder').value=r.sort_order||99;const prev=document.getElementById('maajPromoImagePreview'),wrap=document.getElementById('maajPromoImagePreviewWrap');if(prev&&r.image_url){prev.src=r.image_url;wrap?.classList.remove('hidden')}const b=document.getElementById('maajPromoSaveBtn');if(b){b.textContent='💾 Update Promotional Photo';b.onclick=()=>maajUpdatePromoBanner(id)}document.getElementById('maajPromoStatus').textContent='Editing '+(r.title||'promotional banner')+'. Replace photo or change Button Text / Action, then click Update.';document.getElementById('admin-tab-promo-banners')?.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){alert('Could not open slide: '+e.message)}};
+ window.maajUpdatePromoBanner=async function(id){const client=getPromoSB();try{if(!client)throw new Error('Supabase connection unavailable.');const p={button_text:(document.getElementById('maajPromoButton').value||'SHOP NOW').trim()||'SHOP NOW',action:document.getElementById('maajPromoAction').value,bg:'#0f172a'};const file=document.getElementById('maajPromoImage')?.files?.[0];if(file){const path='promo-banners/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+((file.name.split('.').pop()||'jpg').toLowerCase());const up=await client.storage.from(PROMO_BUCKET).upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});if(up.error)throw up.error;p.image_url=client.storage.from(PROMO_BUCKET).getPublicUrl(path).data.publicUrl;p.title=(file.name||'Promotional Banner').replace(/\.[^.]+$/,'').slice(0,120)||'Promotional Banner'}const {error}=await client.from('promo_banners').update(p).eq('id',id);if(error)throw error;const b=document.getElementById('maajPromoSaveBtn');if(b){b.textContent='+ Add Promotional Photo';b.onclick=maajAddPromoBanner}document.getElementById('maajPromoStatus').textContent='Promotional banner updated online in Supabase.';document.getElementById('maajPromoImage').value='';document.getElementById('maajPromoImagePreviewWrap')?.classList.add('hidden');document.getElementById('maajPromoImagePreview')?.removeAttribute('src');await maajLoadPromoBanners(false);await load();}catch(e){alert('Update failed: '+e.message)}};
+ window.maajDeletePromoBanner=async function(id){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(!confirm('Delete this promotional slide permanently?'))return;try{const q=await client.from('promo_banners').select('image_url').eq('id',id).maybeSingle();if(q.error)throw q.error;const {error}=await client.from('promo_banners').delete().eq('id',id);if(error)throw error;if(q.data?.image_url){const marker='/storage/v1/object/public/'+PROMO_BUCKET+'/';const ix=q.data.image_url.indexOf(marker);if(ix>=0)await client.storage.from(PROMO_BUCKET).remove([decodeURIComponent(q.data.image_url.slice(ix+marker.length))])}await maajLoadPromoBanners(false);await load();}catch(e){alert('Delete failed: '+e.message)}};
+ window.maajDeleteAllPromoBanners=async function(){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return alert('Admin login required.');if(!confirm('Delete ALL promotional slides permanently from Supabase?'))return;try{const q=await client.from('promo_banners').select('id,image_url');if(q.error)throw q.error;const rows=q.data||[];const {error}=await client.from('promo_banners').delete().gte('created_at','1900-01-01T00:00:00Z');if(error)throw error;const paths=rows.map(r=>{if(!r.image_url)return null;const marker='/storage/v1/object/public/'+PROMO_BUCKET+'/';const ix=r.image_url.indexOf(marker);return ix>=0?decodeURIComponent(r.image_url.slice(ix+marker.length)):null}).filter(Boolean);if(paths.length)await client.storage.from(PROMO_BUCKET).remove(paths);const st=document.getElementById('maajPromoStatus');if(st)st.textContent='All promotional slides deleted permanently from Supabase.';await maajLoadPromoBanners(false);await load();}catch(e){alert('Delete all failed: '+e.message)}};
+ const promoFileInput=document.getElementById('maajPromoImage');
+ if(promoFileInput){promoFileInput.addEventListener('change',()=>{const f=promoFileInput.files&&promoFileInput.files[0],w=document.getElementById('maajPromoImagePreviewWrap'),img=document.getElementById('maajPromoImagePreview');if(!f){w?.classList.add('hidden');if(img)img.removeAttribute('src');return}if(img)img.src=URL.createObjectURL(f);w?.classList.remove('hidden');});}
  document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('maajPromoSaveBtn');if(b)b.onclick=maajAddPromoBanner;load();setTimeout(()=>maajLoadPromoBanners(false),1200)});
  const oldSwitch=window.switchAdminTab;if(typeof oldSwitch==='function'&&!oldSwitch.__maajPromo){window.switchAdminTab=function(tab){const r=oldSwitch.apply(this,arguments);if(tab==='promo-banners')setTimeout(()=>maajLoadPromoBanners(false),100);return r};window.switchAdminTab.__maajPromo=true;}
 })();
