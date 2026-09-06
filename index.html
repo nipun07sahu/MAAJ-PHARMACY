@@ -34,6 +34,38 @@ html>
             @page { size: A4; margin: 10mm; }
         }
     </style>
+
+<script id="maaj-api-cache-layer">
+(function(){
+  'use strict';
+  const PREFIX='maaj_api_cache_v1:';
+  const mem=new Map();
+  const inflight=new Map();
+  function now(){return Date.now()}
+  function read(key){
+    const m=mem.get(key); if(m && m.expires>now()) return m.data;
+    if(m) mem.delete(key);
+    try{const x=sessionStorage.getItem(PREFIX+key); if(!x)return null; const o=JSON.parse(x); if(o.expires>now()){mem.set(key,o);return o.data;} sessionStorage.removeItem(PREFIX+key);}catch(e){}
+    return null;
+  }
+  function write(key,data,ttl){const o={data:data,expires:now()+ttl};mem.set(key,o);try{sessionStorage.setItem(PREFIX+key,JSON.stringify(o));}catch(e){} return data}
+  window.maajApiCache={
+    get:function(key){return read(key)},
+    set:function(key,data,ttl){return write(key,data,ttl||60000)},
+    clear:function(prefix){
+      for(const k of Array.from(mem.keys())) if(!prefix||k.indexOf(prefix)===0) mem.delete(k);
+      try{for(let i=sessionStorage.length-1;i>=0;i--){const k=sessionStorage.key(i)||'';if(k.indexOf(PREFIX+(prefix||''))===0)sessionStorage.removeItem(k)}}catch(e){}
+    },
+    remember:async function(key,ttl,loader){
+      const hit=read(key); if(hit!==null)return hit;
+      if(inflight.has(key))return inflight.get(key);
+      const job=Promise.resolve().then(loader).then(data=>write(key,data,ttl)).finally(()=>inflight.delete(key));
+      inflight.set(key,job); return job;
+    }
+  };
+})();
+</script>
+
 <style id="maaj-min-order-299-style">
 .maaj-min-order-note{margin-top:10px;padding:10px 12px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;border-radius:12px;font-size:12px;font-weight:800}
 </style>
@@ -42,12 +74,12 @@ html>
 <style id="promo-fix-css">
 #homePromoSlider{display:block!important;min-height:180px;background:#047857;}
 #homePromoTrack{width:100%;height:100%;min-height:180px;display:flex;}
-.promo-slide{min-width:100%;min-height:180px;display:flex;align-items:center;justify-content:space-between;padding:28px 42px;color:white;box-sizing:border-box;}
+.promo-slide{flex:0 0 100%;width:100%;min-width:100%;min-height:180px;display:flex;align-items:center;justify-content:space-between;padding:28px 42px;color:white;box-sizing:border-box;}
 @media(max-width:640px){.promo-slide{padding:22px;min-height:160px;}.promo-slide h2{font-size:1.25rem!important}.promo-slide p{font-size:.8rem!important}}
 </style>
 <style id="maaj-promo-full-photo-final">
 #homePromoSlider{background:#0f172a!important;overflow:hidden!important;}
-#homePromoTrack{height:100%!important;min-height:180px!important;}
+#homePromoTrack{height:100%!important;min-height:180px!important;width:100%!important;display:flex!important;}
 #homePromoTrack .promo-slide{position:relative!important;width:100%!important;min-width:100%!important;height:100%!important;min-height:180px!important;padding:0!important;overflow:hidden!important;background:#0f172a!important;display:block!important;}
 #homePromoTrack .promo-slide>img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;display:block!important;opacity:1!important;filter:none!important;border-radius:0!important;}
 #homePromoTrack .promo-slide>.promo-slide-content{position:absolute!important;left:0!important;right:0!important;bottom:0!important;z-index:3!important;padding:18px 22px!important;display:flex!important;justify-content:flex-end!important;align-items:flex-end!important;background:linear-gradient(to top,rgba(0,0,0,.58),rgba(0,0,0,0))!important;}
@@ -1689,7 +1721,7 @@ button,a{touch-action:manipulation}
       <button onclick="maajCloseMedicineDetails()" class="w-10 h-10 rounded-full bg-slate-100"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="p-5 grid md:grid-cols-2 gap-6">
-      <div class="bg-slate-50 rounded-2xl min-h-[260px] flex items-center justify-center p-4"><img id="maajDetailPhoto" class="max-h-64 max-w-full object-contain" alt="Medicine"></div>
+      <div class="bg-slate-50 rounded-2xl min-h-[260px] flex items-center justify-center p-4"><img id="maajDetailPhoto" onerror="maajImageFallback(this)" class="max-h-64 max-w-full object-contain" alt="Medicine"></div>
       <div class="space-y-3">
         <div id="maajDetailRx" class="text-xs"></div>
         <p id="maajDetailDescription" class="text-sm text-slate-600 leading-6"></p>
@@ -2156,12 +2188,22 @@ function maajMedicinePhotoUrl(value) {
     const raw = String(value || '').trim();
     if (!raw) return '';
     if (/^data:image\//i.test(raw) || /^blob:/i.test(raw)) return raw;
-    if (/^https?:\/\//i.test(raw)) return raw;
-    const clean = raw.replace(/^\/+/, '').replace(/^storage\/v1\/object\/(public\/)?/, '');
-    if (clean.startsWith('medicine-images/')) {
-        return SUPABASE_URL + '/storage/v1/object/public/' + clean;
+
+    // Normalize old/wrong Supabase project URLs to the current MAAJ PHARMACY project.
+    // This is important for medicines uploaded before the Supabase project URL was fixed.
+    if (/^https?:\/\//i.test(raw)) {
+        const m = raw.match(/\/storage\/v1\/object\/(?:public\/)?medicine-images\/(.+)$/i);
+        if (m && m[1]) {
+            return SUPABASE_URL + '/storage/v1/object/public/medicine-images/' + m[1];
+        }
+        return raw;
     }
-    return SUPABASE_URL + '/storage/v1/object/public/medicine-images/' + clean.replace(/^medicine-images\//, '');
+
+    let clean = raw.replace(/^\/+/, '');
+    clean = clean.replace(/^storage\/v1\/object\/(?:public\/)?/i, '');
+    clean = clean.replace(/^medicine-images\//i, '');
+    if (!clean) return '';
+    return SUPABASE_URL + '/storage/v1/object/public/medicine-images/' + clean;
 }
 
 function maajImageFallback(el) {
@@ -2172,7 +2214,7 @@ function maajImageFallback(el) {
 }
 
 function maajMapApiMedicine(m) {
-    const photo = maajMedicinePhotoUrl(m.photo || m.image || m.photo_url || m.photo_path || '');
+    const photo = maajMedicinePhotoUrl(m.photo || m.image_url || m.image || m.photo_url || m.photo_path || '');
     return {
         id: String(m.id),
         name: m.name || "",
@@ -2195,18 +2237,21 @@ function maajMapApiMedicine(m) {
     };
 }
 
-async function maajLoadMedicinesFromAPI() {
+async function maajLoadMedicinesFromAPI(options) {
     try {
-        const r = await fetch(MAAJ_API + "?select=*&order=created_at.desc", {
-            cache:"no-store",
-            headers:{
-                "apikey": SUPABASE_ANON_KEY,
-                "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-                "Accept": "application/json"
-            }
-        });
-        if (!r.ok) throw new Error("Supabase API " + r.status);
-        const data = await r.json();
+        options=options||{};
+        const force=!!options.force;
+        const load=async()=>{
+            const r = await fetch(MAAJ_API + "?select=*&order=created_at.desc", {
+                cache:"default",
+                headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":"Bearer "+SUPABASE_ANON_KEY,"Accept":"application/json"}
+            });
+            if (!r.ok) throw new Error("Supabase API " + r.status);
+            const data = await r.json();
+            if (!Array.isArray(data)) throw new Error("Invalid medicine data");
+            return data;
+        };
+        const data=force||!window.maajApiCache ? await load() : await window.maajApiCache.remember('medicines_public',120000,load);
         if (!Array.isArray(data)) throw new Error("Invalid medicine data");
         products = data.map(maajMapApiMedicine);
         setDB("products", products);
@@ -2484,6 +2529,28 @@ async function maajLoadMedicinesFromAPI() {
             renderStoreCatalog(); if(window.maajRenderHomeMedicines) maajRenderHomeMedicines();
         }
 
+        // Category matching is keyword-based so medicines with categories such as
+        // "Antibiotic Injection", "Painkiller / Anti-inflammatory", "Vitamin Injection"
+        // and similar real catalogue labels are included in the correct filter.
+        function maajCategoryMatches(p, selected) {
+            const target = String(selected || 'All').trim().toLowerCase();
+            if (!target || target === 'all') return true;
+            const haystack = [
+                p && p.name, p && p.category, p && p.description, p && p.drug_class,
+                p && p.drugClass, p && p.type, p && p.subcategory, p && p.brand
+            ].filter(Boolean).join(' ').toLowerCase();
+            const exact = String((p && p.category) || '').trim().toLowerCase();
+            if (exact === target) return true;
+            const groups = {
+                'painkiller': ['painkiller','pain relief','pain & fever','analgesic','anti-inflammatory','nsaid','aceclofenac','diclofenac','paracetamol','drotaverine','balm','pain balm'],
+                'antibiotics': ['antibiotic','antibacterial','penicillin','cephalosporin','macrolide','fluoroquinolone','aminoglycoside','tetracycline','sulfonamide','cefixime','cefotaxime','cef','azithromycin','moxifloxacin'],
+                'vitamins': ['vitamin','supplement','nutritional','haematinic','calcium','bone health','b-complex','health tonic','probiotic'],
+                'first aid': ['first aid','antiseptic','disinfectant','wound','bandage','gauze','dressing','topical antiseptic','hygiene']
+            };
+            const words = groups[target] || [target];
+            return words.some(w => haystack.includes(w));
+        }
+
         function renderStoreCatalog() {
             const grid = document.getElementById('storeProductGrid');
             if (!grid) return;
@@ -2543,11 +2610,11 @@ async function maajLoadMedicinesFromAPI() {
             filtered.forEach(p => {
                 const card = document.createElement('div');
                 card.className = "bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer flex flex-col";
-                const photo = p.photo || p.image || '';
+                const photo = maajMedicinePhotoUrl(p.photo || p.image_url || p.image || p.photo_url || p.photo_path || '');
                 const desc = p.description || 'Medicine details and usage information.';
                 card.innerHTML = `
                     <div class="h-44 bg-slate-50 flex items-center justify-center p-3 relative" onclick="maajOpenMedicineDetails(${p.id})">
-                        ${photo ? `<img src="${photo}" alt="${p.name}" class="max-h-full max-w-full object-contain">` : `<div class="text-center text-slate-400"><i class="fa-solid fa-pills text-4xl"></i><p class="text-[10px] mt-2">Photo unavailable</p></div>`}
+                        ${photo ? `<img src="${photo}" alt="${p.name}" class="max-h-full max-w-full object-contain" onerror="maajImageFallback(this)">` : `<div class="text-center text-slate-400"><i class="fa-solid fa-pills text-4xl"></i><p class="text-[10px] mt-2">Photo unavailable</p></div>`}
                         <button type="button" onclick="event.stopPropagation();maajAddWishlist(${JSON.stringify(String(p.id))},${JSON.stringify(p.name)},${JSON.stringify(p.price)})" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white border text-rose-500 shadow"><i class="fa-solid fa-heart"></i></button>
                     </div>
                     <div class="p-4 flex flex-col flex-1">
@@ -3424,17 +3491,11 @@ async function maajLoadMedicinesFromAPI() {
    const ix=url.indexOf(marker);
    return ix>=0?decodeURIComponent(url.slice(ix+marker.length)):null;
  }
- const fallback=[
-  {title:'FIRST ORDER OFFER',text:'Get 10% OFF on your first order',button:'SHOP NOW',bg:'linear-gradient(135deg,#047857,#10b981)',action:'store'},
-  {title:'FREE DELIVERY',text:'Order above ₹499 and get FREE delivery',button:'ORDER NOW',bg:'linear-gradient(135deg,#0369a1,#06b6d4)',action:'store'},
-  {title:'HEALTHCARE AT YOUR DOOR',text:'Quality medicines with fast local delivery',button:'SHOP MEDICINES',bg:'linear-gradient(135deg,#7c3aed,#a855f7)',action:'store'},
-  {title:'SAVE MORE ON MEDICINES',text:'Great prices on everyday healthcare essentials',button:'VIEW STORE',bg:'linear-gradient(135deg,#b45309,#f59e0b)',action:'store'},
-  {title:'PRESCRIPTION SERVICE',text:'Upload your prescription and order easily',button:'UPLOAD PRESCRIPTION',bg:'linear-gradient(135deg,#be123c,#f43f5e)',action:'prescription'}
- ];
+  const fallback=[];
  function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
- function render(){const track=document.getElementById('homePromoTrack'),dots=document.getElementById('promoDots');if(!track)return;if(!promos.length){track.innerHTML='';if(dots)dots.innerHTML='';return}if(i>=promos.length)i=0;track.innerHTML=promos.map((p,n)=>{const image=p.image_url||'';return `<div class="promo-slide" role="group" aria-label="${esc(p.title||'Promotional Banner')}" onclick="promoAction(${n})" style="cursor:pointer">${image?`<img src="${esc(image)}${String(image).includes('?')?'&':'?'}v=${Date.now()}" alt="${esc(p.title||'Promotional Banner')}" loading="lazy" onerror="this.style.display='none'">`:'<div style="position:absolute;inset:0;background:#0f172a"></div>'}<div class="promo-slide-content">${p.button?`<button type="button" class="promo-slide-btn" onclick="event.stopPropagation();promoAction(${n})">${esc(p.button)}</button>`:''}</div></div>`}).join('');dots.innerHTML=promos.map((_,n)=>`<button onclick="promoGo(${n})" aria-label="Slide ${n+1}" style="width:8px;height:8px;border-radius:50%;border:0;padding:0;background:${n===i?'white':'rgba(255,255,255,.45)'}"></button>`).join('');track.style.transform=`translateX(-${i*100}%)`;track.style.width=`${promos.length*100}%`;track.style.transition='transform .6s ease';}
+ function render(){const track=document.getElementById('homePromoTrack'),dots=document.getElementById('promoDots');if(!track)return;if(!promos.length){track.innerHTML='<div style="width:100%;min-height:180px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;color:#64748b;font-weight:800">No promotional banners available.</div>';if(dots)dots.innerHTML='';return}if(i>=promos.length)i=0;track.innerHTML=promos.map((p,n)=>{const image=p.image_url||'';return `<div class="promo-slide" role="group" aria-label="${esc(p.title||'Promotional Banner')}" onclick="promoAction(${n})" style="cursor:pointer">${image?`<img src="${esc(image)}${String(image).includes('?')?'&':'?'}v=${Date.now()}" alt="${esc(p.title||'Promotional Banner')}" loading="lazy" onerror="this.style.display='none'">`:'<div style="position:absolute;inset:0;background:#0f172a"></div>'}<div class="promo-slide-content">${p.button?`<button type="button" class="promo-slide-btn" onclick="event.stopPropagation();promoAction(${n})">${esc(p.button)}</button>`:''}</div></div>`}).join('');dots.innerHTML=promos.map((_,n)=>`<button onclick="promoGo(${n})" aria-label="Slide ${n+1}" style="width:8px;height:8px;border-radius:50%;border:0;padding:0;background:${n===i?'white':'rgba(255,255,255,.45)'}"></button>`).join('');track.style.transform=`translateX(-${i*100}%)`;track.style.width='100%';track.style.transition='transform .6s ease';}
  function go(n){if(!promos.length)return;i=(n+promos.length)%promos.length;render();clearInterval(timer);timer=setInterval(()=>go(i+1),5000)}
- async function load(){try{const client=getPromoSB();if(!client){promos=fallback;render();return}const {data,error}=await client.from('promo_banners').select('id,title,text,button_text,action,bg,image_url,sort_order,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;promos=(data&&data.length)?data.map(x=>({id:x.id,title:x.title,text:x.text,button:x.button_text,bg:x.bg,action:x.action,image_url:x.image_url})):fallback;render();}catch(e){console.warn('Promo banners unavailable:',e.message);promos=fallback;render()}}
+ async function load(){try{const client=getPromoSB();if(!client){promos=[];render();return}const loader=async()=>{const {data,error}=await client.from('promo_banners').select('id,title,text,button_text,action,bg,image_url,sort_order,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;return data||[]};const data=window.maajApiCache?await window.maajApiCache.remember('promo_public',300000,loader):await loader();promos=data.length?data.map(x=>({id:x.id,title:x.title,text:x.text,button:x.button_text,bg:x.bg,action:x.action,image_url:x.image_url})):[];render();}catch(e){console.warn('Promo banners unavailable:',e.message);promos=[];render()}}
  window.promoNext=()=>go(i+1);window.promoPrev=()=>go(i-1);window.promoGo=n=>go(n);
  window.promoAction=function(n){const a=promos[n]?.action||'store';if(a==='prescription'){window.navigateTo('upload-prescription');}else if(a==='orders'){window.navigateTo('orders');}else if(a==='offers'){try{window.maajPro('offers')}catch(e){window.navigateTo('store');}}else if(a!=='none'){window.navigateTo('store');}};
  window.maajLoadPromoBanners=async function(show){const box=document.getElementById('maajPromoAdminList'),status=document.getElementById('maajPromoStatus'),client=getPromoSB();if(!box)return;if(!client){box.innerHTML='<div class="text-xs text-red-600 font-bold">Supabase connection unavailable. Please reload the page.</div>';return}try{const {data,error}=await client.from('promo_banners').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="border rounded-2xl p-3 bg-white flex flex-col md:flex-row gap-3 items-start md:items-center"><div class="w-full md:w-56 h-32 rounded-xl overflow-hidden" style="background:${esc(r.bg||'#047857')}">${r.image_url?`<img src="${esc(r.image_url)}${String(r.image_url||'').includes('?')?'&':'?'}v=${Date.now()}" class="w-full h-full object-cover" onerror="this.style.display='none'">`:'<div class="h-full flex items-center justify-center text-white text-2xl">💊</div>'}</div><div class="flex-1"><div class="font-black text-sm">${esc(r.title)}</div><div class="text-[11px] text-slate-500">${esc(r.text||'')}</div><div class="text-[10px] mt-1">Order ${esc(r.sort_order)} • ${r.is_active?'Live':'Hidden'} • ${esc(r.action||'store')}</div></div><div class="flex gap-2"><button type="button" class="bg-slate-100 px-3 py-2 rounded-lg text-xs font-black" onclick="maajEditPromoBanner('${String(r.id).replace(/'/g,"\'")}')">✏️ Edit</button><button type="button" class="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-xs font-black" onclick="maajDeletePromoBanner('${String(r.id).replace(/'/g,"\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No promotional slides saved yet.</div>';if(show&&status)status.textContent='Refreshed from Supabase.'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}};
@@ -3595,7 +3656,7 @@ function maajOpenMedicineDetails(id){
   document.getElementById('maajDetailDescription').textContent=p.description||'No description added yet.';
   document.getElementById('maajDetailMrp').textContent='₹'+Number(p.mrp||0).toFixed(2);
   document.getElementById('maajDetailPrice').textContent='₹'+Number(p.price||0).toFixed(2);
-  document.getElementById('maajDetailPhoto').src=p.photo||p.image||'';
+  document.getElementById('maajDetailPhoto').src=maajMedicinePhotoUrl(p.photo||p.image_url||p.image||p.photo_url||p.photo_path||'');
   document.getElementById('maajDetailRx').innerHTML=p.rx?'<span class="bg-red-100 text-red-700 px-3 py-1.5 rounded-full font-bold">Prescription Required</span>':'<span class="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full font-bold">No Prescription Required</span>';
   var b=document.getElementById('maajDetailAdd');
   b.disabled=Number(p.stock)<=0;b.className='font-bold px-5 py-3 rounded-xl '+(b.disabled?'bg-slate-300 text-slate-500':'bg-emerald-600 text-white');
@@ -3624,7 +3685,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <div class="maaj-pdp-wrap">
     <div class="maaj-pdp-grid">
       <div>
-        <div class="maaj-pdp-photo"><img id="maajPdpPhoto" alt="Medicine photo"></div>
+        <div class="maaj-pdp-photo"><img id="maajPdpPhoto" alt="Medicine photo" onerror="maajImageFallback(this)"></div>
         <div class="maaj-pdp-section"><div class="maaj-pdp-label">Medicine photo</div><div class="maaj-pdp-value">Product image uploaded by the pharmacy.</div></div>
       </div>
       <div>
@@ -3661,7 +3722,7 @@ document.addEventListener('DOMContentLoaded',function(){
    var a=getRecent().filter(function(x){return String(x.id)!==String(p.id)});
    a.unshift({id:p.id,name:p.name,price:p.price});setRecent(a.slice(0,20));
    document.getElementById('maajPdpTitle').textContent=p.name||'Medicine';
-   document.getElementById('maajPdpPhoto').src=p.photo||p.image||'';
+   document.getElementById('maajPdpPhoto').src=maajMedicinePhotoUrl(p.photo||p.image_url||p.image||p.photo_url||p.photo_path||'');
    document.getElementById('maajPdpDescription').textContent=p.description||'Description not added by pharmacy.';
    document.getElementById('maajPdpBrand').textContent=p.brand||'—';
    document.getElementById('maajPdpCategory').textContent=p.category||'—';
@@ -3686,7 +3747,7 @@ document.addEventListener('DOMContentLoaded',function(){
    var g=document.getElementById('maajHomeMedicineGrid');if(!g||typeof products==='undefined')return;
    var list=products.filter(function(p){return Number(p.stock)>0}).slice(0,8);
    g.innerHTML=list.length?list.map(function(p){
-     var photo=p.photo||p.image||'';
+     var photo=maajMedicinePhotoUrl(p.photo||p.image_url||p.image||p.photo_url||p.photo_path||'');
      return '<div class="maaj-home-med" onclick="maajOpenPDP('+JSON.stringify(p.id)+')"><div class="maaj-home-med-img">'+
        (photo?'<img src="'+photo+'" alt="'+esc(p.name)+'">':'<i class="fa-solid fa-pills text-4xl text-slate-300"></i>')+
        '</div><div class="maaj-home-med-body"><div class="text-[10px] text-slate-400">'+esc(p.category||'Medicine')+'</div><div class="font-black text-sm text-slate-800 mt-1">'+esc(p.name)+'</div><div class="mt-2"><span class="text-xs line-through text-slate-400">₹'+Number(p.mrp||0).toFixed(2)+'</span> <b class="text-emerald-600">₹'+Number(p.price||0).toFixed(2)+'</b></div></div></div>';
@@ -3749,7 +3810,7 @@ document.addEventListener('DOMContentLoaded',function(){
    var q=(document.getElementById('maajHomeSearch')?.value||'').toLowerCase().trim();
    var list=products.filter(function(p){return Number(p.stock)>0 && (!q||[p.name,p.brand,p.category,p.composition,p.salt].join(' ').toLowerCase().includes(q))}).slice(0,12);
    g.innerHTML=list.length?list.map(function(p){
-     var photo=p.photo||p.image||'';
+     var photo=maajMedicinePhotoUrl(p.photo||p.image_url||p.image||p.photo_url||p.photo_path||'');
      return '<div class="maaj-home-med" onclick="maajOpenPDP('+JSON.stringify(p.id)+')"><div class="maaj-home-med-img">'+(photo?'<img src="'+photo+'" alt="'+p.name+'">':'<i class="fa-solid fa-pills text-4xl text-slate-300"></i>')+'</div><div class="maaj-home-med-body"><div class="text-[10px] text-slate-400">'+(p.category||'Medicine')+'</div><div class="font-black text-sm mt-1">'+p.name+'</div><div class="text-[10px] text-slate-500 mt-1">'+(p.brand||'')+'</div><div class="mt-2"><span class="text-xs line-through text-slate-400">'+money(p.mrp)+'</span> <b class="text-emerald-600">'+money(p.price)+'</b></div></div></div>';
    }).join(''):'<div class="col-span-full p-10 text-center bg-white border rounded-2xl text-xs text-slate-500">No medicines found.</div>';
  };
@@ -4878,7 +4939,7 @@ async function mmSignIn(){init();let email=(E('mmEmail')?.value||'').trim(),pass
 async function mmLoadMedicines(){let s=await S();if(!s)return;try{let r=await fetch(U+'/rest/v1/medicines?select=*&order=created_at.desc',{headers:H(s),cache:'no-store'});if(!r.ok)throw Error(await r.text());items=await r.json();mmRender();if(typeof window.maajLoadMedicinesFromAPI==='function')await window.maajLoadMedicinesFromAPI()}catch(e){M('mmOneStatus','Load Error: '+e.message)}}
 function X(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function mmRender(){let t=E('mmList');if(!t)return;t.innerHTML=items.map((p,i)=>{const photo=maajMedicinePhotoUrl(p.photo||p.image||p.photo_url||p.photo_path||'');return `<tr class="border-b"><td class="p-3"><input type="checkbox" class="mmSel" data-i="${i}"></td><td class="p-3"><img src="${X(photo)}" class="w-11 h-11 object-contain rounded-lg border bg-white" onerror="maajImageFallback(this)"></td><td class="p-3 font-bold">${X(p.name||'')}</td><td class="p-3">₹${Number(p.price||0).toFixed(2)}</td><td class="p-3">₹${Number(p.mrp||0).toFixed(2)}</td><td class="p-3">${Number(p.gst||5)}%</td><td class="p-3">${X(p.category||'Medicine')}</td><td class="p-3">${X(p.drug_class||p.drugClass||'—')}</td><td class="p-3"><span class="px-2 py-1 rounded-full bg-slate-100 font-bold">${X(p.legal_category||'VERIFY')}</span></td><td class="p-3">${(p.prescription_required||p.rx)?'<span class="px-2 py-1 rounded-full bg-red-50 text-red-700 font-black">Rx</span>':'<span class="text-slate-400">No</span>'}</td><td class="p-3">${Number(p.stock||0)}</td><td class="p-3"><button type="button" onclick="mmEditMed(${i})" class="bg-slate-100 px-3 py-1.5 rounded-lg font-black">Edit</button></td></tr>`}).join('')||'<tr><td colspan="12" class="p-6 text-center text-slate-500">No medicines found online.</td></tr>'}function mmToggleAll(x){document.querySelectorAll('.mmSel').forEach(c=>c.checked=x.checked)}
 async function up(f,s){if(!f)throw Error('Photo is required.');init();if(c&&c.storage){let ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg',path='medicines/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;let r=await c.storage.from('medicine-images').upload(path,f,{cacheControl:'3600',upsert:false,contentType:f.type||'image/jpeg'});if(r.error)throw Error('Photo upload failed: '+r.error.message);let g=c.storage.from('medicine-images').getPublicUrl(path);if(!g.data?.publicUrl)throw Error('Could not create public photo URL.');return g.data.publicUrl;}let ext=(f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg',path='medicines/'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext,r=await fetch(U+'/storage/v1/object/medicine-images/'+path,{method:'POST',headers:{apikey:K,Authorization:'Bearer '+s.access_token,'Content-Type':f.type||'image/jpeg','x-upsert':'false'},body:f});if(!r.ok)throw Error('Photo upload failed: '+await r.text());return U+'/storage/v1/object/public/medicine-images/'+path}
-async function mmAddOne(){let s=await S();if(!s)return M('mmOneStatus','Please login first.');let name=(E('mmName')?.value||'').trim(),price=Number(E('mmPrice')?.value),photo=E('mmPhoto')?.files?.[0];if(!name||!photo||!Number.isFinite(price))return M('mmOneStatus','Medicine name, price and photo are required.');M('mmOneStatus','Uploading photo and saving online...',true);try{let photoUrl=await up(photo,s),body={name,price,mrp:Number(E('mmMrp')?.value||price),category:(E('mmCategory')?.value||'').trim()||'Medicine',drug_class:(E('mmDrugClass')?.value||'').trim()||'Other',legal_category:(E('mmLegalCategory')?.value||'VERIFY'),prescription_required:!!E('mmRxRequired')?.checked,rx:!!E('mmRxRequired')?.checked,gst:Number(E('mmGst')?.value||5),stock:Number(E('mmStock')?.value||0),description:(E('mmDescription')?.value||'').trim(),photo:photoUrl},r=await fetch(U+'/rest/v1/medicines',{method:'POST',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify(body)});if(!r.ok)throw Error(await r.text());['mmName','mmPrice','mmMrp','mmCategory','mmDrugClass','mmDescription','mmPhoto'].forEach(id=>{if(E(id))E(id).value=''});if(E('mmLegalCategory'))E('mmLegalCategory').value='VERIFY';if(E('mmRxRequired'))E('mmRxRequired').checked=false;E('mmStock').value='0';M('mmOneStatus','Medicine added ONLINE successfully. Customer catalogue refreshed.',true);await mmLoadMedicines()}catch(e){M('mmOneStatus','Add Error: '+e.message)}}
+async function mmAddOne(){let s=await S();if(!s)return M('mmOneStatus','Please login first.');let name=(E('mmName')?.value||'').trim(),price=Number(E('mmPrice')?.value),photo=E('mmPhoto')?.files?.[0];if(!name||!photo||!Number.isFinite(price))return M('mmOneStatus','Medicine name, price and photo are required.');M('mmOneStatus','Uploading photo and saving online...',true);try{let photoUrl=await up(photo,s),body={name,price,mrp:Number(E('mmMrp')?.value||price),category:(E('mmCategory')?.value||'').trim()||'Medicine',drug_class:(E('mmDrugClass')?.value||'').trim()||'Other',legal_category:(E('mmLegalCategory')?.value||'VERIFY'),prescription_required:!!E('mmRxRequired')?.checked,rx:!!E('mmRxRequired')?.checked,gst:Number(E('mmGst')?.value||5),stock:Number(E('mmStock')?.value||0),description:(E('mmDescription')?.value||'').trim(),photo:photoUrl},r=await fetch(U+'/rest/v1/medicines',{method:'POST',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify(body)});if(!r.ok)throw Error(await r.text());['mmName','mmPrice','mmMrp','mmCategory','mmDrugClass','mmDescription','mmPhoto'].forEach(id=>{if(E(id))E(id).value=''});if(E('mmLegalCategory'))E('mmLegalCategory').value='VERIFY';if(E('mmRxRequired'))E('mmRxRequired').checked=false;E('mmStock').value='0';M('mmOneStatus','Medicine added ONLINE successfully. Customer catalogue refreshed.',true);await mmLoadMedicines();if(window.maajApiCache)window.maajApiCache.clear('medicines_public')}catch(e){M('mmOneStatus','Add Error: '+e.message)}}
 async function mmBulkAdd(){let s=await S();if(!s)return M('mmBulkStatus','Please login first.');let raw=(E('mmBulkData')?.value||'').trim();if(!raw)return M('mmBulkStatus','Enter medicine rows first.');let lines=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean),a=[],er=[];lines.forEach((line,n)=>{let v=line.split('|').map(x=>x.trim());if(v.length<7){er.push('Row '+(n+1)+': need 7 fields');return}let [name,price,mrp,category='Medicine',gst='5',description='',photo='']=v;if(!name||isNaN(Number(price))||!photo){er.push('Row '+(n+1)+': invalid name/price/photo');return}a.push({name,price:Number(price),mrp:Number(mrp||price),category:category||'Medicine',gst:Number(gst||5),description,photo,stock:0})});if(!a.length)return M('mmBulkStatus','Nothing valid to add. '+er.join(' • '));M('mmBulkStatus','Saving '+a.length+' medicine(s) ONLINE...',true);try{let r=await fetch(U+'/rest/v1/medicines',{method:'POST',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify(a)});if(!r.ok)throw Error(await r.text());E('mmBulkData').value='';M('mmBulkStatus','Added '+a.length+' medicine(s) ONLINE.'+(er.length?' Errors: '+er.join(' • '):''),true);await mmLoadMedicines()}catch(e){M('mmBulkStatus','Bulk Add Error: '+e.message)}}
 async function mmEditMed(i){let s=await S(),p=items[i];if(!s||!p)return;let name=prompt('Medicine name:',p.name);if(name===null)return;let price=prompt('Selling price:',p.price);if(price===null)return;let mrp=prompt('MRP:',p.mrp);if(mrp===null)return;let category=prompt('Category:',p.category||'Medicine');if(category===null)return;let drugClass=prompt('Drug Class:',p.drug_class||p.drugClass||'Other');if(drugClass===null)return;let legal=prompt('Legal Category (OTC / G / H / H1 / X / VERIFY):',p.legal_category||'VERIFY');if(legal===null)return;legal=String(legal).trim().toUpperCase();if(!['OTC','G','H','H1','X','VERIFY'].includes(legal))legal='VERIFY';let rxInput=prompt('Prescription Required? (yes/no):',(p.prescription_required||p.rx)?'yes':'no');if(rxInput===null)return;let rx=/^(yes|y|true|1)$/i.test(String(rxInput).trim())||['H','H1','X'].includes(legal);let gst=prompt('GST %:',p.gst||5);if(gst===null)return;let stock=prompt('Stock:',p.stock||0);if(stock===null)return;let description=prompt('Description:',p.description||'');if(description===null)return;try{let r=await fetch(U+'/rest/v1/medicines?id=eq.'+encodeURIComponent(p.id),{method:'PATCH',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify({name:name.trim(),price:Number(price)||0,mrp:Number(mrp)||Number(price)||0,category:category.trim()||'Medicine',drug_class:drugClass.trim()||'Other',legal_category:legal,prescription_required:rx,rx,gst:Number(gst)||5,stock:Number(stock)||0,description})});if(!r.ok)throw Error(await r.text());await mmLoadMedicines()}catch(e){alert('Edit Error: '+e.message)}}
 async function mmDeleteSelected(){let s=await S();if(!s)return;let idx=[...document.querySelectorAll('.mmSel:checked')].map(x=>Number(x.dataset.i));if(!idx.length)return alert('Select medicines first.');if(!confirm('Delete '+idx.length+' medicine(s) permanently from online catalogue?'))return;try{for(let i of idx){let r=await fetch(U+'/rest/v1/medicines?id=eq.'+encodeURIComponent(items[i].id),{method:'DELETE',headers:H(s)});if(!r.ok)throw Error(await r.text())}await mmLoadMedicines()}catch(e){alert('Delete Error: '+e.message)}}
@@ -5118,7 +5179,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     }
 
     const U = 'https://fywzoptldcgxatyydyec.supabase.co';
-    const K = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneXh0YXR5eWR5ZWMifQ.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
+    const K = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5d3pvcHRsZGNneGF0eXlkeWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNzk1NTUsImV4cCI6MjEwMzY1NTU1NX0.bXI2BCYycnslejrBr5a6Tn90xjwq1jt1P4jsutFRhOk';
     const client = window.supabase.createClient(U, K);
     const sessionResult = await client.auth.getSession();
     const session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
@@ -5414,19 +5475,23 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     };
   }
 
-  async function fetchCustomerOrders(){
+  async function fetchCustomerOrders(options){
     const u=customer(); if(!u)return [];
+    const key='orders_customer_'+u.id;
+    if(!options?.force&&window.maajApiCache){const hit=window.maajApiCache.get(key);if(hit)return hit;}
     const {data,error}=await sb.from('orders').select('*').eq('user_id',u.id).order('created_at',{ascending:false});
     if(error)throw error;
-    return (data||[]).map(orderRow);
+    const out=(data||[]).map(orderRow); if(window.maajApiCache)window.maajApiCache.set(key,out,30000); return out;
   }
   window.maajFetchSupabaseCustomerOrders=fetchCustomerOrders;
 
-  async function fetchAdminOrders(){
+  async function fetchAdminOrders(options){
     if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return [];
+    const key='orders_admin';
+    if(!options?.force&&window.maajApiCache){const hit=window.maajApiCache.get(key);if(hit)return hit;}
     const {data,error}=await sb.from('orders').select('*').order('created_at',{ascending:false});
     if(error)throw error;
-    return (data||[]).map(orderRow);
+    const out=(data||[]).map(orderRow); if(window.maajApiCache)window.maajApiCache.set(key,out,15000); return out;
   }
   window.maajFetchSupabaseAdminOrders=fetchAdminOrders;
   // Expose the same live Supabase loader for the invoice button.
@@ -5439,11 +5504,13 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   }
   window.maajCreateCustomerNotification=createNotification;
 
-  async function fetchNotifications(){
+  async function fetchNotifications(options){
     const u=customer();if(!u)return [];
+    const key='notifications_'+u.id;
+    if(!options?.force&&window.maajApiCache){const hit=window.maajApiCache.get(key);if(hit)return hit;}
     const {data,error}=await sb.from('customer_notifications').select('*').eq('user_id',u.id).order('created_at',{ascending:false}).limit(50);
     if(error)throw error;
-    return data||[];
+    const out=data||[]; if(window.maajApiCache)window.maajApiCache.set(key,out,20000); return out;
   }
 
   function ensureNotificationUI(){
@@ -6156,11 +6223,11 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
  const oldOpen=window.openCategory;
  window.maajNormalOpenCategory=oldOpen;
  function addCardToSection(row){const section=String(row.section||'health').toLowerCase()==='personal'?'personal':'health';const root=document.getElementById('maajHomeVisualCategories');if(!root)return;const sections=[...root.querySelectorAll('.maaj-ai-category-section')];const target=section==='personal'?sections[1]:sections[0];const scroller=target&&target.querySelector('.maaj-ai-cat-scroller');if(!scroller)return;let card=[...scroller.querySelectorAll('.maaj-ai-cat-card')].find(x=>(x.getAttribute('aria-label')||'').replace(/^Open\s+/i,'').trim().toLowerCase()===String(row.name||'').trim().toLowerCase());if(card){const img=card.querySelector('img');if(img&&row.image_url)img.src=row.image_url;const d=card.querySelector('.maaj-ai-cat-desc');if(d&&row.description)d.textContent=row.description;return}card=document.createElement('button');card.type='button';card.className='maaj-ai-cat-card';card.setAttribute('aria-label','Open '+row.name);card.innerHTML='<span class="maaj-ai-cat-img"><img loading="lazy" alt="'+esc(row.name)+'" src="'+esc(row.image_url||'')+'"></span><span class="maaj-ai-cat-name">'+esc(row.name)+'</span><span class="maaj-ai-cat-desc">'+esc(row.description||'')+'</span>';card.onclick=function(){window.openHealthCategory(row.name)};scroller.appendChild(card)}
- async function loadPublic(){if(!sb)return;try{const {data,error}=await sb.from('home_categories').select('id,name,section,description,image_url,sort_order,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;(data||[]).forEach(addCardToSection);window.MAAJ_HOME_CATEGORIES=data||[]}catch(e){console.warn('Home category table unavailable:',e.message)}}
+ async function loadPublic(){if(!sb)return;try{const loader=async()=>{const {data,error}=await sb.from('home_categories').select('id,name,section,description,image_url,sort_order,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;return data||[]};const data=window.maajApiCache?await window.maajApiCache.remember('home_categories_public',600000,loader):await loader();(data||[]).forEach(addCardToSection);window.MAAJ_HOME_CATEGORIES=data||[]}catch(e){console.warn('Home category table unavailable:',e.message)}}
  async function adminRows(){if(!sb)return;const box=document.getElementById('maajHomeCategoryAdminList');if(!box)return;try{const {data,error}=await sb.from('home_categories').select('id,name,section,description,image_url,sort_order,is_active').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="maaj-home-db-card maaj-home-db-card-v2"><img src="${esc(r.image_url||'')}" alt="${esc(r.name)}"><div class="db-info"><div class="db-name">${esc(r.name)}</div><div class="db-meta">${esc(r.section==='personal'?'Personal care':'Shop by health concerns')} • order ${esc(r.sort_order)}</div><div class="db-meta">${esc(r.description||'')}</div><div class="db-meta">${r.is_active?'Active':'Hidden'}</div></div><div class="maaj-home-db-actions"><button type="button" class="maaj-edit-home-btn" onclick="maajEditHomeCategory('${String(r.id).replace(/'/g,"\\'")}')">✏️ Edit Name & Crop Photo</button><button type="button" class="maaj-delete-home-btn" onclick="maajDeleteHomeCategory('${String(r.id).replace(/'/g,"\\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No Supabase home categories yet.</div>'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}}
  window.maajLoadHomeCategories=async function(showStatus){await loadPublic();await adminRows();if(showStatus){const e=document.getElementById('maajHomeCategoryStatus');if(e)e.textContent='Refreshed from Supabase.'}};
- window.maajAddHomeCategory=async function(){const status=document.getElementById('maajHomeCategoryStatus');const set=t=>{if(status){status.textContent=t;status.style.color=t.startsWith('Saved')?'#047857':'#b91c1c'}};if(!sb)return set('Supabase is not available.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return set('Admin login required.');const name=(document.getElementById('maajHomeCatName')?.value||'').trim();const section=(document.getElementById('maajHomeCatSection')?.value||'health').trim();const description=(document.getElementById('maajHomeCatDesc')?.value||'').trim();const order=Number(document.getElementById('maajHomeCatOrder')?.value||99);const file=document.getElementById('maajHomeCatImage')?.files?.[0];const uploadFile=window.maajHomeCatCroppedBlob?new File([window.maajHomeCatCroppedBlob], 'category-cropped.jpg',{type:'image/jpeg'}):file;if(!name||!uploadFile)return set('Category name and photo are required.');set('Uploading photo...');try{const path='home-categories/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.jpg';const up=await sb.storage.from('medicine-images').upload(path,uploadFile,{upsert:false,contentType:uploadFile.type||'image/jpeg'});if(up.error)throw up.error;const publicUrl=sb.storage.from('medicine-images').getPublicUrl(path).data.publicUrl;const ins=await sb.from('home_categories').insert({name,section,description,image_url:publicUrl,sort_order:order,is_active:true}).select('*').single();if(ins.error)throw ins.error;window.maajHomeCatCroppedBlob=null;set('Saved online in Supabase.');document.getElementById('maajHomeCatName').value='';document.getElementById('maajHomeCatDesc').value='';document.getElementById('maajHomeCatImage').value='';const prev=document.getElementById('maajHomeCatCropPreview');if(prev){prev.src='';prev.classList.add('hidden')}await window.maajLoadHomeCategories(false)}catch(e){set('Save Error: '+(e.message||e))}};
- window.maajDeleteHomeCategory=async function(id){if(!sb)return;if(!confirm('Delete this home category?'))return;try{const {error}=await sb.from('home_categories').delete().eq('id',id);if(error)throw error;await window.maajLoadHomeCategories(false)}catch(e){alert('Delete failed: '+e.message)}};
+ window.maajAddHomeCategory=async function(){const status=document.getElementById('maajHomeCategoryStatus');const set=t=>{if(status){status.textContent=t;status.style.color=t.startsWith('Saved')?'#047857':'#b91c1c'}};if(!sb)return set('Supabase is not available.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return set('Admin login required.');const name=(document.getElementById('maajHomeCatName')?.value||'').trim();const section=(document.getElementById('maajHomeCatSection')?.value||'health').trim();const description=(document.getElementById('maajHomeCatDesc')?.value||'').trim();const order=Number(document.getElementById('maajHomeCatOrder')?.value||99);const file=document.getElementById('maajHomeCatImage')?.files?.[0];const uploadFile=window.maajHomeCatCroppedBlob?new File([window.maajHomeCatCroppedBlob], 'category-cropped.jpg',{type:'image/jpeg'}):file;if(!name||!uploadFile)return set('Category name and photo are required.');set('Uploading photo...');try{const path='home-categories/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.jpg';const up=await sb.storage.from('medicine-images').upload(path,uploadFile,{upsert:false,contentType:uploadFile.type||'image/jpeg'});if(up.error)throw up.error;const publicUrl=sb.storage.from('medicine-images').getPublicUrl(path).data.publicUrl;const ins=await sb.from('home_categories').insert({name,section,description,image_url:publicUrl,sort_order:order,is_active:true}).select('*').single();if(ins.error)throw ins.error;window.maajHomeCatCroppedBlob=null;set('Saved online in Supabase.');document.getElementById('maajHomeCatName').value='';document.getElementById('maajHomeCatDesc').value='';document.getElementById('maajHomeCatImage').value='';const prev=document.getElementById('maajHomeCatCropPreview');if(prev){prev.src='';prev.classList.add('hidden')}if(window.maajApiCache)window.maajApiCache.clear('home_categories_public');await window.maajLoadHomeCategories(false)}catch(e){set('Save Error: '+(e.message||e))}};
+ window.maajDeleteHomeCategory=async function(id){if(!sb)return;if(!confirm('Delete this home category?'))return;try{const {error}=await sb.from('home_categories').delete().eq('id',id);if(error)throw error;if(window.maajApiCache)window.maajApiCache.clear('home_categories_public');await window.maajLoadHomeCategories(false)}catch(e){alert('Delete failed: '+e.message)}};
  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){loadPublic()},800);setTimeout(function(){adminRows()},1200);});
  const sw=window.switchAdminTab;if(typeof sw==='function'&&!sw.__maajHomeCat){window.switchAdminTab=function(tab){const r=sw.apply(this,arguments);if(tab==='home-categories')setTimeout(adminRows,100);return r};window.switchAdminTab.__maajHomeCat=true;}
 })();
@@ -6189,7 +6256,7 @@ window.maajEditHomeCategory=async function(id){if(!adminOk()){alert('Admin login
 window.maajCloseHomeCategoryEditor=function(){var m=$id('maajHomeCategoryEditor');if(m)m.classList.remove('active');if(m)m.setAttribute('aria-hidden','true');if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null}editing=null;imgObj=null};
 $id('maajHceZoom')?.addEventListener('input',applyVisual);$id('maajHcePos')?.addEventListener('input',applyVisual);
 $id('maajHceFile')?.addEventListener('change',function(){var f=this.files?.[0];if(!f)return;var r=new FileReader();r.onload=function(){loadEditorImage(r.result)};r.readAsDataURL(f)});
-window.maajSaveHomeCategoryEdit=async function(){if(!editing){alert('No category selected.');return}if(!adminOk()){alert('Admin login required.');return}setStatus('Preparing cropped photo...',true);try{var blob=await cropBlob(),file=new File([blob],'category-cropped.jpg',{type:'image/jpeg'});var path='home-categories/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.jpg';var up=await sb.storage.from('medicine-images').upload(path,file,{upsert:false,contentType:'image/jpeg'});if(up.error)throw up.error;var url=sb.storage.from('medicine-images').getPublicUrl(path).data.publicUrl;var upd=await sb.from('home_categories').update({name:($id('maajHceName').value||'').trim(),section:$id('maajHceSection').value,description:($id('maajHceDesc').value||'').trim(),sort_order:Number($id('maajHceOrder').value||99),image_url:url}).eq('id',editing.id).select('*').single();if(upd.error)throw upd.error;setStatus('Saved successfully.',true);window.maajCloseHomeCategoryEditor();await window.maajLoadHomeCategories(false);alert('Home category updated successfully.');}catch(e){setStatus('Save Error: '+(e.message||e),false)}};
+window.maajSaveHomeCategoryEdit=async function(){if(!editing){alert('No category selected.');return}if(!adminOk()){alert('Admin login required.');return}setStatus('Preparing cropped photo...',true);try{var blob=await cropBlob(),file=new File([blob],'category-cropped.jpg',{type:'image/jpeg'});var path='home-categories/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.jpg';var up=await sb.storage.from('medicine-images').upload(path,file,{upsert:false,contentType:'image/jpeg'});if(up.error)throw up.error;var url=sb.storage.from('medicine-images').getPublicUrl(path).data.publicUrl;var upd=await sb.from('home_categories').update({name:($id('maajHceName').value||'').trim(),section:$id('maajHceSection').value,description:($id('maajHceDesc').value||'').trim(),sort_order:Number($id('maajHceOrder').value||99),image_url:url}).eq('id',editing.id).select('*').single();if(upd.error)throw upd.error;setStatus('Saved successfully.',true);window.maajCloseHomeCategoryEditor();if(window.maajApiCache)window.maajApiCache.clear('home_categories_public');await window.maajLoadHomeCategories(false);alert('Home category updated successfully.');}catch(e){setStatus('Save Error: '+(e.message||e),false)}};
 })();
 </script>
 
@@ -6365,3 +6432,4 @@ window.maajSaveHomeCategoryEdit=async function(){if(!editing){alert('No category
  });
 })();
 </script>
+\n\n
