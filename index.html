@@ -2529,28 +2529,6 @@ async function maajLoadMedicinesFromAPI(options) {
             renderStoreCatalog(); if(window.maajRenderHomeMedicines) maajRenderHomeMedicines();
         }
 
-        // Category matching is keyword-based so medicines with categories such as
-        // "Antibiotic Injection", "Painkiller / Anti-inflammatory", "Vitamin Injection"
-        // and similar real catalogue labels are included in the correct filter.
-        function maajCategoryMatches(p, selected) {
-            const target = String(selected || 'All').trim().toLowerCase();
-            if (!target || target === 'all') return true;
-            const haystack = [
-                p && p.name, p && p.category, p && p.description, p && p.drug_class,
-                p && p.drugClass, p && p.type, p && p.subcategory, p && p.brand
-            ].filter(Boolean).join(' ').toLowerCase();
-            const exact = String((p && p.category) || '').trim().toLowerCase();
-            if (exact === target) return true;
-            const groups = {
-                'painkiller': ['painkiller','pain relief','pain & fever','analgesic','anti-inflammatory','nsaid','aceclofenac','diclofenac','paracetamol','drotaverine','balm','pain balm'],
-                'antibiotics': ['antibiotic','antibacterial','penicillin','cephalosporin','macrolide','fluoroquinolone','aminoglycoside','tetracycline','sulfonamide','cefixime','cefotaxime','cef','azithromycin','moxifloxacin'],
-                'vitamins': ['vitamin','supplement','nutritional','haematinic','calcium','bone health','b-complex','health tonic','probiotic'],
-                'first aid': ['first aid','antiseptic','disinfectant','wound','bandage','gauze','dressing','topical antiseptic','hygiene']
-            };
-            const words = groups[target] || [target];
-            return words.some(w => haystack.includes(w));
-        }
-
         function renderStoreCatalog() {
             const grid = document.getElementById('storeProductGrid');
             if (!grid) return;
@@ -4007,12 +3985,12 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
       <section>
         <h2 class="text-base font-black">Policies</h2>
         <ul class="mt-3 space-y-2 text-sm text-slate-300">
-          <li><a href="#editorial-policy" class="hover:text-white">Editorial Policy</a></li>
-          <li><a href="#privacy-policy" class="hover:text-white">Privacy Policy</a></li>
-          <li><a href="#terms" class="hover:text-white">Terms & Conditions</a></li>
-          <li><a href="#returns" class="hover:text-white">Returns & Refunds</a></li>
-          <li><a href="#delivery-policy" class="hover:text-white">Medicine Delivery & Cancellations</a></li>
-          <li><a href="#prescription" class="hover:text-white">Prescription & Restricted Medicines</a></li>
+          <li><a href="editorial-policy.html" class="hover:text-white">Editorial Policy</a></li>
+          <li><a href="privacy-policy.html" class="hover:text-white">Privacy Policy</a></li>
+          <li><a href="terms-policy.html" class="hover:text-white">Terms & Conditions</a></li>
+          <li><a href="returns-policy.html" class="hover:text-white">Returns & Refunds</a></li>
+          <li><a href="delivery-policy.html" class="hover:text-white">Medicine Delivery & Cancellations</a></li>
+          <li><a href="prescription-policy.html" class="hover:text-white">Prescription & Restricted Medicines</a></li>
         </ul>
       </section>
     </div>
@@ -4465,45 +4443,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
 })();
 </script>
 
-<!-- MAAJ PHARMACY — COMPLETE POLICY & INFORMATION CENTER -->
-<section id="maajPolicyCenter" class="maaj-policy-center" aria-labelledby="maajPolicyHeading">
-  <div class="maaj-policy-shell">
-    <div class="maaj-policy-hero">
-      <div class="maaj-policy-badge">MAAJ PHARMACY</div>
-      <h2 id="maajPolicyHeading">Policies & Customer Information</h2>
-      <p>Clear, transparent information for medicines, orders, delivery, prescriptions, privacy and customer support.</p>
-      <div class="maaj-policy-meta"><span><b>Effective Date</b> 2 September 2026</span><span><b>Business</b> MAA JHARBANDHALIAN MEDICINE STORE</span></div>
-    </div>
-    <div class="maaj-policy-layout">
-      <nav class="maaj-policy-nav" aria-label="Policy navigation">
-        <a href="#maaj-editorial-policy">01 · Editorial Policy</a>
-        <a href="#maaj-privacy-policy">02 · Privacy Policy</a>
-        <a href="#maaj-terms">03 · Terms & Conditions</a>
-        <a href="#maaj-returns">04 · Returns & Refunds</a>
-        <a href="#maaj-delivery-policy">05 · Delivery & Cancellations</a>
-        <a href="#maaj-prescription-policy">06 · Prescription & Restricted Medicines</a>
-        <a href="#maaj-policy-contact">Contact & Support</a>
-      </nav>
-      <div class="maaj-policy-content">
-        <article id="maaj-editorial-policy" class="maaj-policy-card"><div class="maaj-policy-number">01</div><h3>Editorial Policy</h3><p>At <strong>MAAJ PHARMACY</strong>, we aim to provide clear, useful and responsible health-related information to our customers.</p><p>Our health articles, medicine information, product descriptions and educational content are prepared for general informational and educational purposes.</p><h4>Our Editorial Principles</h4><ul><li>We aim to provide accurate and understandable information.</li><li>Medicine-related information is presented responsibly and should not replace professional medical advice.</li><li>Product information may include uses, precautions, directions, ingredients and other relevant details.</li><li>We do not intentionally publish misleading medical claims.</li><li>Information may be reviewed and updated when necessary.</li><li>Product availability, price and other commercial information may change without prior notice.</li><li>Customers should always read the medicine packaging, label and instructions before use.</li><li>Customers should consult a qualified doctor or healthcare professional when medical advice, diagnosis or treatment is required.</li></ul><div class="maaj-policy-callout"><strong>Medical Disclaimer</strong><p>The information available on the MAAJ PHARMACY website is <strong>not a substitute for consultation with a qualified doctor, pharmacist or other healthcare professional.</strong></p><p>MAAJ PHARMACY does not guarantee that every health-related article or educational resource is suitable for every individual.</p></div></article>
 
-        <article id="maaj-privacy-policy" class="maaj-policy-card"><div class="maaj-policy-number">02</div><h3>Privacy Policy</h3><p>MAAJ PHARMACY respects the privacy of its customers and takes reasonable steps to protect personal information collected through our website.</p><h4>Information We May Collect</h4><ul><li>Customer name</li><li>Mobile number</li><li>Delivery address</li><li>Email address, if provided</li><li>Order details</li><li>Prescription information when required</li><li>Payment or transaction-related information</li><li>Information provided while contacting customer support</li></ul><h4>How We Use Information</h4><ul><li>Process and deliver orders</li><li>Contact you regarding your order</li><li>Verify prescription requirements where applicable</li><li>Provide customer support</li><li>Manage returns, refunds and cancellations</li><li>Improve our website and services</li><li>Maintain business and transaction records</li><li>Prevent fraudulent or unauthorized activities</li><li>Comply with applicable legal requirements</li></ul><h4>Information Security</h4><p>We take reasonable administrative and technical measures to protect customer information from unauthorized access, misuse, alteration or disclosure. However, no internet-based system can be guaranteed to be completely secure.</p><h4>Sharing of Information</h4><p>We do not intend to sell or commercially trade customers' personal information. Information may be shared with service providers or other parties when reasonably necessary to complete an order, deliver products, process a transaction, provide technical services or meet legal or regulatory requirements.</p><h4>Cookies</h4><p>Our website may use cookies or similar technologies to improve website functionality, remember preferences and understand website usage.</p><h4>Policy Changes</h4><p>MAAJ PHARMACY may update this Privacy Policy when necessary. The updated version will be published on this website.</p></article>
-
-        <article id="maaj-terms" class="maaj-policy-card"><div class="maaj-policy-number">03</div><h3>Terms & Conditions</h3><p>By accessing or using the MAAJ PHARMACY website, you agree to comply with these Terms & Conditions.</p><h4>Website Usage</h4><p>Customers agree to use the website only for lawful purposes.</p><ul><li>Provide false or misleading information.</li><li>Attempt to access unauthorized areas of the website.</li><li>Misuse the ordering system.</li><li>Attempt to interfere with website operation.</li><li>Use the website for fraudulent activities.</li></ul><h4>Product Information</h4><p>We make reasonable efforts to display accurate product names, descriptions, prices and availability. However, minor differences may occur between website information and the physical product packaging.</p><h4>Medicine Orders</h4><p>Certain medicines may require a valid prescription. MAAJ PHARMACY reserves the right to request a valid prescription and verify it before processing an applicable order.</p><p>Orders may be rejected or cancelled if:</p><ul><li>A required prescription is not provided.</li><li>The prescription cannot be reasonably verified.</li><li>The prescription appears invalid or incomplete.</li><li>The requested medicine is unavailable.</li><li>Applicable laws or regulations prevent the sale or delivery of the medicine.</li></ul><h4>Order Acceptance</h4><p>Placing an order does not automatically guarantee acceptance. MAAJ PHARMACY may cancel or reject an order where necessary because of stock availability, prescription requirements, pricing errors, delivery limitations or other legitimate reasons.</p><h4>Prices</h4><p>Product prices displayed on the website may change from time to time. Any applicable taxes, delivery charges or other charges will be communicated during the ordering process where applicable.</p><h4>Account Information</h4><p>Customers are responsible for providing accurate information and keeping their account credentials secure.</p></article>
-
-        <article id="maaj-returns" class="maaj-policy-card"><div class="maaj-policy-number">04</div><h3>Returns & Refunds Policy</h3><p>MAAJ PHARMACY aims to provide genuine and properly packed products to customers.</p><h4>Return Eligibility</h4><p>A return or replacement request may be considered where:</p><ul><li>The wrong product was delivered.</li><li>The product was damaged during delivery.</li><li>The product received is defective or unusable.</li><li>The delivered product does not reasonably match the ordered product.</li></ul><h4>Medicines</h4><p>For safety and regulatory reasons, <strong>opened, used or tampered medicines may generally not be eligible for return.</strong> Return eligibility may also depend on the product type and applicable legal requirements.</p><h4>Reporting a Problem</h4><p>Customers should contact MAAJ PHARMACY as soon as possible after delivery if there is an issue with an order.</p><p>Customers may be asked to provide:</p><ul><li>Order details</li><li>Photographs of the product/package</li><li>Description of the issue</li><li>Other information reasonably required to investigate the complaint</li></ul><h4>Refunds</h4><p>If a refund is approved, the refund method and processing time may depend on the original payment method and applicable banking/payment procedures. For Cash on Delivery orders, the refund process may require additional information from the customer.</p><h4>Non-Returnable Situations</h4><ul><li>The product has been used or opened.</li><li>The product has been damaged by the customer.</li><li>The packaging has been intentionally damaged.</li><li>The customer ordered the wrong product.</li><li>The return request is made after the applicable return period.</li><li>The product is not eligible for return due to applicable regulations.</li></ul><p>MAAJ PHARMACY reserves the right to assess each return/refund request individually.</p></article>
-
-        <article id="maaj-delivery-policy" class="maaj-policy-card"><div class="maaj-policy-number">05</div><h3>Medicine Delivery & Cancellations Policy</h3><p>MAAJ PHARMACY provides medicine and healthcare-product delivery subject to product availability, delivery-area coverage and applicable requirements.</p><h4>Delivery Area</h4><p>Delivery is currently intended for customers within the serviceable delivery area of MAAJ PHARMACY. The website/order system may restrict orders outside the available delivery area.</p><h4>Delivery Time</h4><p>Our target is to provide delivery <strong>within 1 day</strong> for eligible orders in the serviceable area.</p><p>However, delivery time may vary because of:</p><ul><li>Product availability</li><li>Prescription verification</li><li>Weather conditions</li><li>Local transportation issues</li><li>Customer availability</li><li>Incorrect delivery information</li><li>Unforeseen operational circumstances</li></ul><p>Therefore, a delivery estimate should not be treated as an unconditional guarantee in circumstances beyond our reasonable control.</p><h4>Delivery Address</h4><p>Customers must provide a complete and accurate delivery address and reachable mobile number. MAAJ PHARMACY is not responsible for delays caused by an incorrect or incomplete address.</p><h4>Order Cancellation</h4><p>An order may be cancelled before dispatch, subject to the order status and applicable circumstances. After dispatch, cancellation may not always be possible.</p><p>MAAJ PHARMACY may cancel an order if:</p><ul><li>The requested product is unavailable.</li><li>A required prescription is not provided or cannot be verified.</li><li>The delivery address is outside the serviceable area.</li><li>There is a suspected fraudulent transaction.</li><li>There is an incorrect price or product listing.</li><li>Applicable law or regulatory requirements prevent fulfilment.</li></ul><h4>Failed Delivery</h4><p>If delivery cannot be completed because the customer is unavailable, unreachable or has provided an incorrect address, MAAJ PHARMACY may contact the customer to arrange another delivery attempt. Additional delivery restrictions or charges may apply where applicable.</p></article>
-
-        <article id="maaj-prescription-policy" class="maaj-policy-card"><div class="maaj-policy-number">06</div><h3>Prescription & Restricted Medicines Policy</h3><p>MAAJ PHARMACY follows applicable requirements relating to prescription and restricted medicines.</p><h4>Prescription Requirement</h4><p>Certain medicines can only be supplied when a valid prescription from a qualified medical practitioner is provided and accepted where required by applicable law. MAAJ PHARMACY may request prescription details or a copy/image of the prescription before processing an order.</p><h4>Prescription Verification</h4><p>A prescription may be checked for relevant information such as:</p><ul><li>Patient details</li><li>Medicine name</li><li>Strength</li><li>Dosage instructions</li><li>Quantity</li><li>Prescriber information</li><li>Date</li><li>Other legally required information</li></ul><h4>Order Rejection</h4><p>MAAJ PHARMACY may refuse or cancel an order if:</p><ul><li>No required prescription is provided.</li><li>The prescription is unclear or incomplete.</li><li>The prescription appears altered or invalid.</li><li>The medicine or quantity requested is not consistent with applicable requirements.</li><li>The medicine is unavailable.</li><li>Supplying the medicine would violate applicable law or regulations.</li></ul><h4>Restricted Medicines</h4><p>Certain medicines may be subject to additional restrictions regarding sale, quantity, prescription, storage, record keeping or delivery. MAAJ PHARMACY will follow applicable requirements for such products.</p><h4>Customer Responsibility</h4><p>Customers must not provide false, altered or fraudulent prescriptions. Customers must use medicines only as directed by a qualified healthcare professional and according to the medicine's approved instructions.</p><div class="maaj-policy-callout"><strong>Important Medical Notice</strong><p>MAAJ PHARMACY does not encourage self-medication with prescription medicines. If you are unsure whether a medicine is appropriate for you, consult a qualified doctor or pharmacist before using it.</p></div></article>
-
-        <article id="maaj-policy-contact" class="maaj-policy-card maaj-contact-card"><div class="maaj-policy-number">☎</div><h3>Contact & Customer Support</h3><p>For questions regarding orders, medicines, delivery, returns or other website services, customers may contact <strong>MAAJ PHARMACY / MAA JHARBANDHALIAN MEDICINE STORE</strong> through the contact details provided on the website.</p><div class="maaj-contact-grid"><div><span>Website</span><strong>MAAJ PHARMACY</strong></div><div><span>Business Name</span><strong>MAA JHARBANDHALIAN MEDICINE STORE</strong></div><div><span>Customer Support</span><strong>Available through the contact/WhatsApp support option provided on the website.</strong></div></div></article>
-
-        <div class="maaj-policy-update"><strong>Policy Updates</strong><p>MAAJ PHARMACY may modify, update or replace these policies when necessary. The latest version published on the website will be considered the current version.</p><span>Last Updated: 2 September 2026 · © 2026 MAAJ PHARMACY. All Rights Reserved.</span></div>
-      </div>
-    </div>
-  </div>
-</section>
 <style>
 #maajPolicyCenter{margin:42px auto 0;padding:0 16px 60px;font-family:Inter,Arial,sans-serif;color:#121414;scroll-margin-top:24px}
 #maajPolicyCenter .maaj-policy-shell{max-width:1220px;margin:auto;background:#f8fbfa;border:1px solid #dbe7e5;border-radius:30px;overflow:hidden;box-shadow:0 20px 60px rgba(15,23,42,.10)}
