@@ -3,6 +3,7 @@ html>
 <html lang="en">
 <head>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAAJ PHARMACY — Complete Enterprise Suite</title>
@@ -33,7 +34,13 @@ html>
             #invoiceContent { font-size: 11px !important; }
             @page { size: A4; margin: 10mm; }
         }
-    </style>
+    /* CUSTOMER PRICE CLEANUP: show only selling price on customer-facing pages. */
+#maajDetailMrp,#maajPdpMrp,
+#storeProductGrid .line-through,#catalogGrid .line-through,#medicineGrid .line-through,
+#homeFeaturedProducts .line-through,#maajCustomerMedicineGrid .line-through{
+  display:none!important;
+}
+</style>
 
 <script id="maaj-api-cache-layer">
 (function(){
@@ -797,12 +804,48 @@ button,a{touch-action:manipulation}
 #homePromoTrack .promo-slide-content .promo-slide-btn{pointer-events:auto!important;position:relative!important;z-index:20!important}
 #homePromoTrack .promo-slide-btn{cursor:pointer!important;touch-action:manipulation!important}
 </style>
+
+<style id="maaj-upi-payment-css">
+#maaj-payment-methods{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px;width:100%!important;visibility:visible!important;opacity:1!important}
+#maaj-payment-methods .maaj-pay-option{display:block!important;visibility:visible!important;opacity:1!important;min-height:76px!important}
+#maaj-payment-methods .maaj-pay-option *{visibility:visible!important}
+#maajPayUpiOption{display:block!important;visibility:visible!important;opacity:1!important}
+.maaj-pay-option{position:relative;border:1px solid #d9e2dd;border-radius:14px;background:#fff;padding:12px;cursor:pointer;transition:.16s}
+.maaj-pay-option input{position:absolute;opacity:0;pointer-events:none}
+.maaj-pay-option.active{border-color:#0e8231;background:#eaf7ee;box-shadow:0 0 0 2px rgba(14,130,49,.10)}
+.maaj-pay-option .maaj-pay-icon{font-size:18px;color:#0e8231;margin-bottom:6px}
+.maaj-pay-option b{display:block;font-size:12px;color:#121414}
+.maaj-pay-option span{display:block;font-size:10px;color:#64748b;margin-top:2px}
+#maajUpiPaymentBox{display:none;margin-top:12px;padding:15px;border:1px solid #bfdbfe;border-radius:14px;background:#eff6ff}
+#maajUpiPaymentBox.active{display:block}
+#maajUpiQr{width:210px;height:210px;margin:12px auto;background:#fff;padding:8px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+#maajUpiQr img,#maajUpiQr canvas{max-width:100%;height:auto}
+.maaj-payment-status{font-size:11px;font-weight:800;text-align:center;color:#334155;line-height:1.5}
+.maaj-payment-status.success{color:#047857}.maaj-payment-status.error{color:#b42318}
+#maajUpiOpenBtn{display:none;width:100%;margin-top:10px;border:0;border-radius:11px;background:#2563eb;color:#fff;padding:11px;font-weight:900;cursor:pointer}
+#maajUpiCancelBtn{display:none;width:100%;margin-top:8px;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#334155;padding:10px;font-weight:800;cursor:pointer}
+#maajUpiFailedBtn{display:none;width:100%;margin-top:8px;border:1px solid #fecaca;border-radius:11px;background:#fff;color:#b42318;padding:10px;font-weight:900;cursor:pointer}
+#maajUpiCountdown{display:none;text-align:center;font-size:12px;font-weight:900;color:#1d4ed8;margin-top:8px}
+.maaj-payment-note{margin-top:9px;padding:9px 10px;border-radius:10px;background:#fff;border:1px solid #dbeafe;color:#475569;font-size:10px;line-height:1.5}
+@media(max-width:520px){#maaj-payment-methods{grid-template-columns:1fr}.maaj-pay-option{padding:11px}#maajUpiQr{width:190px;height:190px}}
+</style>
+
+
+<style id="maaj-customer-price-final-fix">
+#maajDetailMrp,#maajPdpMrp,
+#storeProductGrid .line-through,#catalogGrid .line-through,#medicineGrid .line-through,
+#homeFeaturedProducts .line-through,#maajCustomerMedicineGrid .line-through,
+#storeProductGrid .maaj-cart-item-mrp,#catalogGrid .maaj-cart-item-mrp,
+#medicineGrid .maaj-cart-item-mrp{display:none!important}
+.maaj-customer-selling-price{font-weight:900;color:#07883b}
+</style>
+
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col">
 
     <!-- TOP ANNOUNCEMENT BAR -->
     <div class="bg-emerald-800 text-white text-xs text-center py-2 px-4 font-medium flex justify-between items-center">
-        <span>⚡ Target 1-Day Delivery Within Eligible 10 KM Local Area</span>
+        <span>? Target 1-Day Delivery Within Eligible 10 KM Local Area</span>
         <span class="hidden sm:inline">MAA JHARBANDHALIAN MEDICINE STORE | Lic: BOWZ-2860/R</span>
         <span>Helpline: 6372556219</span>
     </div>
@@ -1012,13 +1055,13 @@ button,a{touch-action:manipulation}
                         <p id="couponStatusMessage" class="maaj-coupon-message" role="status" aria-live="polite"></p>
                     </div>
                     <div class="maaj-cart-summary-lines">
-                        <div><span>Subtotal</span><strong id="cartSubtotal">₹0.00</strong></div>
-                        <div><span>Discount</span><strong id="cartDiscount" class="maaj-savings">-₹0.00</strong></div>
-                        <div><span>GST</span><strong id="cartTax">₹0.00</strong></div>
-                        <div><span>Delivery</span><strong id="cartDeliveryFee">₹0.00</strong></div>
+                        <div><span>Subtotal</span><strong id="cartSubtotal">?0.00</strong></div>
+                        <div><span>Discount</span><strong id="cartDiscount" class="maaj-savings">-?0.00</strong></div>
+                        <div><span>GST</span><strong id="cartTax">?0.00</strong></div>
+                        <div><span>Delivery</span><strong id="cartDeliveryFee">?0.00</strong></div>
                     </div>
                     <div id="maajCartSavingsNote" class="maaj-cart-savings-note"></div>
-                    <div class="maaj-cart-total-row"><span>Total</span><strong id="cartGrandTotal">₹0.00</strong></div>
+                    <div class="maaj-cart-total-row"><span>Total</span><strong id="cartGrandTotal">?0.00</strong></div>
                     <button type="button" onclick="navigateTo('checkout')" class="maaj-cart-primary-btn" aria-label="Proceed to checkout">
                         Proceed to Checkout <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                     </button>
@@ -1033,7 +1076,7 @@ button,a{touch-action:manipulation}
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-2xl font-black text-slate-900">Checkout</h2>
-                    <p class="text-xs text-slate-500 mt-1">Confirm your delivery details and place your COD order.</p>
+                    <p class="text-xs text-slate-500 mt-1">Confirm your delivery details, choose a payment method and place your order.</p>
                 </div>
                 <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full text-xs font-bold">
                     <i class="fa-solid fa-money-bill-wave mr-1"></i> Cash on Delivery
@@ -1057,10 +1100,30 @@ button,a{touch-action:manipulation}
                                 <label class="block text-xs font-bold mb-1">PIN Code *</label>
                                 <input id="checkoutPincode" type="text" maxlength="6" class="w-full p-3 border rounded-xl text-sm" placeholder="PIN code">
                             </div>
-                            <div>
+                            <div class="md:col-span-2">
                                 <label class="block text-xs font-bold mb-1">Payment Method</label>
-                                <div class="w-full p-3 border rounded-xl bg-emerald-50 text-emerald-800 text-sm font-bold">
-                                    <i class="fa-solid fa-money-bill-wave mr-2"></i> Cash on Delivery (COD)
+                                <div id="maaj-payment-methods" aria-label="Payment method">
+                                    <label class="maaj-pay-option active" id="maajPayCodOption">
+                                        <input type="radio" name="maajPaymentMethod" value="COD" checked onchange="maajSelectPaymentMethod('COD')">
+                                        <div class="maaj-pay-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                                        <b>Cash on Delivery</b>
+                                        <span>Pay when your order arrives</span>
+                                    </label>
+                                    <label class="maaj-pay-option" id="maajPayUpiOption">
+                                        <input type="radio" name="maajPaymentMethod" value="UPI" onchange="maajSelectPaymentMethod('UPI')">
+                                        <div class="maaj-pay-icon"><i class="fa-solid fa-qrcode"></i></div>
+                                        <b>UPI Payment</b>
+                                        <span>PhonePe / Paytm / any UPI app</span>
+                                    </label>
+                                </div>
+                                <div id="maajUpiPaymentBox">
+                                    <div class="text-xs font-black text-blue-900"><i class="fa-solid fa-shield-halved mr-1"></i> Secure UPI Payment</div><div class="mt-2 text-xs text-slate-700">UPI ID: <b>aQ041528802@ybl</b></div>
+                                    <div id="maajUpiStatus" class="maaj-payment-status mt-2">Click “Pay with UPI” to create a secure payment.</div>
+                                    <div id="maajUpiQr" aria-label="UPI payment QR code"></div>
+                                    <div id="maajUpiCountdown">Payment window: 5:00 remaining</div>
+                                    <button id="maajUpiOpenBtn" type="button" onclick="maajOpenUpiCheckout()">Open UPI Payment</button>
+                                    <button id="maajUpiCancelBtn" type="button" onclick="maajCancelUpiPayment()">Cancel Payment</button>
+                                    <div class="maaj-payment-note">Payment is confirmed only after the MAAJ PHARMACY server verifies the transaction with the configured payment provider. Do not mark a payment as successful manually.</div>
                                 </div>
                             </div>
                         </div>
@@ -1090,20 +1153,23 @@ button,a{touch-action:manipulation}
                         Please verify your name, mobile number, PIN code and address before placing the order.
                     </div>
 
-                    <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow" type="button" onclick="finalPlaceCODOrder()">
+                    <button id="maajPlaceOrderButton" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl shadow" type="button" onclick="finalPlaceCODOrder()">
                         <i class="fa-solid fa-bag-shopping mr-2"></i> Confirm & Place COD Order
                     </button>
+                    <div id="maajPaymentHelp" class="mt-2 text-center text-[10px] font-bold text-slate-500">
+                        Select <b>UPI Payment</b> above to pay securely by QR / UPI app.
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl border shadow-sm p-5 h-fit">
                     <h3 class="font-black text-sm border-b pb-3">Order Summary</h3>
                     <div id="checkoutItemsList" class="space-y-2 py-4 text-xs"></div>
                     <div class="border-t pt-3 space-y-2 text-xs">
-                        <div class="flex justify-between"><span>Subtotal</span><b id="checkoutSubtotal">₹0.00</b></div>
-                        <div class="flex justify-between"><span>Discount</span><b id="checkoutDiscount">₹0.00</b></div>
-                        <div class="flex justify-between"><span>Delivery</span><b id="checkoutDelivery">₹0.00</b></div>
-                        <div class="flex justify-between"><span>Tax</span><b id="checkoutTax">₹0.00</b></div>
-                        <div class="flex justify-between border-t pt-3 text-base"><span class="font-black">Grand Total</span><b id="checkoutGrandTotal" class="text-emerald-700">₹0.00</b></div>
+                        <div class="flex justify-between"><span>Subtotal</span><b id="checkoutSubtotal">?0.00</b></div>
+                        <div class="flex justify-between"><span>Discount</span><b id="checkoutDiscount">?0.00</b></div>
+                        <div class="flex justify-between"><span>Delivery</span><b id="checkoutDelivery">?0.00</b></div>
+                        <div class="flex justify-between"><span>Tax</span><b id="checkoutTax">?0.00</b></div>
+                        <div class="flex justify-between border-t pt-3 text-base"><span class="font-black">Grand Total</span><b id="checkoutGrandTotal" class="text-emerald-700">?0.00</b></div>
                     </div>
                 </div>
             </div>
@@ -1165,7 +1231,7 @@ button,a{touch-action:manipulation}
                         <div><h3 class="font-black text-sm">Order Summary</h3><p class="text-[10px] text-slate-500">Payment and order total</p></div>
                     </div>
                     <div class="flex justify-between text-xs"><span class="text-slate-500">Items</span><b id="trackingItemsCount">0</b></div>
-                    <div class="flex justify-between text-sm mt-2"><span class="font-bold">Total</span><b id="trackingTotal" class="text-emerald-700">₹0.00</b></div>
+                    <div class="flex justify-between text-sm mt-2"><span class="font-bold">Total</span><b id="trackingTotal" class="text-emerald-700">?0.00</b></div>
                     <div class="mt-2 text-[10px] text-slate-500" id="trackingPayment">Payment: N/A</div>
                 </div>
             </div>
@@ -1234,7 +1300,7 @@ button,a{touch-action:manipulation}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-slate-800">
                 <div class="bg-white p-4 rounded-xl border shadow-sm">
                     <p class="text-[10px] text-slate-400 font-bold uppercase">Total Sales</p>
-                    <p id="statTotalSales" class="text-lg font-black text-emerald-600">₹0.00</p>
+                    <p id="statTotalSales" class="text-lg font-black text-emerald-600">?0.00</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl border shadow-sm">
                     <p class="text-[10px] text-slate-400 font-bold uppercase">Total Orders</p>
@@ -1265,10 +1331,10 @@ button,a{touch-action:manipulation}
                 <button onclick="switchAdminTab('orders')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Orders</button>
                 <button onclick="switchAdminTab('prescriptions')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Rx PDFs Review</button>
                 <button onclick="switchAdminTab('coupons')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">Coupons</button>
-                <button onclick="switchAdminTab('medicine-manager')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">💊 Medicine Manager</button>
-                <button onclick="switchAdminTab('categories')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">🏷️ Categories</button>
-                <button onclick="switchAdminTab('home-categories')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">🖼️ Home Categories</button>
-                <button onclick="switchAdminTab('promo-banners')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">🎁 Promo Banners</button>
+                <button onclick="switchAdminTab('medicine-manager')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">?? Medicine Manager</button>
+                <button onclick="switchAdminTab('categories')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">??? Categories</button>
+                <button onclick="switchAdminTab('home-categories')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">??? Home Categories</button>
+                <button onclick="switchAdminTab('promo-banners')" class="admin-tab-btn bg-white border px-3 py-2 rounded-lg">?? Promo Banners</button>
             </div>
 
             <!-- TAB 1: PRODUCTS -->
@@ -1377,7 +1443,7 @@ button,a{touch-action:manipulation}
             <div id="admin-tab-categories" class="admin-tab space-y-4">
               <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
                 <div class="p-4 border-b bg-slate-50 flex flex-wrap items-center justify-between gap-3">
-                  <div><h3 class="font-black text-sm">🏷️ Admin Categories</h3><p class="text-[11px] text-slate-500 mt-1">Manage the categories available while adding medicines. Existing categories are kept.</p></div>
+                  <div><h3 class="font-black text-sm">??? Admin Categories</h3><p class="text-[11px] text-slate-500 mt-1">Manage the categories available while adding medicines. Existing categories are kept.</p></div>
                   <span class="text-[10px] font-black text-emerald-600">MAAJ PHARMACY</span>
                 </div>
                 <div class="p-5">
@@ -1397,7 +1463,7 @@ button,a{touch-action:manipulation}
             <div id="admin-tab-home-categories" class="admin-tab space-y-4">
               <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
                 <div class="p-4 border-b bg-slate-50">
-                  <h3 class="font-black text-sm">🖼️ Home Page Visual Categories</h3>
+                  <h3 class="font-black text-sm">??? Home Page Visual Categories</h3>
                   <p class="text-[11px] text-slate-500 mt-1">Add category name, section, description and photo. Data is saved online in Supabase.</p>
                 </div>
                 <div class="p-5 space-y-4">
@@ -1407,8 +1473,8 @@ button,a{touch-action:manipulation}
                     <div><label class="block text-[11px] font-black text-slate-600 mb-1">Short Description</label><input id="maajHomeCatDesc" class="w-full border rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. Blood sugar care"></div>
                     <div><label class="block text-[11px] font-black text-slate-600 mb-1">Sort Order</label><input id="maajHomeCatOrder" type="number" value="99" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div>
                   </div>
-                  <div><label class="block text-[11px] font-black text-slate-600 mb-1">Category Photo *</label><input id="maajHomeCatImage" type="file" accept="image/png,image/jpeg,image/webp" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></div><div class="flex flex-wrap items-center gap-2 mt-2"><button type="button" class="maaj-crop-new-btn" onclick="maajCropNewHomeCategory()">✂️ Crop / Edit Selected Photo</button><img id="maajHomeCatCropPreview" class="maaj-home-new-preview hidden" alt="Cropped preview"></div>
-                  <div class="flex flex-wrap gap-2"><button type="button" onclick="maajAddHomeCategory()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">+ Add Category Online</button><button type="button" onclick="maajLoadHomeCategories(true)" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-black">↻ Refresh</button></div>
+                  <div><label class="block text-[11px] font-black text-slate-600 mb-1">Category Photo *</label><input id="maajHomeCatImage" type="file" accept="image/png,image/jpeg,image/webp" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></div><div class="flex flex-wrap items-center gap-2 mt-2"><button type="button" class="maaj-crop-new-btn" onclick="maajCropNewHomeCategory()">?? Crop / Edit Selected Photo</button><img id="maajHomeCatCropPreview" class="maaj-home-new-preview hidden" alt="Cropped preview"></div>
+                  <div class="flex flex-wrap gap-2"><button type="button" onclick="maajAddHomeCategory()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">+ Add Category Online</button><button type="button" onclick="maajLoadHomeCategories(true)" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-black">? Refresh</button></div>
                   <div id="maajHomeCategoryStatus" class="text-xs font-bold"></div>
                   <div><h4 class="font-black text-sm mb-2">Saved Home Categories</h4><div id="maajHomeCategoryAdminList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div></div>
                 </div>
@@ -1421,7 +1487,7 @@ button,a{touch-action:manipulation}
             <div id="admin-tab-promo-banners" class="admin-tab space-y-4">
               <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
                 <div class="p-4 border-b bg-slate-50">
-                  <h3 class="font-black text-sm">🎁 Promotional Banner Slider</h3>
+                  <h3 class="font-black text-sm">?? Promotional Banner Slider</h3>
                   <p class="text-[11px] text-slate-500 mt-1">Upload promotional photo, button text and action. Data is saved online in Supabase.</p>
                 </div>
                 <div class="p-5 space-y-4">
@@ -1455,8 +1521,8 @@ button,a{touch-action:manipulation}
                   </div>
                   <div class="flex flex-wrap gap-2">
                     <button type="button" id="maajPromoSaveBtn" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">+ Add Offer Slide Online</button>
-                    <button type="button" onclick="maajLoadPromoBanners(true)" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-black">↻ Refresh</button>
-                    <button type="button" onclick="maajDeleteAllPromoBanners()" class="bg-red-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">🗑️ Delete All Slides</button>
+                    <button type="button" onclick="maajLoadPromoBanners(true)" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-black">? Refresh</button>
+                    <button type="button" onclick="maajDeleteAllPromoBanners()" class="bg-red-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">??? Delete All Slides</button>
                   </div>
                   <div id="maajPromoStatus" class="text-xs font-bold"></div>
                   <div><h4 class="font-black text-sm mb-2">Live Promotional Slides</h4><div id="maajPromoAdminList" class="space-y-3"></div></div>
@@ -1470,7 +1536,7 @@ button,a{touch-action:manipulation}
             <div id="admin-tab-medicine-manager" class="admin-tab space-y-4">
               <div class="bg-white rounded-2xl border overflow-hidden shadow-sm">
                 <div class="p-4 border-b bg-slate-50 flex items-center justify-between gap-3">
-                  <div><h3 class="font-black text-sm">💊 Medicine Manager</h3><p class="text-[11px] text-slate-500 mt-1">Login with the Supabase admin account. Medicines added here are saved online and loaded into the customer catalogue.</p></div>
+                  <div><h3 class="font-black text-sm">?? Medicine Manager</h3><p class="text-[11px] text-slate-500 mt-1">Login with the Supabase admin account. Medicines added here are saved online and loaded into the customer catalogue.</p></div>
                   <span id="mmUserTag" class="text-[10px] font-black text-emerald-600">ADMIN LOGIN REQUIRED</span>
                 </div>
                 <div id="mmLogin" class="p-5">
@@ -1495,14 +1561,14 @@ button,a{touch-action:manipulation}
                         <tbody id="mmBulkRows"></tbody>
                       </table>
                     </div>
-                    <div class="flex flex-wrap gap-2 mt-3"><button type="button" onclick="mmBulkAdd()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">✓ Add All Medicines Online</button><button type="button" onclick="mmClearBulkRows()" class="bg-white border px-4 py-2.5 rounded-xl text-xs font-black">Clear Rows</button></div>
+                    <div class="flex flex-wrap gap-2 mt-3"><button type="button" onclick="mmBulkAdd()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">? Add All Medicines Online</button><button type="button" onclick="mmClearBulkRows()" class="bg-white border px-4 py-2.5 rounded-xl text-xs font-black">Clear Rows</button></div>
                     <div id="mmBulkStatus" class="text-xs font-bold mt-2"></div>
                   </div>
                   <div class="rounded-2xl border bg-white p-4"><h4 class="font-black text-sm">Add One Medicine</h4><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
                     <div><label class="block text-[11px] font-black text-slate-600 mb-1">Medicine Name *</label><input id="mmName" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Selling Price *</label><input id="mmPrice" type="number" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">MRP</label><input id="mmMrp" type="number" min="0" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Category</label><select id="mmCategory" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></select></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Drug Class</label><select id="mmDrugClass" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></select></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Legal Category</label><select id="mmLegalCategory" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"><option value="OTC">OTC / Non-prescription</option><option value="G">Schedule G</option><option value="H">Schedule H</option><option value="H1">Schedule H1</option><option value="X">Schedule X</option><option value="VERIFY" selected>Verify from pack / licence</option></select></div><div class="flex items-center gap-2 pt-6"><input id="mmRxRequired" type="checkbox" class="w-4 h-4 text-red-600 rounded"><label for="mmRxRequired" class="text-[11px] font-black text-red-700">Prescription Required (Rx)</label></div>
                     <div><label class="block text-[11px] font-black text-slate-600 mb-1">GST %</label><select id="mmGst" class="w-full border rounded-xl px-3 py-2.5 text-sm"><option value="5">5% — Medicine</option><option value="18">18% — Cosmetic</option></select></div><div><label class="block text-[11px] font-black text-slate-600 mb-1">Stock</label><input id="mmStock" type="number" min="0" value="0" class="w-full border rounded-xl px-3 py-2.5 text-sm"></div><div class="md:col-span-2"><label class="block text-[11px] font-black text-slate-600 mb-1">Medicine Photo *</label><input id="mmPhoto" type="file" accept="image/*" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white"></div><div class="md:col-span-2 lg:col-span-4"><label class="block text-[11px] font-black text-slate-600 mb-1">Description</label><textarea id="mmDescription" class="w-full border rounded-xl p-3 text-sm min-h-[80px]"></textarea></div>
                   </div><button type="button" onclick="mmAddOne()" class="mt-3 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-black">Add Medicine Online</button><div id="mmOneStatus" class="text-xs font-bold mt-2"></div></div>
-                  <div class="rounded-2xl border bg-white overflow-hidden"><div class="p-4 border-b flex flex-wrap items-center justify-between gap-2"><div><h4 class="font-black text-sm">Medicine List</h4><p class="text-[11px] text-slate-500">Live list from Supabase.</p></div><div class="flex gap-2"><button type="button" onclick="mmLoadMedicines()" class="bg-slate-100 px-3 py-2 rounded-xl text-xs font-black">↻ Refresh</button><button type="button" onclick="mmDeleteSelected()" class="bg-red-50 text-red-700 px-3 py-2 rounded-xl text-xs font-black">Delete Selected</button></div></div><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50 border-b"><tr><th class="p-3"><input type="checkbox" id="mmSelectAll" onclick="mmToggleAll(this)"></th><th class="p-3">Photo</th><th class="p-3">Medicine</th><th class="p-3">Price</th><th class="p-3">MRP</th><th class="p-3">GST</th><th class="p-3">Category</th><th class="p-3">Drug Class</th><th class="p-3">Legal Category</th><th class="p-3">Rx</th><th class="p-3">Stock</th><th class="p-3">Action</th></tr></thead><tbody id="mmList"></tbody></table></div></div>
+                  <div class="rounded-2xl border bg-white overflow-hidden"><div class="p-4 border-b flex flex-wrap items-center justify-between gap-2"><div><h4 class="font-black text-sm">Medicine List</h4><p class="text-[11px] text-slate-500">Live list from Supabase.</p></div><div class="flex gap-2"><button type="button" onclick="mmLoadMedicines()" class="bg-slate-100 px-3 py-2 rounded-xl text-xs font-black">? Refresh</button><button type="button" onclick="mmDeleteSelected()" class="bg-red-50 text-red-700 px-3 py-2 rounded-xl text-xs font-black">Delete Selected</button></div></div><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50 border-b"><tr><th class="p-3"><input type="checkbox" id="mmSelectAll" onclick="mmToggleAll(this)"></th><th class="p-3">Photo</th><th class="p-3">Medicine</th><th class="p-3">Price</th><th class="p-3">MRP</th><th class="p-3">GST</th><th class="p-3">Category</th><th class="p-3">Drug Class</th><th class="p-3">Legal Category</th><th class="p-3">Rx</th><th class="p-3">Stock</th><th class="p-3">Action</th></tr></thead><tbody id="mmList"></tbody></table></div></div>
                 </div>
               </div>
             </div>
@@ -1641,11 +1707,11 @@ button,a{touch-action:manipulation}
                     <input type="text" id="pmExpiry" placeholder="e.g. 12/2027" class="w-full p-2 border rounded">
                 </div>
                 <div>
-                    <label class="block font-bold mb-1">MRP Price (₹)</label>
+                    <label class="block font-bold mb-1">MRP Price (?)</label>
                     <input type="number" id="pmMrp" placeholder="35" class="w-full p-2 border rounded">
                 </div>
                 <div>
-                    <label class="block font-bold mb-1">Selling Price (₹)</label>
+                    <label class="block font-bold mb-1">Selling Price (?)</label>
                     <input type="number" id="pmPrice" placeholder="28" class="w-full p-2 border rounded">
                 </div>
                 <div class="sm:col-span-2">
@@ -1694,7 +1760,7 @@ button,a{touch-action:manipulation}
                     <label class="block font-bold mb-1">Discount Type</label>
                     <select id="cmType" class="w-full p-2 border rounded bg-white">
                         <option value="PERCENT">Percentage (%)</option>
-                        <option value="FLAT">Flat Amount (₹)</option>
+                        <option value="FLAT">Flat Amount (?)</option>
                     </select>
                 </div>
                 <div>
@@ -1702,7 +1768,7 @@ button,a{touch-action:manipulation}
                     <input type="number" id="cmValue" placeholder="10" class="w-full p-2 border rounded">
                 </div>
                 <div>
-                    <label class="block font-bold mb-1">Minimum Order Amount (₹)</label>
+                    <label class="block font-bold mb-1">Minimum Order Amount (?)</label>
                     <input type="number" id="cmMinSpend" placeholder="200" class="w-full p-2 border rounded">
                 </div>
             </div>
@@ -1732,7 +1798,7 @@ button,a{touch-action:manipulation}
           <div class="bg-slate-50 rounded-xl p-3"><b>Expiry</b><div id="maajDetailExpiry" class="text-slate-500 mt-1"></div></div>
         </div>
         <div class="flex items-center justify-between border-t pt-4">
-          <div><span id="maajDetailMrp" class="text-xs line-through text-slate-400"></span> <b id="maajDetailPrice" class="text-xl text-emerald-600"></b></div>
+          <div><span id="maajDetailMrp" class="hidden"></span> <b id="maajDetailPrice" class="text-xl text-emerald-600"></b></div>
           <button id="maajDetailAdd" class="bg-emerald-600 text-white font-bold px-5 py-3 rounded-xl"><i class="fa-solid fa-cart-plus mr-1"></i> Add to Cart</button>
         </div>
       </div>
@@ -2286,7 +2352,7 @@ async function maajLoadMedicinesFromAPI(options) {
         let coupons = getDB("coupons", defaultCoupons);
         let cart = getDB("cart", []);
         let orders = getDB("orders", []);
-        let prescriptions = getDB("prescriptions", defaultPrescriptions);
+        let prescriptions = [];
         let activeCoupon = null;
         let uploadedFileBase64 = "";
         let uploadedFileName = "";
@@ -2604,7 +2670,7 @@ async function maajLoadMedicinesFromAPI(options) {
                         <p class="text-xs text-slate-400">Brand: ${p.brand || '—'}</p>
                         <p class="text-[11px] text-slate-500 mt-2 line-clamp-2">${desc}</p>
                         <div class="pt-3 mt-auto border-t flex justify-between items-center">
-                            <div><span class="text-xs line-through text-slate-400">₹${Number(p.mrp || 0).toFixed(2)}</span><span class="text-sm font-black text-emerald-600 ml-1">₹${Number(p.price || 0).toFixed(2)}</span></div>
+                            <div><span class="text-sm font-black text-emerald-600">Rs.${Number(p.price || 0).toFixed(2)}</span></div>
                             ${Number(p.stock) > 0 ? `<button onclick="event.stopPropagation();addToCart(${JSON.stringify(String(p.id))})" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Add</button>` : `<span class="text-xs text-red-500 font-bold">Out of Stock</span>`}
                         </div>
                     </div>`;
@@ -2757,10 +2823,10 @@ async function maajLoadMedicinesFromAPI(options) {
             const tax = (subtotal - discount) * 0.05;
             const grandTotal = Math.max(0, subtotal - discount + tax);
 
-            document.getElementById('cartSubtotal').innerText = `₹${subtotal.toFixed(2)}`;
-            document.getElementById('cartDiscount').innerText = `-₹${discount.toFixed(2)}`;
-            document.getElementById('cartTax').innerText = `₹${tax.toFixed(2)}`;
-            document.getElementById('cartGrandTotal').innerText = `₹${grandTotal.toFixed(2)}`;
+            document.getElementById('cartSubtotal').innerText = `?${subtotal.toFixed(2)}`;
+            document.getElementById('cartDiscount').innerText = `-?${discount.toFixed(2)}`;
+            document.getElementById('cartTax').innerText = `?${tax.toFixed(2)}`;
+            document.getElementById('cartGrandTotal').innerText = `?${grandTotal.toFixed(2)}`;
         }
 
         function applyCoupon() {
@@ -2777,7 +2843,7 @@ async function maajLoadMedicinesFromAPI(options) {
 
             if (subtotal < found.minSpend) {
                 msg.className = "text-[11px] text-red-500 font-bold";
-                msg.innerText = `Minimum order spend ₹${found.minSpend} required.`;
+                msg.innerText = `Minimum order spend ?${found.minSpend} required.`;
                 return;
             }
 
@@ -2871,18 +2937,176 @@ async function maajLoadMedicinesFromAPI(options) {
                         <span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">${o.status}</span>
                     </div>
                     <div class="space-y-1">
-                        ${o.items.map(i => `<p class="text-slate-600">${i.name} x ${i.qty} — ₹${i.price * i.qty}</p>`).join('')}
+                        ${o.items.map(i => `<p class="text-slate-600">${i.name} x ${i.qty} — ?${i.price * i.qty}</p>`).join('')}
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t">
-                        <span class="font-black text-slate-800">Total: ₹${o.amount} (${o.paymentMode})</span>
+                        <span class="font-black text-slate-800">Total: ?${o.amount} (${o.paymentMode})</span>
                         <div class="flex gap-2">
                             <button onclick="trackOrder('${o.id}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded hover:bg-emerald-700">Track</button>
+                            ${['Pending','Confirmed'].includes(o.status) ? `<button onclick="maajCustomerCancelOrder('${o.id}')" class="bg-red-50 text-red-700 border border-red-200 font-bold px-3 py-1 rounded hover:bg-red-100">Cancel Order</button>` : ''}
                         </div>
                     </div>
                 `;
                 list.appendChild(card);
             });
         }
+
+        // CUSTOMER CANCELLATION REASON — saved only in Supabase with the order.
+        window.maajAskCancellationReason = function(orderId) {
+            return new Promise(function(resolve) {
+                var old = document.getElementById('maajCancelReasonModal');
+                if (old) old.remove();
+                var modal = document.createElement('div');
+                modal.id = 'maajCancelReasonModal';
+                modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+                modal.innerHTML = `
+                  <div style="width:100%;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.25);padding:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                      <h3 style="font-size:18px;font-weight:800;color:#0f172a;margin:0;">Why are you cancelling this order?</h3>
+                      <button type="button" id="maajCancelReasonClose" style="border:0;background:#f1f5f9;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;">×</button>
+                    </div>
+                    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Your feedback helps us improve our pharmacy service.</p>
+                    <div id="maajCancelReasons" style="display:grid;gap:8px;">
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Ordered by mistake"> <b>Ordered by mistake</b></label>
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Medicine is no longer needed"> <b>Medicine is no longer needed</b></label>
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Delivery is taking too long"> <b>Delivery is taking too long</b></label>
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Wrong medicine or quantity selected"> <b>Wrong medicine or quantity selected</b></label>
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Wrong address or contact details"> <b>Wrong address or contact details</b></label>
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Payment or price issue"> <b>Payment or price issue</b></label>
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Duplicate order"> <b>Duplicate order</b></label>
+                      <label style="border:1px solid #e2e8f0;border-radius:10px;padding:10px;cursor:pointer;font-size:13px;"><input type="radio" name="maajCancelReason" value="Other"> <b>Other</b></label>
+                    </div>
+                    <div id="maajOtherCancelWrap" style="display:none;margin-top:10px;">
+                      <label style="font-size:12px;font-weight:700;color:#334155;">Please describe</label>
+                      <textarea id="maajOtherCancelDescription" maxlength="500" rows="4" placeholder="Tell us what went wrong or what we can improve..." style="width:100%;margin-top:5px;border:1px solid #cbd5e1;border-radius:10px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
+                      <div style="font-size:10px;color:#94a3b8;margin-top:3px;">Maximum 500 characters</div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+                      <button type="button" id="maajCancelReasonBack" style="padding:9px 14px;border:1px solid #cbd5e1;background:#fff;border-radius:9px;font-weight:700;cursor:pointer;">Keep Order</button>
+                      <button type="button" id="maajCancelReasonSubmit" style="padding:9px 14px;border:0;background:#dc2626;color:#fff;border-radius:9px;font-weight:800;cursor:pointer;">Confirm Cancellation</button>
+                    </div>
+                  </div>`;
+                document.body.appendChild(modal);
+                var otherWrap=document.getElementById('maajOtherCancelWrap');
+                var desc=document.getElementById('maajOtherCancelDescription');
+                modal.querySelectorAll('input[name="maajCancelReason"]').forEach(function(r){
+                    r.addEventListener('change',function(){
+                        otherWrap.style.display=(this.value==='Other'?'block':'none');
+                        if(this.value==='Other') setTimeout(function(){desc.focus()},50);
+                    });
+                });
+                function close(value){ modal.remove(); resolve(value); }
+                document.getElementById('maajCancelReasonClose').onclick=function(){close(null)};
+                document.getElementById('maajCancelReasonBack').onclick=function(){close(null)};
+                modal.addEventListener('click',function(e){if(e.target===modal)close(null)});
+                document.getElementById('maajCancelReasonSubmit').onclick=function(){
+                    var selected=modal.querySelector('input[name="maajCancelReason"]:checked');
+                    if(!selected){alert('Please select a cancellation reason.');return;}
+                    var description=(desc.value||'').trim();
+                    if(selected.value==='Other' && !description){alert('Please describe the reason in the box.');desc.focus();return;}
+                    close({reason:selected.value,description:description,orderId:orderId});
+                };
+            });
+        };
+
+        // CUSTOMER CANCELLATION — SUPABASE IS THE ONLY ORDER SOURCE OF TRUTH.
+        // The logged-in Supabase Auth session is the final identity check.
+        // Nothing about the order cancellation is saved to localStorage.
+        window.maajCustomerCancelOrder = async function(orderId) {
+            // IMPORTANT: use the global Supabase client. The old code used a
+            // block-scoped `sb`, which caused "sb is not defined" on Cancel.
+            const supabaseClient = window.maajSupabaseClient;
+            if (!supabaseClient) {
+                alert('Supabase is not available. Please refresh the page.');
+                return;
+            }
+
+            let authUser = null;
+            try {
+                const { data, error } = await supabaseClient.auth.getUser();
+                if (error) throw error;
+                authUser = data?.user || null;
+            } catch (e) {
+                try {
+                    const { data } = await supabaseClient.auth.getSession();
+                    authUser = data?.session?.user || null;
+                } catch (_) {}
+            }
+
+            if (!authUser || !authUser.id) {
+                alert('Your login session is not available. Please refresh the page and login again.');
+                return;
+            }
+
+            const cancellation = await window.maajAskCancellationReason(orderId);
+            if (!cancellation) return;
+
+            try {
+                // ATOMIC Supabase operation:
+                // - verifies this customer owns the order
+                // - changes Pending/Confirmed -> Cancelled
+                // - restores every medicine quantity
+                // - rolls everything back if any part fails
+                // Nothing is written to localStorage.
+                const { data, error } = await supabaseClient.rpc('cancel_customer_order', {
+                    p_order_id: String(orderId),
+                    p_reason: cancellation.reason,
+                    p_description: cancellation.description || null
+                });
+
+                if (error) throw error;
+                if (!data) throw new Error('Supabase did not cancel the order.');
+
+                // Online notification only. It is not stored in localStorage.
+                try {
+                    if (typeof createNotification === 'function') {
+                        await createNotification(
+                            authUser.id,
+                            orderId,
+                            'Order Cancelled',
+                            'Your order ' + orderId + ' was cancelled successfully. The stock has been restored.',
+                            'order_cancelled'
+                        );
+                    }
+                } catch (e) { console.warn('Cancellation notification failed:', e); }
+
+                // Clear only temporary in-memory/API cache, never localStorage.
+                try {
+                    if (window.maajApiCache && typeof window.maajApiCache.clear === 'function') {
+                        window.maajApiCache.clear('orders_customer_' + authUser.id);
+                        window.maajApiCache.clear('orders_admin');
+                        window.maajApiCache.clear('orders_');
+                    }
+                } catch (e) {}
+
+                try {
+                    if (typeof window.maajLoadMedicinesFromAPI === 'function') {
+                        await window.maajLoadMedicinesFromAPI({force:true});
+                    }
+                } catch (e) {}
+
+                alert('Order cancelled successfully. Supabase has been updated and the stock has been restored.');
+
+                // Reload the visible order list directly from Supabase.
+                try {
+                    if (typeof window.renderCustomerOrders === 'function') {
+                        await window.renderCustomerOrders();
+                    }
+                } catch (e) {}
+
+                try {
+                    if (typeof window.isAdminAuthenticated === 'function' &&
+                        window.isAdminAuthenticated() &&
+                        typeof window.renderAdminOrders === 'function') {
+                        await window.renderAdminOrders();
+                    }
+                } catch (e) {}
+
+            } catch (e) {
+                console.error('Customer order cancellation failed:', e);
+                alert('Order cancellation failed.\n\n' + (e.message || e) + '\n\nNo local order data was saved.');
+            }
+        };
 
         function trackOrder(orderId) {
             const o = orders.find(item => item.id === orderId);
@@ -3029,8 +3253,8 @@ async function maajLoadMedicinesFromAPI(options) {
                         </div>
                         <div class="bg-slate-50 p-3 rounded-lg border text-left text-xs space-y-1">
                             <p class="font-bold text-emerald-800">Verified Pharmacist Check:</p>
-                            <p class="text-slate-600">✓ Patient Name Verified</p>
-                            <p class="text-slate-600">✓ Doctor Registration Stamp Present</p>
+                            <p class="text-slate-600">? Patient Name Verified</p>
+                            <p class="text-slate-600">? Doctor Registration Stamp Present</p>
                         </div>
                     </div>
                 `;
@@ -3066,7 +3290,7 @@ async function maajLoadMedicinesFromAPI(options) {
             const lowStock = products.filter(p => p.stock <= p.minStock).length;
             const pendingRx = prescriptions.filter(r => r.status.includes('Pending')).length;
 
-            document.getElementById('statTotalSales').innerText = `₹${totalSales.toFixed(2)}`;
+            document.getElementById('statTotalSales').innerText = `?${totalSales.toFixed(2)}`;
             document.getElementById('statTotalOrders').innerText = totalOrders;
             document.getElementById('statPendingOrders').innerText = pendingOrders;
             document.getElementById('statTotalMedicines').innerText = products.length;
@@ -3294,7 +3518,7 @@ async function maajLoadMedicinesFromAPI(options) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="p-3 font-bold">${c.code}</td>
-                    <td class="p-3">${c.value}${c.type === 'PERCENT' ? '%' : '₹'}</td>
+                    <td class="p-3">${c.value}${c.type === 'PERCENT' ? '%' : '?'}</td>
                     <td class="p-3">₹${c.minSpend}</td>
                     <td class="p-3 text-right">
                         <button onclick="toggleCoupon('${c.code}')" class="text-blue-600 font-bold">Toggle</button>
@@ -3399,7 +3623,7 @@ async function maajLoadMedicinesFromAPI(options) {
                         <div class="p-3 overflow-x-auto"><table class="w-full border-collapse"><thead><tr class="bg-slate-100 border-y border-slate-300"><th class="p-2">#</th><th class="p-2 text-left">Medicine</th><th class="p-2">Batch</th><th class="p-2">Expiry</th><th class="p-2">MRP</th><th class="p-2">Qty</th><th class="p-2">Rate</th><th class="p-2 text-right">Amount</th></tr></thead><tbody>${itemRows}</tbody></table></div>
                         <div class="grid md:grid-cols-2 border-t">
                             <div class="p-4"><div class="font-black text-emerald-700 mb-2">PAYMENT</div><div>Mode: <b>${o.paymentMode || '—'}</b></div><div>Status: <b>${o.status || '—'}</b></div>${o.coupon?`<div>Coupon: <b>${o.coupon}</b></div>`:''}<div class="mt-3 text-[9px] text-slate-500">Computer generated invoice. Please verify medicine, quantity and customer details before dispatch.</div></div>
-                            <div class="p-4 bg-slate-50"><div class="flex justify-between py-1"><span>Subtotal</span><b>₹${subtotal.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Discount</span><b>− ₹${discount.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Tax / GST</span><b>₹${tax.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Delivery</span><b>${delivery?`₹${delivery.toFixed(2)}`:'FREE'}</b></div><div class="flex justify-between mt-2 pt-2 border-t-2 border-emerald-700 text-base font-black text-emerald-700"><span>GRAND TOTAL</span><span>₹${grand.toFixed(2)}</span></div></div>
+                            <div class="p-4 bg-slate-50"><div class="flex justify-between py-1"><span>Subtotal</span><b>₹${subtotal.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Discount</span><b>- ?${discount.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Tax / GST</span><b>₹${tax.toFixed(2)}</b></div><div class="flex justify-between py-1"><span>Delivery</span><b>${delivery?`?${delivery.toFixed(2)}`:'FREE'}</b></div><div class="flex justify-between mt-2 pt-2 border-t-2 border-emerald-700 text-base font-black text-emerald-700"><span>GRAND TOTAL</span><span>₹${grand.toFixed(2)}</span></div></div>
                         </div>
                         <div class="p-4 border-t"><div class="font-black text-emerald-700 mb-1">TERMS & CONDITIONS</div><div class="grid md:grid-cols-2 gap-2 text-[9px] text-slate-600"><div>• Prescription medicines are supplied only after prescription verification where required.<br>• Goods once sold should be checked at delivery.</div><div class="text-right mt-3 md:mt-0"><div class="font-bold text-slate-800">Authorized Signatory</div><div class="mt-6">MAA JHARBANDLI AND MEDICINE STORE</div></div></div></div>
                         <div class="bg-slate-100 text-center p-2 text-[9px] font-bold text-slate-500">Thank you for choosing MAA JHARBANDLI AND MEDICINE STORE</div>
@@ -3476,9 +3700,9 @@ async function maajLoadMedicinesFromAPI(options) {
  async function load(){try{const client=getPromoSB();if(!client){promos=[];render();return}const loader=async()=>{const {data,error}=await client.from('promo_banners').select('id,title,text,button_text,action,bg,image_url,sort_order,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;return data||[]};const data=window.maajApiCache?await window.maajApiCache.remember('promo_public',300000,loader):await loader();promos=data.length?data.map(x=>({id:x.id,title:x.title,text:x.text,button:x.button_text,bg:x.bg,action:x.action,image_url:x.image_url})):[];render();}catch(e){console.warn('Promo banners unavailable:',e.message);promos=[];render()}}
  window.promoNext=()=>go(i+1);window.promoPrev=()=>go(i-1);window.promoGo=n=>go(n);
  window.promoAction=function(n){const a=promos[n]?.action||'store';if(a==='prescription'){window.navigateTo('upload-prescription');}else if(a==='orders'){window.navigateTo('orders');}else if(a==='offers'){try{window.maajPro('offers')}catch(e){window.navigateTo('store');}}else if(a!=='none'){window.navigateTo('store');}};
- window.maajLoadPromoBanners=async function(show){const box=document.getElementById('maajPromoAdminList'),status=document.getElementById('maajPromoStatus'),client=getPromoSB();if(!box)return;if(!client){box.innerHTML='<div class="text-xs text-red-600 font-bold">Supabase connection unavailable. Please reload the page.</div>';return}try{const {data,error}=await client.from('promo_banners').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="border rounded-2xl p-3 bg-white flex flex-col md:flex-row gap-3 items-start md:items-center"><div class="w-full md:w-56 h-32 rounded-xl overflow-hidden" style="background:${esc(r.bg||'#047857')}">${r.image_url?`<img src="${esc(r.image_url)}${String(r.image_url||'').includes('?')?'&':'?'}v=${Date.now()}" class="w-full h-full object-cover" onerror="this.style.display='none'">`:'<div class="h-full flex items-center justify-center text-white text-2xl">💊</div>'}</div><div class="flex-1"><div class="font-black text-sm">${esc(r.title)}</div><div class="text-[11px] text-slate-500">${esc(r.text||'')}</div><div class="text-[10px] mt-1">Order ${esc(r.sort_order)} • ${r.is_active?'Live':'Hidden'} • ${esc(r.action||'store')}</div></div><div class="flex gap-2"><button type="button" class="bg-slate-100 px-3 py-2 rounded-lg text-xs font-black" onclick="maajEditPromoBanner('${String(r.id).replace(/'/g,"\'")}')">✏️ Edit</button><button type="button" class="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-xs font-black" onclick="maajDeletePromoBanner('${String(r.id).replace(/'/g,"\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No promotional slides saved yet.</div>';if(show&&status)status.textContent='Refreshed from Supabase.'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}};
+ window.maajLoadPromoBanners=async function(show){const box=document.getElementById('maajPromoAdminList'),status=document.getElementById('maajPromoStatus'),client=getPromoSB();if(!box)return;if(!client){box.innerHTML='<div class="text-xs text-red-600 font-bold">Supabase connection unavailable. Please reload the page.</div>';return}try{const {data,error}=await client.from('promo_banners').select('*').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="border rounded-2xl p-3 bg-white flex flex-col md:flex-row gap-3 items-start md:items-center"><div class="w-full md:w-56 h-32 rounded-xl overflow-hidden" style="background:${esc(r.bg||'#047857')}">${r.image_url?`<img src="${esc(r.image_url)}${String(r.image_url||'').includes('?')?'&':'?'}v=${Date.now()}" class="w-full h-full object-cover" onerror="this.style.display='none'">`:'<div class="h-full flex items-center justify-center text-white text-2xl">??</div>'}</div><div class="flex-1"><div class="font-black text-sm">${esc(r.title)}</div><div class="text-[11px] text-slate-500">${esc(r.text||'')}</div><div class="text-[10px] mt-1">Order ${esc(r.sort_order)} • ${r.is_active?'Live':'Hidden'} • ${esc(r.action||'store')}</div></div><div class="flex gap-2"><button type="button" class="bg-slate-100 px-3 py-2 rounded-lg text-xs font-black" onclick="maajEditPromoBanner('${String(r.id).replace(/'/g,"\'")}')">?? Edit</button><button type="button" class="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-xs font-black" onclick="maajDeletePromoBanner('${String(r.id).replace(/'/g,"\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No promotional slides saved yet.</div>';if(show&&status)status.textContent='Refreshed from Supabase.'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}};
  window.maajAddPromoBanner=async function(){const st=document.getElementById('maajPromoStatus');const set=t=>{if(st)st.textContent=t};const client=getPromoSB();if(!client)return set('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return set('Admin login required.');const file=document.getElementById('maajPromoImage')?.files?.[0],button=(document.getElementById('maajPromoButton')?.value||'SHOP NOW').trim(),action=document.getElementById('maajPromoAction')?.value||'store';if(!file)return set('Please select a promotional slide photo.');try{set('Uploading photo and saving online...');const ext=((file.name.split('.').pop()||'jpg').toLowerCase());const path='promo-banners/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+ext;const up=await client.storage.from(PROMO_BUCKET).upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});if(up.error)throw up.error;const image_url=client.storage.from(PROMO_BUCKET).getPublicUrl(path).data.publicUrl;if(!image_url)throw new Error('Could not create public image URL. Check the promo-banners Storage bucket and its public read policy.');const title=(file.name||'Promotional Banner').replace(/\.[^.]+$/,'').slice(0,120)||'Promotional Banner';const ins=await client.from('promo_banners').insert({title,text:'',button_text:button||'SHOP NOW',action,bg:'#0f172a',image_url,sort_order:99,is_active:true}).select('*').single();if(ins.error)throw ins.error;document.getElementById('maajPromoImage').value='';document.getElementById('maajPromoButton').value='SHOP NOW';document.getElementById('maajPromoAction').value='store';document.getElementById('maajPromoImagePreviewWrap')?.classList.add('hidden');document.getElementById('maajPromoImagePreview')?.removeAttribute('src');set('Promotional photo saved online in Supabase.');await maajLoadPromoBanners(false);await load();}catch(e){set('Save Error: '+e.message)}};
- window.maajEditPromoBanner=async function(id){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return alert('Admin login required.');try{const q=await client.from('promo_banners').select('*').eq('id',id).single();if(q.error)throw q.error;const r=q.data;document.getElementById('maajPromoTitle').value=r.title||'Promotional Banner';document.getElementById('maajPromoText').value='';document.getElementById('maajPromoButton').value=r.button_text||'SHOP NOW';document.getElementById('maajPromoAction').value=r.action||'store';document.getElementById('maajPromoBg').value='#0f172a';document.getElementById('maajPromoOrder').value=r.sort_order||99;const prev=document.getElementById('maajPromoImagePreview'),wrap=document.getElementById('maajPromoImagePreviewWrap');if(prev&&r.image_url){prev.src=r.image_url;wrap?.classList.remove('hidden')}const b=document.getElementById('maajPromoSaveBtn');if(b){b.textContent='💾 Update Promotional Photo';b.onclick=()=>maajUpdatePromoBanner(id)}document.getElementById('maajPromoStatus').textContent='Editing '+(r.title||'promotional banner')+'. Replace photo or change Button Text / Action, then click Update.';document.getElementById('admin-tab-promo-banners')?.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){alert('Could not open slide: '+e.message)}};
+ window.maajEditPromoBanner=async function(id){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return alert('Admin login required.');try{const q=await client.from('promo_banners').select('*').eq('id',id).single();if(q.error)throw q.error;const r=q.data;document.getElementById('maajPromoTitle').value=r.title||'Promotional Banner';document.getElementById('maajPromoText').value='';document.getElementById('maajPromoButton').value=r.button_text||'SHOP NOW';document.getElementById('maajPromoAction').value=r.action||'store';document.getElementById('maajPromoBg').value='#0f172a';document.getElementById('maajPromoOrder').value=r.sort_order||99;const prev=document.getElementById('maajPromoImagePreview'),wrap=document.getElementById('maajPromoImagePreviewWrap');if(prev&&r.image_url){prev.src=r.image_url;wrap?.classList.remove('hidden')}const b=document.getElementById('maajPromoSaveBtn');if(b){b.textContent='?? Update Promotional Photo';b.onclick=()=>maajUpdatePromoBanner(id)}document.getElementById('maajPromoStatus').textContent='Editing '+(r.title||'promotional banner')+'. Replace photo or change Button Text / Action, then click Update.';document.getElementById('admin-tab-promo-banners')?.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){alert('Could not open slide: '+e.message)}};
  window.maajUpdatePromoBanner=async function(id){const client=getPromoSB();try{if(!client)throw new Error('Supabase connection unavailable.');const p={button_text:(document.getElementById('maajPromoButton').value||'SHOP NOW').trim()||'SHOP NOW',action:document.getElementById('maajPromoAction').value,bg:'#0f172a'};const file=document.getElementById('maajPromoImage')?.files?.[0];if(file){const path='promo-banners/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.'+((file.name.split('.').pop()||'jpg').toLowerCase());const up=await client.storage.from(PROMO_BUCKET).upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'});if(up.error)throw up.error;p.image_url=client.storage.from(PROMO_BUCKET).getPublicUrl(path).data.publicUrl;p.title=(file.name||'Promotional Banner').replace(/\.[^.]+$/,'').slice(0,120)||'Promotional Banner'}const {error}=await client.from('promo_banners').update(p).eq('id',id);if(error)throw error;const b=document.getElementById('maajPromoSaveBtn');if(b){b.textContent='+ Add Promotional Photo';b.onclick=maajAddPromoBanner}document.getElementById('maajPromoStatus').textContent='Promotional banner updated online in Supabase.';document.getElementById('maajPromoImage').value='';document.getElementById('maajPromoImagePreviewWrap')?.classList.add('hidden');document.getElementById('maajPromoImagePreview')?.removeAttribute('src');await maajLoadPromoBanners(false);await load();}catch(e){alert('Update failed: '+e.message)}};
  window.maajDeletePromoBanner=async function(id){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(!confirm('Delete this promotional slide permanently?'))return;try{const q=await client.from('promo_banners').select('image_url').eq('id',id).maybeSingle();if(q.error)throw q.error;const {error}=await client.from('promo_banners').delete().eq('id',id);if(error)throw error;if(q.data?.image_url){const marker='/storage/v1/object/public/'+PROMO_BUCKET+'/';const ix=q.data.image_url.indexOf(marker);if(ix>=0)await client.storage.from(PROMO_BUCKET).remove([decodeURIComponent(q.data.image_url.slice(ix+marker.length))])}await maajLoadPromoBanners(false);await load();}catch(e){alert('Delete failed: '+e.message)}};
  window.maajDeleteAllPromoBanners=async function(){const client=getPromoSB();if(!client)return alert('Supabase connection unavailable. Please reload the page.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return alert('Admin login required.');if(!confirm('Delete ALL promotional slides permanently from Supabase?'))return;try{const q=await client.from('promo_banners').select('id,image_url');if(q.error)throw q.error;const rows=q.data||[];const {error}=await client.from('promo_banners').delete().gte('created_at','1900-01-01T00:00:00Z');if(error)throw error;const paths=rows.map(r=>{if(!r.image_url)return null;const marker='/storage/v1/object/public/'+PROMO_BUCKET+'/';const ix=r.image_url.indexOf(marker);return ix>=0?decodeURIComponent(r.image_url.slice(ix+marker.length)):null}).filter(Boolean);if(paths.length)await client.storage.from(PROMO_BUCKET).remove(paths);const st=document.getElementById('maajPromoStatus');if(st)st.textContent='All promotional slides deleted permanently from Supabase.';await maajLoadPromoBanners(false);await load();}catch(e){alert('Delete all failed: '+e.message)}};
@@ -3570,21 +3794,21 @@ function maajWishlistButton(id,name,price){
    var o=A('maaj_orders'), last=o[o.length-1], status=(last&&last.status)||'Order Placed';
    var stages=['Order Placed','Confirmed','Packed','Out for Delivery','Delivered'], idx=Math.max(0,stages.indexOf(status));
    var h='<div class="maaj-pro-box"><p class="text-xs text-slate-500">Latest order</p><h3 class="font-black text-lg mt-1">'+E(last&&last.id||'No order yet')+'</h3><div class="maaj-track">';
-   stages.forEach(function(s,i){h+='<div class="maaj-track-step '+(i<=idx?'active':'')+'"><div class="maaj-track-dot">'+(i<=idx?'✓':(i+1))+'</div>'+s+'</div>'});h+='</div></div>';open(type,'Order Tracking',h);
+   stages.forEach(function(s,i){h+='<div class="maaj-track-step '+(i<=idx?'active':'')+'"><div class="maaj-track-dot">'+(i<=idx?'?':(i+1))+'</div>'+s+'</div>'});h+='</div></div>';open(type,'Order Tracking',h);
   } else if(type==='rx'){
    open(type,'Prescription Upload','<div class="maaj-rx"><i class="fa-solid fa-file-prescription text-3xl text-emerald-600"></i><h3 class="font-black mt-2">Upload Prescription</h3><p class="text-xs text-slate-500 mt-1">Upload a clear image or PDF. Restricted medicines should only proceed after verification.</p><input id="maajRxFile" type="file" accept="image/*,.pdf" class="maaj-pro-input mt-4"><button class="maaj-pro-btn mt-3" onclick="maajSaveRx()">Submit Prescription</button><p id="maajRxMsg" class="text-xs font-bold mt-3"></p></div>');
   } else if(type==='offers'){
-   var c=A('maaj_coupons'); if(!c.length)c=[{code:'WELCOME10',text:'10% off on eligible first order'},{code:'MAAJ499',text:'Free delivery above ₹499'}];
+   var c=A('maaj_coupons'); if(!c.length)c=[{code:'WELCOME10',text:'10% off on eligible first order'},{code:'MAAJ499',text:'Free delivery above ?499'}];
    open(type,'Offers & Coupons','<div class="space-y-2">'+c.map(function(x){return '<div class="maaj-pro-row"><div><b class="text-xs">'+E(x.code)+'</b><div class="text-[10px] text-slate-500">'+E(x.text||'')+'</div></div><button class="maaj-pro-btn" onclick="navigator.clipboard&&navigator.clipboard.writeText('+JSON.stringify(x.code)+');alert(\'Coupon copied: '+E(x.code)+'\')">Copy</button></div>'}).join('')+'</div>');
   } else if(type==='compare'){
    var w=A('maaj_wishlist'); open(type,'Compare Medicines',w.length<2?'<p class="text-xs text-slate-500">Save at least two medicines to your Wishlist before comparing.</p>':'<div class="overflow-auto"><table class="w-full text-xs"><thead><tr><th class="text-left p-2">Medicine</th><th class="p-2">Price</th></tr></thead><tbody>'+w.map(function(x){return '<tr class="border-t"><td class="p-2">'+E(x.name)+'</td><td class="p-2 text-center">'+E(x.price||'—')+'</td></tr>'}).join('')+'</tbody></table></div>');
   } else if(type==='recent'){
-   var r=A('maaj_recently_viewed'); open(type,'Recently Viewed',r.length?r.map(function(x){return '<div class="maaj-pro-row"><div><b class="text-xs">'+E(x.name||x)+'</b><div class="text-[10px] text-slate-500">₹'+E(x.price||'—')+'</div></div><button class="maaj-pro-btn" onclick="maajOpenMedicineDetails('+JSON.stringify(x.id)+')">View</button></div>'}).join(''):'<p class="text-xs text-slate-500">Open any medicine to add it here.</p>');
+   var r=A('maaj_recently_viewed'); open(type,'Recently Viewed',r.length?r.map(function(x){return '<div class="maaj-pro-row"><div><b class="text-xs">'+E(x.name||x)+'</b><div class="text-[10px] text-slate-500">?'+E(x.price||'—')+'</div></div><button class="maaj-pro-btn" onclick="maajOpenMedicineDetails('+JSON.stringify(x.id)+')">View</button></div>'}).join(''):'<p class="text-xs text-slate-500">Open any medicine to add it here.</p>');
   } else if(type==='reviews'){
    var meds=(typeof products!=='undefined'&&Array.isArray(products))?products:[];
    var names=meds.map(function(x){return String(x.name||'').trim()}).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i}).sort();
    var opts=names.map(function(n){return '<option value="'+E(n)+'"></option>'}).join('');
-   open(type,'Medicine Reviews','<div class="relative"><label class="text-xs font-bold text-slate-700">Medicine Name</label><input id="maajReviewName" list="maajReviewMedicineList" autocomplete="off" class="maaj-pro-input mt-1" placeholder="Type medicine name (e.g. A)"><datalist id="maajReviewMedicineList">'+opts+'</datalist><div id="maajReviewSuggestions" class="hidden mt-1 max-h-48 overflow-auto border rounded-xl bg-white"></div><p class="text-[10px] text-slate-500 mt-1">Type a letter to see matching medicines, then select one.</p><label class="text-xs font-bold text-slate-700 block mt-3">Rating</label><select id="maajReviewStars" class="maaj-pro-select mt-1"><option value="5">★★★★★ 5</option><option value="4">★★★★☆ 4</option><option value="3">★★★☆☆ 3</option><option value="2">★★☆☆☆ 2</option><option value="1">★☆☆☆☆ 1</option></select><textarea id="maajReviewText" class="maaj-pro-input mt-2" rows="3" placeholder="Write your review"></textarea><button class="maaj-pro-btn mt-2" onclick="maajSaveReview()">Submit Review</button></div>');
+   open(type,'Medicine Reviews','<div class="relative"><label class="text-xs font-bold text-slate-700">Medicine Name</label><input id="maajReviewName" list="maajReviewMedicineList" autocomplete="off" class="maaj-pro-input mt-1" placeholder="Type medicine name (e.g. A)"><datalist id="maajReviewMedicineList">'+opts+'</datalist><div id="maajReviewSuggestions" class="hidden mt-1 max-h-48 overflow-auto border rounded-xl bg-white"></div><p class="text-[10px] text-slate-500 mt-1">Type a letter to see matching medicines, then select one.</p><label class="text-xs font-bold text-slate-700 block mt-3">Rating</label><select id="maajReviewStars" class="maaj-pro-select mt-1"><option value="5">????? 5</option><option value="4">????? 4</option><option value="3">????? 3</option><option value="2">????? 2</option><option value="1">????? 1</option></select><textarea id="maajReviewText" class="maaj-pro-input mt-2" rows="3" placeholder="Write your review"></textarea><button class="maaj-pro-btn mt-2" onclick="maajSaveReview()">Submit Review</button></div>');
    var input=document.getElementById('maajReviewName'), box=document.getElementById('maajReviewSuggestions');
    function showReviewSuggestions(){
      var q=(input.value||'').trim().toLowerCase();
@@ -3669,7 +3893,7 @@ document.addEventListener('DOMContentLoaded',function(){
       <div>
         <div id="maajPdpRx" class="mb-3"></div>
         <h1 id="maajPdpTitle" class="maaj-pdp-title"></h1>
-        <div class="mt-2"><span id="maajPdpMrp" class="text-sm line-through text-slate-400"></span> <span id="maajPdpPrice" class="maaj-pdp-price"></span></div>
+        <div class="mt-2"><span id="maajPdpMrp" class="hidden"></span> <span id="maajPdpPrice" class="maaj-pdp-price"></span></div>
         <div id="maajPdpDiscount" class="text-xs text-emerald-600 font-bold mt-1"></div>
         <div class="maaj-pdp-section"><div class="maaj-pdp-label">Description</div><div id="maajPdpDescription" class="maaj-pdp-value"></div></div>
         <div class="maaj-pdp-section grid grid-cols-2 gap-4">
@@ -3728,7 +3952,7 @@ document.addEventListener('DOMContentLoaded',function(){
      var photo=maajMedicinePhotoUrl(p.photo||p.image_url||p.image||p.photo_url||p.photo_path||'');
      return '<div class="maaj-home-med" onclick="maajOpenPDP('+JSON.stringify(p.id)+')"><div class="maaj-home-med-img">'+
        (photo?'<img src="'+photo+'" alt="'+esc(p.name)+'">':'<i class="fa-solid fa-pills text-4xl text-slate-300"></i>')+
-       '</div><div class="maaj-home-med-body"><div class="text-[10px] text-slate-400">'+esc(p.category||'Medicine')+'</div><div class="font-black text-sm text-slate-800 mt-1">'+esc(p.name)+'</div><div class="mt-2"><span class="text-xs line-through text-slate-400">₹'+Number(p.mrp||0).toFixed(2)+'</span> <b class="text-emerald-600">₹'+Number(p.price||0).toFixed(2)+'</b></div></div></div>';
+       '</div><div class="maaj-home-med-body"><div class="text-[10px] text-slate-400">'+esc(p.category||'Medicine')+'</div><div class="font-black text-sm text-slate-800 mt-1">'+esc(p.name)+'</div><div class="mt-2"><b class="text-emerald-600">Rs.'+Number(p.price||0).toFixed(2)+'</b></div></div></div>';
    }).join(''):'<div class="col-span-full text-center p-8 text-xs text-slate-500 bg-white border rounded-xl">No medicines added yet.</div>';
  };
  window.maajOpenAllMedicines=function(){if(typeof navigateTo==='function')navigateTo('store');};
@@ -3782,14 +4006,14 @@ document.addEventListener('DOMContentLoaded',function(){
 (function(){
  function getCart(){try{return JSON.parse(localStorage.getItem('maaj_cart')||'[]')}catch(e){return[]}}
  function setCart(a){localStorage.setItem('maaj_cart',JSON.stringify(a))}
- function money(n){return '₹'+Number(n||0).toFixed(2)}
+ function money(n){return 'Rs.'+Number(n||0).toFixed(2)}
  window.maajRenderCustomerHome=function(){
    var g=document.getElementById('maajCustomerMedicineGrid');if(!g||typeof products==='undefined')return;
    var q=(document.getElementById('maajHomeSearch')?.value||'').toLowerCase().trim();
    var list=products.filter(function(p){return Number(p.stock)>0 && (!q||[p.name,p.brand,p.category,p.composition,p.salt].join(' ').toLowerCase().includes(q))}).slice(0,12);
    g.innerHTML=list.length?list.map(function(p){
      var photo=maajMedicinePhotoUrl(p.photo||p.image_url||p.image||p.photo_url||p.photo_path||'');
-     return '<div class="maaj-home-med" onclick="maajOpenPDP('+JSON.stringify(p.id)+')"><div class="maaj-home-med-img">'+(photo?'<img src="'+photo+'" alt="'+p.name+'">':'<i class="fa-solid fa-pills text-4xl text-slate-300"></i>')+'</div><div class="maaj-home-med-body"><div class="text-[10px] text-slate-400">'+(p.category||'Medicine')+'</div><div class="font-black text-sm mt-1">'+p.name+'</div><div class="text-[10px] text-slate-500 mt-1">'+(p.brand||'')+'</div><div class="mt-2"><span class="text-xs line-through text-slate-400">'+money(p.mrp)+'</span> <b class="text-emerald-600">'+money(p.price)+'</b></div></div></div>';
+     return '<div class="maaj-home-med" onclick="maajOpenPDP('+JSON.stringify(p.id)+')"><div class="maaj-home-med-img">'+(photo?'<img src="'+photo+'" alt="'+p.name+'">':'<i class="fa-solid fa-pills text-4xl text-slate-300"></i>')+'</div><div class="maaj-home-med-body"><div class="text-[10px] text-slate-400">'+(p.category||'Medicine')+'</div><div class="font-black text-sm mt-1">'+p.name+'</div><div class="text-[10px] text-slate-500 mt-1">'+(p.brand||'')+'</div><div class="mt-2"><b class="text-emerald-600">'+money(p.price)+'</b></div></div></div>';
    }).join(''):'<div class="col-span-full p-10 text-center bg-white border rounded-2xl text-xs text-slate-500">No medicines found.</div>';
  };
  window.maajHomeSearchMedicines=function(){maajRenderCustomerHome()};
@@ -3815,7 +4039,7 @@ document.addEventListener('DOMContentLoaded',function(){
  };
  window.maajRenderCart=function(){
    var c=getCart(), box=document.getElementById('maajCartItems'), sub=0,count=0;
-   box.innerHTML=c.length?c.map(function(i,idx){var q=Number(i.qty||1),price=Number(i.price||0);sub+=price*q;count+=q;return '<div class="maaj-cart-item"><img src="'+(i.photo||i.image||'')+'" onerror="this.style.display=\'none\'"><div class="flex-1"><b class="text-xs">'+i.name+'</b><div class="text-[11px] text-emerald-600 font-bold mt-1">'+money(price)+'</div><div class="maaj-qty"><button onclick="maajChangeQty('+idx+',-1)">−</button><b class="text-xs">'+q+'</b><button onclick="maajChangeQty('+idx+',1)">+</button><button onclick="maajRemoveCart('+idx+')" class="ml-2 text-red-500"><i class="fa-solid fa-trash"></i></button></div></div></div>'}).join(''):'<div class="text-center p-10 text-xs text-slate-500">Your cart is empty.</div>';
+   box.innerHTML=c.length?c.map(function(i,idx){var q=Number(i.qty||1),price=Number(i.price||0);sub+=price*q;count+=q;return '<div class="maaj-cart-item"><img src="'+(i.photo||i.image||'')+'" onerror="this.style.display=\'none\'"><div class="flex-1"><b class="text-xs">'+i.name+'</b><div class="text-[11px] text-emerald-600 font-bold mt-1">'+money(price)+'</div><div class="maaj-qty"><button onclick="maajChangeQty('+idx+',-1)">-</button><b class="text-xs">'+q+'</b><button onclick="maajChangeQty('+idx+',1)">+</button><button onclick="maajRemoveCart('+idx+')" class="ml-2 text-red-500"><i class="fa-solid fa-trash"></i></button></div></div></div>'}).join(''):'<div class="text-center p-10 text-xs text-slate-500">Your cart is empty.</div>';
    var delivery=sub>=499||sub===0?0:30,total=sub+delivery;
    document.getElementById('maajCartSubtotal').textContent=money(sub);document.getElementById('maajCartDelivery').textContent=delivery?money(delivery):'FREE';document.getElementById('maajCartTotal').textContent=money(total);document.getElementById('maajBottomCartCount').textContent=count;
    localStorage.setItem('maaj_cart_total',String(total));
@@ -4002,7 +4226,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
       </div>
       <div>
         <div class="text-sm font-black">Minimum Order</div>
-        <p class="mt-1 text-xs text-slate-400">Minimum cart value: ₹299. Free delivery eligibility follows the store's delivery rules.</p>
+        <p class="mt-1 text-xs text-slate-400">Minimum cart value: ?299. Free delivery eligibility follows the store's delivery rules.</p>
       </div>
       <div>
         <div class="text-sm font-black">Payment</div>
@@ -4179,7 +4403,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   <div id="maajRealDetailsBox" tabindex="-1">
     <div id="maajRealDetailsTop">
       <div>
-        <div id="maajRealDetailsIcon">🏥</div>
+        <div id="maajRealDetailsIcon">??</div>
         <h2 id="maajRealDetailsTitle">MAAJ PHARMACY</h2>
       </div>
       <button id="maajRealDetailsClose" type="button" aria-label="Close details">×</button>
@@ -4193,7 +4417,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
 <script id="maaj-details-real-script">
 (function(){
   const INFO={
-    about:{i:'🏥',t:'About MAAJ PHARMACY',d:'MAAJ PHARMACY is a customer-focused online medical store for ordering medicines and healthcare products with local delivery, prescription support, order tracking and customer assistance.',c:[
+    about:{i:'??',t:'About MAAJ PHARMACY',d:'MAAJ PHARMACY is a customer-focused online medical store for ordering medicines and healthcare products with local delivery, prescription support, order tracking and customer assistance.',c:[
       ['Online Medical Store','Browse eligible medicines and healthcare products from the MAAJ PHARMACY catalogue.'],
       ['Medicine Information','Open a product to see image, MRP, selling price, brand, composition, pack size, batch, expiry and prescription status when available.'],
       ['Fast Local Delivery','Delivery timing and charges are calculated using the store delivery rules and serviceable location.'],
@@ -4201,74 +4425,74 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
       ['Customer Account','Use your account to manage profile information, orders, prescriptions and available account features.'],
       ['Secure Checkout','Review cart value, GST, delivery charges and COD details before placing an order.']
     ],a:'Go to MAAJ PHARMACY',k:'home'},
-    medicines:{i:'💊',t:'All Medicines',d:'Browse the MAAJ PHARMACY medicine catalogue and open any product for complete information before ordering.',c:[
+    medicines:{i:'??',t:'All Medicines',d:'Browse the MAAJ PHARMACY medicine catalogue and open any product for complete information before ordering.',c:[
       ['Search Medicine','Search by medicine or product name.'],
       ['Product Details','View price, MRP, brand, composition/salt, pack size, batch, expiry and Rx status when available.'],
       ['Categories','Filter or browse healthcare categories.'],
       ['Add to Cart','Add eligible products and change quantity from the unified cart.']
     ],a:'Open Medicine Store',k:'medicines'},
-    otc:{i:'🛍️',t:'OTC Healthcare Products',d:'Browse non-prescription healthcare products that are eligible for online ordering.',c:[
+    otc:{i:'???',t:'OTC Healthcare Products',d:'Browse non-prescription healthcare products that are eligible for online ordering.',c:[
       ['OTC Products','Explore eligible non-prescription products.'],
       ['Pricing','Review selling price and MRP before adding an item.'],
       ['Quantity','Increase or decrease quantity from the cart.'],
-      ['Minimum Order','The minimum order value is ₹299.']
+      ['Minimum Order','The minimum order value is ?299.']
     ],a:'Browse OTC Products',k:'medicines'},
-    categories:{i:'🗂️',t:'Our Categories',d:'Explore healthcare categories available through MAAJ PHARMACY.',c:[
+    categories:{i:'???',t:'Our Categories',d:'Explore healthcare categories available through MAAJ PHARMACY.',c:[
       ['Pain Relief','Pain-relief products and applicable healthcare items.'],
       ['Vitamins','Vitamin and wellness products.'],
       ['First Aid','Basic first-aid products.'],
       ['Topical Care','Creams, ointments, balms and pain oils.']
     ],a:'Browse Categories',k:'medicines'},
-    brands:{i:'🏷️',t:'All Brands',d:'Browse products by brand wherever brand information is available in the MAAJ PHARMACY catalogue.',c:[
+    brands:{i:'???',t:'All Brands',d:'Browse products by brand wherever brand information is available in the MAAJ PHARMACY catalogue.',c:[
       ['Brand Information','Brand is displayed on applicable product cards and product details.'],
       ['Search','Use search to find products quickly.'],
       ['Product Details','Open a product to view its complete available information.'],
       ['Cart','Add eligible products to the unified cart.']
     ],a:'Browse Brands',k:'medicines'},
-    salts:{i:'🧪',t:'Salt / Composition',d:'See the active ingredient or composition listed for applicable medicines.',c:[
+    salts:{i:'??',t:'Salt / Composition',d:'See the active ingredient or composition listed for applicable medicines.',c:[
       ['Composition','Product details show salt/composition when available.'],
       ['Medicine Identification','Composition helps identify the active ingredient.'],
       ['Prescription Status','Rx restrictions still apply where applicable.'],
       ['Safety','Do not substitute prescription medicines without appropriate professional advice.']
     ],a:'View Medicines',k:'medicines'},
-    cart:{i:'🛒',t:'Your Cart',d:'Review products, quantities, discounts, GST, delivery charges and the ₹299 minimum order requirement before checkout.',c:[
-      ['Minimum Order','Cart value must be at least ₹299 to proceed.'],
-      ['Free Delivery','Medicine-only orders of ₹499 or more qualify for free delivery under the store rule.'],
-      ['Quantity Controls','Use + and − to change quantities without leaving the cart.'],
+    cart:{i:'??',t:'Your Cart',d:'Review products, quantities, discounts, GST, delivery charges and the ?299 minimum order requirement before checkout.',c:[
+      ['Minimum Order','Cart value must be at least ?299 to proceed.'],
+      ['Free Delivery','Medicine-only orders of ?499 or more qualify for free delivery under the store rule.'],
+      ['Quantity Controls','Use + and - to change quantities without leaving the cart.'],
       ['Checkout','Proceed to checkout after the minimum order requirement is met.']
     ],a:'Open Your Cart',k:'cart'},
-    checkout:{i:'💳',t:'Checkout',d:'Confirm delivery details, order summary, GST, delivery charge and COD payment before placing your order.',c:[
+    checkout:{i:'??',t:'Checkout',d:'Confirm delivery details, order summary, GST, delivery charge and COD payment before placing your order.',c:[
       ['Order Summary','Review every item and quantity.'],
       ['GST','Applicable GST is calculated according to the product category.'],
       ['Delivery','Delivery charge follows the store delivery rules.'],
       ['COD','Cash on Delivery is the supported payment mode in the current storefront.']
     ],a:'Go to Checkout',k:'checkout'},
-    prescription:{i:'📄',t:'Prescription Upload',d:'Upload a clear and valid prescription for medicines that require prescription verification. Restricted medicines must not be dispensed without the required prescription.',c:[
+    prescription:{i:'??',t:'Prescription Upload',d:'Upload a clear and valid prescription for medicines that require prescription verification. Restricted medicines must not be dispensed without the required prescription.',c:[
       ['Upload','Choose a clear prescription image/file from your device.'],
       ['Readable','The prescription must be readable and complete.'],
       ['Verification','The prescription may be reviewed before fulfillment.'],
       ['Restricted Medicines','Applicable prescription requirements must be followed.']
     ],a:'Upload Prescription',k:'prescription'},
-    prescriptionhistory:{i:'🗃️',t:'Prescription History',d:'Review previously uploaded prescriptions and their available status from your customer account.',c:[
+    prescriptionhistory:{i:'???',t:'Prescription History',d:'Review previously uploaded prescriptions and their available status from your customer account.',c:[
       ['History','See available previously uploaded prescription records.'],
       ['Status','Review the status shown by the application.'],
       ['Privacy','Prescription information should be handled as customer account data.'],
       ['Support','Contact support if a prescription needs assistance.']
     ],a:'Open Prescription History',k:'prescriptionhistory'},
-    orders:{i:'📦',t:'My Orders',d:'Review previous orders and available order-status information from your customer account.',c:[
+    orders:{i:'??',t:'My Orders',d:'Review previous orders and available order-status information from your customer account.',c:[
       ['Order History','View previously placed orders.'],
       ['Order Status','See the current status available for an order.'],
       ['Delivery','Review available delivery information.'],
       ['Support','Ask support for help with an order when needed.']
     ],a:'Open My Orders',k:'orders'},
-    tracking:{i:'🚚',t:'Track Order',d:'Check available tracking and delivery progress for your order.',c:[
+    tracking:{i:'??',t:'Track Order',d:'Check available tracking and delivery progress for your order.',c:[
       ['Tracking','View the order tracking information available in the application.'],
       ['Delivery Status','See progress such as processing, dispatched or delivered when supported.'],
       ['Order Details','Review the order connected to the tracking record.'],
       ['Support','Contact support if tracking needs attention.']
     ],a:'Track Order',k:'tracking'},
     account:null,
-    services:{i:'⚡',t:'Our Services',d:'MAAJ PHARMACY combines online medicine ordering, prescription support, local delivery, customer accounts and order assistance.',c:[
+    services:{i:'?',t:'Our Services',d:'MAAJ PHARMACY combines online medicine ordering, prescription support, local delivery, customer accounts and order assistance.',c:[
       ['Online Ordering','Search, review and order eligible medicines.'],
       ['Prescription Upload','Upload prescriptions when required.'],
       ['Fast Delivery','Use the local delivery service where the location is serviceable.'],
@@ -4276,61 +4500,61 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
       ['Customer Support','Get assistance for orders, products and accounts.'],
       ['COD','Pay using Cash on Delivery where eligible.']
     ],a:'Explore Services',k:'home'},
-    faq:{i:'❓',t:'FAQs',d:'Find practical answers about ordering, prescriptions, delivery, payments, accounts and returns.',c:[
-      ['Minimum Order','₹299 minimum order value is mandatory.'],
+    faq:{i:'?',t:'FAQs',d:'Find practical answers about ordering, prescriptions, delivery, payments, accounts and returns.',c:[
+      ['Minimum Order','?299 minimum order value is mandatory.'],
       ['Payment','COD is available in the current storefront.'],
       ['Prescription','Applicable prescription medicines require a valid prescription.'],
       ['Delivery','Charges and estimated time depend on order value and location.']
     ],a:'Open FAQ',k:'faq'},
-    contact:{i:'📞',t:'Contact Us',d:'Get assistance with your MAAJ PHARMACY order, delivery, products, prescriptions or account.',c:[
+    contact:{i:'??',t:'Contact Us',d:'Get assistance with your MAAJ PHARMACY order, delivery, products, prescriptions or account.',c:[
       ['Order Help','Ask about order status, delivery or cancellation.'],
       ['Product Help','Ask about availability and product details.'],
       ['Prescription Help','Get assistance with upload and verification.'],
       ['Account Help','Get help with login and account information.']
     ],a:'Contact MAAJ PHARMACY',k:'contact'},
-    blogs:{i:'📰',t:'Health Blogs',d:'Read general health and wellness information published for MAAJ PHARMACY customers.',c:[
+    blogs:{i:'??',t:'Health Blogs',d:'Read general health and wellness information published for MAAJ PHARMACY customers.',c:[
       ['Educational Content','General healthcare and wellness information.'],
       ['Medicine Education','Learn about medicines and healthcare topics.'],
       ['Family Health','Practical family and wellness information.'],
       ['Important','Educational content does not replace professional medical advice.']
     ],a:'Open Health Blogs',k:'blogs'},
-    parenting:{i:'👨‍👩‍👧',t:'Parenting & Family Guide',d:'A family-health information area covering general parenting, child wellness and family healthcare topics.',c:[
+    parenting:{i:'????????',t:'Parenting & Family Guide',d:'A family-health information area covering general parenting, child wellness and family healthcare topics.',c:[
       ['Family Wellness','General family health information.'],
       ['Child Health','Educational information for parents and caregivers.'],
       ['Medicine Safety','Children’s medicines require appropriate dosing and professional guidance.'],
       ['Support','Use customer support for store and order questions.']
     ],a:'Open Family Guide',k:'parenting'},
-    delivery:{i:'🚚',t:'Medicine Delivery & Cancellations',d:'Delivery charges, estimated time and cancellation availability depend on the applicable MAAJ PHARMACY order rules.',c:[
-      ['Minimum Order','₹299 minimum order value.'],
-      ['Free Delivery','Medicine-only orders of ₹499 or more qualify for free delivery under the store rule.'],
+    delivery:{i:'??',t:'Medicine Delivery & Cancellations',d:'Delivery charges, estimated time and cancellation availability depend on the applicable MAAJ PHARMACY order rules.',c:[
+      ['Minimum Order','?299 minimum order value.'],
+      ['Free Delivery','Medicine-only orders of ?499 or more qualify for free delivery under the store rule.'],
       ['Local Delivery','Local delivery timing depends on the mapped serviceable area.'],
       ['Cancellation','Cancellation depends on order processing/dispatch status.']
     ],a:'View Delivery Information',k:'delivery'},
-    returns:{i:'↩️',t:'Returns & Refunds',d:'Return and refund eligibility depends on product type, condition and order status under the MAAJ PHARMACY policy.',c:[
+    returns:{i:'??',t:'Returns & Refunds',d:'Return and refund eligibility depends on product type, condition and order status under the MAAJ PHARMACY policy.',c:[
       ['Eligibility','Not every healthcare product may be returnable.'],
       ['Condition','Products must meet applicable return conditions.'],
       ['Refund','Approved refunds follow the applicable process.'],
       ['Support','Contact support before sending a return.']
     ],a:'View Return Policy',k:'returns'},
-    privacy:{i:'🔒',t:'Privacy Policy',d:'MAAJ PHARMACY should explain how customer, order, prescription and account information is collected, used, protected and managed.',c:[
+    privacy:{i:'??',t:'Privacy Policy',d:'MAAJ PHARMACY should explain how customer, order, prescription and account information is collected, used, protected and managed.',c:[
       ['Data Minimization','Only information required for the service should be collected.'],
       ['Security','Customer information must be protected.'],
       ['Transparency','Important data uses should be clearly explained.'],
       ['Customer Choice','Available account/privacy controls should be accessible.']
     ],a:'Read Privacy Policy',k:'privacy'},
-    terms:{i:'📜',t:'Terms & Conditions',d:'These terms define the rules for using MAAJ PHARMACY, placing orders, payment, delivery, prescriptions and customer accounts.',c:[
+    terms:{i:'??',t:'Terms & Conditions',d:'These terms define the rules for using MAAJ PHARMACY, placing orders, payment, delivery, prescriptions and customer accounts.',c:[
       ['Orders','Orders depend on product availability and eligibility.'],
       ['Prescription','Prescription requirements apply where required.'],
       ['Payment','Payment availability depends on the current storefront rules.'],
       ['Delivery','Delivery estimates are estimates and may change.']
     ],a:'Read Terms',k:'terms'},
-    editorial:{i:'✍️',t:'Editorial Policy',d:'MAAJ PHARMACY health content should be accurate, clear, responsible and written for consumer understanding.',c:[
+    editorial:{i:'??',t:'Editorial Policy',d:'MAAJ PHARMACY health content should be accurate, clear, responsible and written for consumer understanding.',c:[
       ['Accuracy','Health information should be reviewed for factual accuracy.'],
       ['Clarity','Content should use clear, understandable language.'],
       ['Sources','Important health claims should use reliable sources.'],
       ['Limits','Educational content is not personalized medical advice.']
     ],a:'Read Editorial Policy',k:'editorial'},
-    support:{i:'💬',t:'Customer Support',d:'Get help with MAAJ PHARMACY orders, delivery, products, prescriptions and customer accounts.',c:[
+    support:{i:'??',t:'Customer Support',d:'Get help with MAAJ PHARMACY orders, delivery, products, prescriptions and customer accounts.',c:[
       ['Orders','Help with status, cancellation and delivery.'],
       ['Products','Help with product availability and details.'],
       ['Prescription','Help with upload and verification.'],
@@ -4489,7 +4713,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
     if(!list) return;
     if(!items.length){
       list.innerHTML='<div class="text-slate-400 text-center py-5">Your cart is empty.</div>';
-      ['checkoutSubtotal','checkoutDiscount','checkoutDelivery','checkoutTax','checkoutGrandTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='₹0.00';});
+      ['checkoutSubtotal','checkoutDiscount','checkoutDelivery','checkoutTax','checkoutGrandTotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='?0.00';});
       return;
     }
     list.innerHTML = items.map(i => `
@@ -4501,15 +4725,15 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
     const minOrderNote = document.getElementById('checkoutMinimumOrderNote');
     if(minOrderNote){
       const remaining = Math.max(0, 299 - Number(t.subtotal||0));
-      minOrderNote.textContent = remaining > 0 ? `Minimum order ₹299 • Add ₹${remaining.toFixed(2)} more to continue` : 'Minimum order ₹299 ✓';
+      minOrderNote.textContent = remaining > 0 ? `Minimum order ?299 • Add ?${remaining.toFixed(2)} more to continue` : 'Minimum order ?299 ?';
       minOrderNote.className = remaining > 0 ? 'mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800' : 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700';
     }
     const vals = {
-      checkoutSubtotal: `₹${Number(t.subtotal||0).toFixed(2)}`,
-      checkoutDiscount: `-₹${Number(t.discount||0).toFixed(2)}`,
-      checkoutDelivery: Number(t.delivery||0)===0 ? 'FREE' : `₹${Number(t.delivery||0).toFixed(2)}`,
-      checkoutTax: `₹${Number(t.tax||0).toFixed(2)}`,
-      checkoutGrandTotal: `₹${Number(t.total||0).toFixed(2)}`
+      checkoutSubtotal: `?${Number(t.subtotal||0).toFixed(2)}`,
+      checkoutDiscount: `-?${Number(t.discount||0).toFixed(2)}`,
+      checkoutDelivery: Number(t.delivery||0)===0 ? 'FREE' : `?${Number(t.delivery||0).toFixed(2)}`,
+      checkoutTax: `?${Number(t.tax||0).toFixed(2)}`,
+      checkoutGrandTotal: `?${Number(t.total||0).toFixed(2)}`
     };
     Object.entries(vals).forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=v;});
   }
@@ -4624,7 +4848,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
           <span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">${esc2(o.status)}</span>
         </div>
         <div class="text-slate-600 space-y-1">
-          ${(o.items||[]).map(i=>`<p>${esc2(i.name)} × ${Number(i.qty||0)} — ₹${(Number(i.price||0)*Number(i.qty||0)).toFixed(2)}</p>`).join('')}
+          ${(o.items||[]).map(i=>`<p>${esc2(i.name)} × ${Number(i.qty||0)} — ?${(Number(i.price||0)*Number(i.qty||0)).toFixed(2)}</p>`).join('')}
         </div>
         <div class="border-t pt-3 grid grid-cols-1 md:grid-cols-2 gap-1 text-slate-500">
           <div><b>Customer:</b> ${esc2(o.customer)}</div>
@@ -4632,7 +4856,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
           <div class="md:col-span-2"><b>Address:</b> ${esc2(o.address)} ${o.pincode?`(${esc2(o.pincode)})`:''}</div>
         </div>
         <div class="flex justify-between items-center pt-2 border-t">
-          <span class="font-black text-slate-800">Total: ₹${Number(o.amount||0).toFixed(2)} — COD</span>
+          <span class="font-black text-slate-800">Total: ?${Number(o.amount||0).toFixed(2)} — COD</span>
           <button onclick="trackOrder('${String(o.id).replace(/'/g,"\\'")}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded">Track</button>
         </div>`;
       list.appendChild(card);
@@ -4649,6 +4873,7 @@ border:1px solid #f4d99b;color:#7a4b00;font-size:12px;font-weight:800}
   };
 
   document.addEventListener('DOMContentLoaded',function(){
+    maajSelectPaymentMethod('COD');
     setTimeout(function(){syncCheckoutFields();renderCheckoutSummary();},100);
   });
 })();
@@ -4919,7 +5144,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     <td class="p-2"><select class="mm-bulk-input mm-bulk-gst"><option value="5">5%</option><option value="18">18%</option></select></td>
     <td class="p-2"><input class="mm-bulk-input mm-bulk-stock" type="number" min="0" step="1" value="0"></td>
     <td class="p-2"><input class="mm-bulk-input mm-bulk-description" placeholder="Description"></td>
-    <td class="p-2"><label class="mm-photo-label">📷 Choose Photo<input class="mm-bulk-photo" type="file" accept="image/*" style="display:none" onchange="mmBulkPhotoChanged(this)"></label><span class="mm-photo-name">No photo selected</span></td>
+    <td class="p-2"><label class="mm-photo-label">?? Choose Photo<input class="mm-bulk-photo" type="file" accept="image/*" style="display:none" onchange="mmBulkPhotoChanged(this)"></label><span class="mm-photo-name">No photo selected</span></td>
     <td class="p-2"><button type="button" onclick="mmRemoveBulkRow(this)" class="bg-red-50 text-red-700 px-2.5 py-2 rounded-lg font-black">Remove</button></td>
   </tr>`}
   window.mmAddBulkRow=function(){
@@ -4957,7 +5182,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
       }
       const r=await fetch(U+'/rest/v1/medicines',{method:'POST',headers:{...H(s),Prefer:'return=representation'},body:JSON.stringify(saved)});
       if(!r.ok)throw Error(await r.text());
-      mmE('mmBulkRows').innerHTML='';mmAddBulkRows(3);M('mmBulkStatus','✓ Added '+saved.length+' medicine(s) ONLINE successfully. Customer catalogue refreshed.'+(errors.length?' Skipped: '+errors.join(' • '):''),true);await mmLoadMedicines();
+      mmE('mmBulkRows').innerHTML='';mmAddBulkRows(3);M('mmBulkStatus','? Added '+saved.length+' medicine(s) ONLINE successfully. Customer catalogue refreshed.'+(errors.length?' Skipped: '+errors.join(' • '):''),true);await mmLoadMedicines();
     }catch(e){M('mmBulkStatus','Bulk Add Error: '+e.message)}
   }
   window.mmBulkAdd=mmBulkAddExcel;
@@ -4968,13 +5193,13 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
 (function(){
   const KEY='maaj_admin_categories_v1';
   const DEFAULTS=['Best Offers','Vitamins & Supplements','Nutritional Drinks','Skin Care','Hair Care','Sexual Wellness','Ayurveda Products','Pain Relief','Homeopathy','Painkiller','Antibiotics','Vitamins','First Aid','Power','Cream','Ointment','Belt','Syrup','Pain Oil','Balm','Condom'];
-  const ICONS={'Best Offers':'🔥','Vitamins & Supplements':'💊','Nutritional Drinks':'🥤','Skin Care':'🧴','Hair Care':'💇','Sexual Wellness':'❤️','Ayurveda Products':'🌿','Pain Relief':'🩹','Homeopathy':'🌱','Painkiller':'💊','Antibiotics':'🧪','Vitamins':'🍊','First Aid':'⛑️','Power':'⚡','Cream':'🧴','Ointment':'🧴','Belt':'🩺','Syrup':'🥄','Pain Oil':'🫧','Balm':'🧴','Condom':'🛡️'};
+  const ICONS={'Best Offers':'??','Vitamins & Supplements':'??','Nutritional Drinks':'??','Skin Care':'??','Hair Care':'??','Sexual Wellness':'??','Ayurveda Products':'??','Pain Relief':'??','Homeopathy':'??','Painkiller':'??','Antibiotics':'??','Vitamins':'??','First Aid':'??','Power':'?','Cream':'??','Ointment':'??','Belt':'??','Syrup':'??','Pain Oil':'??','Balm':'??','Condom':'???'};
   function get(){try{const a=JSON.parse(localStorage.getItem(KEY)||'null');if(Array.isArray(a)&&a.length)return a;}catch(e){}return DEFAULTS.slice();}
   function save(a){try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}}
   function cats(){return get();}
   function esc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
   function render(){
-    const a=cats(),grid=document.getElementById('maajAdminCategoryGrid'); if(grid) grid.innerHTML=a.map((x,i)=>`<div class="rounded-2xl border bg-white p-4 hover:shadow-sm transition"><div class="text-2xl">${ICONS[x]||'🏷️'}</div><div class="mt-2 text-xs font-black text-slate-800">${esc(x)}</div><button type="button" onclick="maajRemoveAdminCategory(${i})" class="mt-3 text-[10px] font-black text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg">Remove</button></div>`).join('');
+    const a=cats(),grid=document.getElementById('maajAdminCategoryGrid'); if(grid) grid.innerHTML=a.map((x,i)=>`<div class="rounded-2xl border bg-white p-4 hover:shadow-sm transition"><div class="text-2xl">${ICONS[x]||'???'}</div><div class="mt-2 text-xs font-black text-slate-800">${esc(x)}</div><button type="button" onclick="maajRemoveAdminCategory(${i})" class="mt-3 text-[10px] font-black text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg">Remove</button></div>`).join('');
     fillSelect(document.getElementById('mmCategory'));
     document.querySelectorAll('.mm-bulk-category').forEach(fillSelect);
   }
@@ -5125,7 +5350,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     const session = sessionResult && sessionResult.data ? sessionResult.data.session : null;
 
     if (!session) {
-      alert('Pehle Admin → Medicine Manager mein Supabase login karein.');
+      alert('Pehle Admin ? Medicine Manager mein Supabase login karein.');
       return;
     }
 
@@ -5182,7 +5407,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     btn.id = 'maajExcelMergedButton';
     btn.type = 'button';
     btn.className = 'px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold ml-2';
-    btn.textContent = '📊 Add Excel 50 Medicines';
+    btn.textContent = '?? Add Excel 50 Medicines';
     btn.title = 'Uploaded Excel ki 50 medicines';
     btn.onclick = window.maajSyncExcelMedicinesToSupabase;
     parent.appendChild(btn);
@@ -5411,7 +5636,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
 
   function orderRow(o){
     return {
-      id:o.id,date:o.created_at||o.date,customer:o.customer_name||o.customer||'',phone:o.customer_phone||o.phone||'',pincode:o.pincode||'',address:o.address||'',customerId:o.user_id||o.customerId||'',customerMobile:o.customer_phone||o.customerMobile||'',items:Array.isArray(o.items)?o.items:[],subtotal:Number(o.subtotal||0),discount:Number(o.discount||0),tax:Number(o.tax||0),delivery:Number(o.delivery||0),amount:Number(o.total||o.amount||0),paymentMode:o.payment_mode||o.paymentMode||'COD',status:o.status||'Pending',deliveryEstimate:o.delivery_estimate||o.deliveryEstimate||''
+      id:o.id,date:o.created_at||o.date,customer:o.customer_name||o.customer||'',phone:o.customer_phone||o.phone||'',pincode:o.pincode||'',address:o.address||'',customerId:o.user_id||o.customerId||'',customerMobile:o.customer_phone||o.customerMobile||'',items:Array.isArray(o.items)?o.items:[],subtotal:Number(o.subtotal||0),discount:Number(o.discount||0),tax:Number(o.tax||0),delivery:Number(o.delivery||0),amount:Number(o.total||o.amount||0),paymentMode:o.payment_mode||o.paymentMode||'COD',status:o.status||'Pending',deliveryEstimate:o.delivery_estimate||o.deliveryEstimate||'',cancellationReason:o.cancellation_reason||'',cancellationDescription:o.cancellation_description||''
     };
   }
 
@@ -5507,7 +5732,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     try{
       const data=await fetchCustomerOrders();
       if(!data.length){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No previous orders found.</div>';return;}
-      list.innerHTML=data.map(o=>'<div class="bg-white p-5 rounded-xl border space-y-3 text-xs shadow-sm"><div class="flex justify-between items-center border-b pb-2 gap-3"><div><span class="font-bold text-slate-800">'+esc(o.id)+'</span><span class="text-slate-400 ml-2">('+esc(o.date?new Date(o.date).toLocaleString():'')+')</span></div><span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">'+esc(o.status)+'</span></div><div class="space-y-1">'+o.items.map(i=>'<p class="text-slate-600">'+esc(i.name||'Medicine')+' x '+Number(i.qty||1)+' — '+money(Number(i.price||0)*Number(i.qty||1))+'</p>').join('')+'</div><div class="flex justify-between items-center pt-2 border-t"><span class="font-black text-slate-800">Total: '+money(o.amount)+' ('+esc(o.paymentMode)+')</span><div class="flex gap-2"><button onclick="trackOrder(\''+esc(o.id)+'\')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded hover:bg-emerald-700">Track</button></div></div></div>').join('');
+      list.innerHTML=data.map(o=>`<div class="bg-white p-5 rounded-xl border space-y-3 text-xs shadow-sm"><div class="flex justify-between items-center border-b pb-2 gap-3"><div><span class="font-bold text-slate-800">${esc(o.id)}</span><span class="text-slate-400 ml-2">(${esc(o.date?new Date(o.date).toLocaleString():'')})</span></div><span class="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">${esc(o.status)}</span></div><div class="space-y-1">${o.items.map(i=>`<p class="text-slate-600">${esc(i.name||'Medicine')} x ${Number(i.qty||1)} — ${money(Number(i.price||0)*Number(i.qty||1))}</p>`).join('')}</div><div class="flex justify-between items-center pt-2 border-t gap-3"><div><span class="font-black text-slate-800">Total: ${money(o.amount)} (${esc(o.paymentMode)})</span>${(String(o.status)==='Cancelled'&&o.cancellationReason)?`<div class="mt-2 p-2 rounded-lg bg-red-50 border border-red-100 text-[10px] text-red-800"><b>Cancellation reason:</b> ${esc(o.cancellationReason)}${o.cancellationDescription?`<div class="mt-1"><b>Your feedback:</b> ${esc(o.cancellationDescription)}</div>`:''}</div>`:''}</div><div class="flex flex-wrap gap-2"><button onclick="trackOrder('${esc(o.id)}')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded hover:bg-emerald-700">Track</button>${(['Pending','Confirmed'].includes(String(o.status))?`<button onclick="maajCustomerCancelOrder('${esc(o.id)}')" class="bg-red-50 text-red-700 border border-red-200 font-bold px-3 py-1 rounded hover:bg-red-100"><i class="fa-solid fa-xmark mr-1"></i>Cancel Order</button>`:'')}</div></div></div>`).join('');
     }catch(e){list.innerHTML='<div class="bg-red-50 text-red-700 p-5 rounded-xl border border-red-200 text-xs font-bold">Orders could not be loaded from Supabase: '+esc(e.message)+'</div>'}
   };
 
@@ -5567,7 +5792,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     try{
       const data=await fetchAdminOrders();
       if(!data.length){tbody.innerHTML='<tr><td colspan="5" class="p-5 text-center text-slate-400">No customer orders received yet.</td></tr>';return;}
-      tbody.innerHTML=data.map(o=>'<tr class="border-t align-top"><td class="p-3 font-bold text-slate-800">'+esc(o.id)+'<div class="text-[9px] text-slate-400 mt-1">'+esc(o.date?new Date(o.date).toLocaleString():'')+'</div></td><td class="p-3"><b>'+esc(o.customer)+'</b><div>'+esc(o.phone)+'</div><div>'+esc(o.pincode)+'</div><div class="text-[10px] text-slate-500 max-w-[220px]">'+esc(o.address)+'</div></td><td class="p-3 font-bold">'+money(o.amount)+'<div class="text-[10px] text-slate-500">COD</div><div class="text-[10px] text-slate-600 mt-1">'+o.items.length+' item(s)</div></td><td class="p-3"><select onchange="updateOrderStatus(\''+esc(o.id)+'\',this.value)" class="p-1 border rounded bg-white font-bold">'+['Pending','Confirmed','Processing','Packed','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>'<option value="'+esc(s)+'" '+(o.status===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select><div id="orderSync-'+esc(o.id)+'" class="maaj-order-sync">Online</div></td><td class="p-3 text-right"><button onclick="viewInvoice(\''+esc(o.id)+'\')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-emerald-700"><i class="fa-solid fa-file-invoice mr-1"></i> Generate Invoice</button></td></tr>').join('');
+      tbody.innerHTML=data.map(o=>'<tr class="border-t align-top"><td class="p-3 font-bold text-slate-800">'+esc(o.id)+'<div class="text-[9px] text-slate-400 mt-1">'+esc(o.date?new Date(o.date).toLocaleString():'')+'</div></td><td class="p-3"><b>'+esc(o.customer)+'</b><div>'+esc(o.phone)+'</div><div>'+esc(o.pincode)+'</div><div class="text-[10px] text-slate-500 max-w-[220px]">'+esc(o.address)+'</div></td><td class="p-3 font-bold">'+money(o.amount)+'<div class="text-[10px] text-slate-500">COD</div><div class="text-[10px] text-slate-600 mt-1">'+o.items.length+' item(s)</div></td><td class="p-3"><select onchange="updateOrderStatus(\''+esc(o.id)+'\',this.value)" class="p-1 border rounded bg-white font-bold">'+['Pending','Confirmed','Processing','Packed','Shipped','Out for Delivery','Delivered','Cancelled'].map(s=>'<option value="'+esc(s)+'" '+(o.status===s?'selected':'')+'>'+esc(s)+'</option>').join('')+'</select>'+(o.status==='Cancelled'&&o.cancellationReason?'<div class="mt-2 p-2 rounded-lg bg-red-50 border border-red-100 text-[10px] text-red-800"><b>Cancellation reason:</b> '+esc(o.cancellationReason)+(o.cancellationDescription?'<div class="mt-1"><b>Details:</b> '+esc(o.cancellationDescription)+'</div>':'')+'</div>':'')+'<div id="orderSync-'+esc(o.id)+'" class="maaj-order-sync">Online</div></td><td class="p-3 text-right"><button onclick="viewInvoice(\''+esc(o.id)+'\')" class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-emerald-700"><i class="fa-solid fa-file-invoice mr-1"></i> Generate Invoice</button></td></tr>').join('');
     }catch(e){tbody.innerHTML='<tr><td colspan="5" class="p-5 text-center text-red-600 font-bold">Online orders could not be loaded: '+esc(e.message)+'<div class="text-[10px] mt-2 font-normal">Run the supplied Supabase Orders SQL once, then refresh.</div></td></tr>'}
   };
 
@@ -5586,7 +5811,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
       else if(newStatus==='Delivered')message='Your order '+o.id+' has been delivered. Thank you for choosing MAAJ PHARMACY.';
       else if(newStatus==='Cancelled')message='Your order '+o.id+' has been cancelled. Please contact MAAJ PHARMACY support if you need help.';
       await createNotification(o.customerId,o.id,title,message,newStatus==='Cancelled'?'order_cancelled':'order_update');
-      if(cell){cell.textContent='Updated ✓';cell.className='maaj-order-sync ok'}
+      if(cell){cell.textContent='Updated ?';cell.className='maaj-order-sync ok'}
       alert('Order '+o.id+' updated to '+newStatus+'. Customer notification sent.');
       renderAdminOrders();
     }catch(e){if(cell){cell.textContent='Update failed';cell.className='maaj-order-sync err'}alert('Order update failed: '+e.message);renderAdminOrders()}
@@ -5604,7 +5829,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     const address=(document.getElementById('checkoutAddress')?.value||u.address||'').trim();
     if(!name||!/^[0-9]{10}$/.test(phone)||!/^[0-9]{6}$/.test(pin)||!address){alert('Please enter valid customer name, 10-digit mobile number, 6-digit PIN code and complete delivery address.');return false}
     const rx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true');
-    if(rx){const file=document.querySelector('#prescriptionFile,#rxFile,input[type="file"][name*="prescription" i]');const hasUpload=!!(file&&file.files&&file.files.length)||!!localRead('maaj_latest_prescription',null);if(!hasUpload){alert('A valid prescription is required for one or more medicines in your cart. Please upload it before placing the order.');return false}}
+    if(rx){const f1=document.getElementById('cartPrescription'),f2=document.getElementById('checkoutPrescription');const file=document.querySelector('#prescriptionFile,#rxFile,input[type="file"][name*="prescription" i]');const hasUpload=!!(f1&&f1.files&&f1.files.length)||!!(f2&&f2.files&&f2.files.length)||!!(file&&file.files&&file.files.length)||!!window.maajPrescriptionFile||!!localRead('maaj_latest_prescription',null);if(!hasUpload){alert('A valid prescription is required for one or more medicines in your cart. Please upload it before placing the order.');return false}}
     const totals=typeof window.maajCanonicalTotals==='function'?window.maajCanonicalTotals(a):{subtotal:0,discount:0,tax:0,delivery:0,total:0};
     const id='ORD-'+Date.now().toString().slice(-8)+'-'+Math.floor(100+Math.random()*900);
     const payload={id,user_id:u.id,customer_name:name,customer_phone:phone,pincode:pin,address,items:a,subtotal:Number(totals.subtotal||0),discount:Number(totals.discount||0),tax:Number(totals.tax||0),delivery:Number(totals.delivery||0),total:Number(totals.total||0),payment_mode:'COD',status:'Pending',delivery_estimate:(pin==='767022'||pin==='767061'||pin==='767021')?'Up to 1 day':'3–7 days'};
@@ -5624,7 +5849,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
           '<div class="maaj-success-kicker">ORDER PLACED</div>'+
           '<h2 class="maaj-success-title">Your order is confirmed for processing</h2>'+
           '<p class="maaj-success-subtitle">Thank you, '+esc(name)+'. Your COD order has been received by MAAJ PHARMACY.</p>'+
-          '<div class="maaj-order-id-box"><span>ORDER ID</span><strong>'+esc(id)+'</strong><button type="button" onclick="(navigator.clipboard?navigator.clipboard.writeText(\''+esc(id)+'\').then(function(){alert(\'Order ID copied ✓\')}).catch(function(){}):null)">Copy</button></div>'+
+          '<div class="maaj-order-id-box"><span>ORDER ID</span><strong>'+esc(id)+'</strong><button type="button" onclick="(navigator.clipboard?navigator.clipboard.writeText(\''+esc(id)+'\').then(function(){alert(\'Order ID copied ?\')}).catch(function(){}):null)">Copy</button></div>'+
           '<div class="maaj-success-grid">'+
             '<div><span>Status</span><b>Pending confirmation</b></div>'+
             '<div><span>Payment</span><b>Cash on Delivery</b></div>'+
@@ -5741,7 +5966,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     list.innerHTML=a.length?a.map((i,index)=>{
       const q=num(i.qty),price=num(i.price);return '<div class="bg-white p-4 rounded-xl border flex justify-between items-center text-xs shadow-sm">'+
       '<div><h4 class="font-bold text-slate-800">'+esc(i.name||'Medicine')+'</h4><p class="text-slate-400">'+money(price)+' × '+q+'</p></div>'+ 
-      '<div class="flex items-center gap-2"><button type="button" onclick="updateQty('+index+',-1)" class="w-7 h-7 bg-slate-100 font-bold rounded">−</button><span class="font-bold min-w-[18px] text-center">'+q+'</span><button type="button" onclick="updateQty('+index+',1)" class="w-7 h-7 bg-slate-100 font-bold rounded">+</button><button type="button" onclick="removeItem('+index+')" class="text-red-500 ml-2" aria-label="Remove item"><i class="fa-solid fa-trash"></i></button></div></div>';
+      '<div class="flex items-center gap-2"><button type="button" onclick="updateQty('+index+',-1)" class="w-7 h-7 bg-slate-100 font-bold rounded">-</button><span class="font-bold min-w-[18px] text-center">'+q+'</span><button type="button" onclick="updateQty('+index+',1)" class="w-7 h-7 bg-slate-100 font-bold rounded">+</button><button type="button" onclick="removeItem('+index+')" class="text-red-500 ml-2" aria-label="Remove item"><i class="fa-solid fa-trash"></i></button></div></div>';
     }).join(''):'<div class="bg-white p-8 rounded-xl border text-center text-xs text-slate-400">Your cart is empty.</div>';
     const t=totals(a);
     const values={cartSubtotal:money(t.subtotal),cartDiscount:'-'+money(t.discount),cartTax:money(t.tax),cartGrandTotal:money(t.total)};
@@ -5769,10 +5994,32 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   window.maajCloseCart=function(){try{window.navigateTo('cart')}catch(e){}};
   window.maajGoCheckout=function(){
     const a=getCart();if(!a.length){alert('Your cart is empty.');return false}
-    const t=totals(a);if(t.subtotal<MIN_ORDER){alert('Minimum order value is ₹299. Please add '+money(MIN_ORDER-t.subtotal)+' more.');return false}
-    const hasRx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true'||['H','H1','X'].includes(String(i.legal_category||'').toUpperCase()));if(hasRx){const cf=document.getElementById('cartPrescription');if(!cf?.files?.length){alert('Prescription required: please upload a valid doctor prescription in the Cart before checkout.');return false}}
+    const t=totals(a);if(t.subtotal<MIN_ORDER){alert('Minimum order value is ?299. Please add '+money(MIN_ORDER-t.subtotal)+' more.');return false}
+    const hasRx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true'||['H','H1','X'].includes(String(i.legal_category||'').toUpperCase()));if(hasRx){const cf=document.getElementById('cartPrescription');if(cf&&cf.files&&cf.files.length){window.maajPrescriptionFile=cf.files[0];}if(!window.maajPrescriptionFile){alert('Prescription required: please upload a valid doctor prescription in the Cart before checkout.');return false}}
     try{window.navigateTo('checkout');setTimeout(renderCheckout,80)}catch(e){return false}return true;
   };
+
+  // Keep one shared prescription file for Cart -> Checkout. The browser does not allow
+  // programmatically copying a selected file between file inputs, so both inputs
+  // feed the same in-memory reference and checkout validation accepts either one.
+  window.maajPrescriptionFile=window.maajPrescriptionFile||null;
+  document.addEventListener('change',function(e){var t=e.target;if(t&&t.id==='cartPrescription'&&t.files&&t.files.length){window.maajPrescriptionFile=t.files[0];}else if(t&&t.id==='checkoutPrescription'&&t.files&&t.files.length){window.maajPrescriptionFile=t.files[0];}},true);
+  (function(){
+    const bind=function(id){
+      const el=document.getElementById(id);
+      if(!el||el.dataset.maajRxBound==='1')return;
+      el.dataset.maajRxBound='1';
+      el.addEventListener('change',function(){
+        window.maajPrescriptionFile=(this.files&&this.files.length)?this.files[0]:null;
+        const statusId=id==='cartPrescription'?'cartPrescriptionStatus':'checkoutPrescriptionStatus';
+        const st=document.getElementById(statusId);
+        if(st)st.textContent=window.maajPrescriptionFile?'Prescription selected: '+window.maajPrescriptionFile.name:'No prescription uploaded.';
+      });
+    };
+    const run=function(){bind('cartPrescription');bind('checkoutPrescription')};
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+    setTimeout(run,100);setTimeout(run,500);
+  })();
 
   function currentCustomer(){return window.currentCustomer||window.maajCustomerSession?.user||null}
   function renderCheckout(){
@@ -5786,31 +6033,286 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   window.renderCheckoutSummary=renderCheckout;
   window.renderCheckoutPage=renderCheckout;
 
+  let maajPaymentPollingTimer=null;
+  let maajActivePayment=null;
+
+  function maajPaymentMethod(){
+    const el=document.querySelector('input[name="maajPaymentMethod"]:checked');
+    return el ? String(el.value).toUpperCase() : 'COD';
+  }
+
+  window.maajSelectPaymentMethod=function(method){
+    method=String(method||'COD').toUpperCase();
+    var cod=document.getElementById('maajPayCodOption');
+    var upiOption=document.getElementById('maajPayUpiOption');
+    var methods=document.getElementById('maaj-payment-methods');
+    if(methods){
+      methods.style.display='grid';
+      methods.style.visibility='visible';
+      methods.style.opacity='1';
+    }
+    if(cod){cod.style.display='block';cod.style.visibility='visible';cod.style.opacity='1'}
+    if(upiOption){upiOption.style.display='block';upiOption.style.visibility='visible';upiOption.style.opacity='1'}
+    document.querySelectorAll('.maaj-pay-option').forEach(function(x){x.classList.remove('active')});
+    const option=document.getElementById(method==='UPI'?'maajPayUpiOption':'maajPayCodOption');
+    if(option)option.classList.add('active');
+    const upi=document.getElementById('maajUpiPaymentBox');
+    if(upi)upi.classList.toggle('active',method==='UPI');
+    const btn=document.getElementById('maajPlaceOrderButton');
+    if(btn)btn.innerHTML=method==='UPI'
+      ? '<i class="fa-solid fa-qrcode mr-2"></i> Pay with UPI'
+      : '<i class="fa-solid fa-bag-shopping mr-2"></i> Confirm & Place COD Order';
+  };
+
+  function maajPaymentApiBase(){
+    return String(window.MAAJ_PAYMENT_API_BASE||'/api').replace(/\/$/,'');
+  }
+
+  function maajSetPaymentStatus(text,kind){
+    const e=document.getElementById('maajUpiStatus');if(!e)return;
+    e.textContent=text;e.className='maaj-payment-status mt-2'+(kind?' '+kind:'');
+  }
+
+  function maajClearPaymentUi(){
+    if(maajPaymentPollingTimer){clearInterval(maajPaymentPollingTimer);maajPaymentPollingTimer=null}
+    const qr=document.getElementById('maajUpiQr');if(qr)qr.innerHTML='';
+    const open=document.getElementById('maajUpiOpenBtn');if(open){open.style.display='none';open.dataset.url=''}
+    const cancel=document.getElementById('maajUpiCancelBtn');if(cancel)cancel.style.display='none';
+    const verify=document.getElementById('maajUpiManualVerifyBtn');if(verify)verify.style.display='none';
+    maajActivePayment=null;
+  }
+
+  window.maajCancelUpiPayment=function(){
+    maajClearPaymentUi();
+    maajSetPaymentStatus('UPI payment cancelled. You can choose COD or start UPI again.','');
+  };
+
+  window.maajOpenUpiCheckout=function(){
+    const b=document.getElementById('maajUpiOpenBtn'),url=b&&b.dataset.url;
+    if(url)window.open(url,'_blank','noopener,noreferrer');
+  };
+
+  const MAAJ_UPI_ID='aQ041528802@ybl';
+  const MAAJ_UPI_NAME='MAAJ PHARMACY';
+
+  function maajBuildUpiUri(orderPayload){
+    const amount=Number(orderPayload&&orderPayload.total||0).toFixed(2);
+    const orderId=String(orderPayload&&orderPayload.id||'ORDER');
+    return 'upi://pay?pa='+encodeURIComponent(MAAJ_UPI_ID)
+      +'&pn='+encodeURIComponent(MAAJ_UPI_NAME)
+      +'&am='+encodeURIComponent(amount)
+      +'&cu=INR'
+      +'&tn='+encodeURIComponent('MAAJ PHARMACY '+orderId);
+  }
+
+  function maajEnsureUpiFailButton(){
+    let fail=document.getElementById('maajUpiFailedBtn');
+    if(!fail){
+      fail=document.createElement('button');
+      fail.id='maajUpiFailedBtn';
+      fail.type='button';
+      fail.textContent='Payment Failed / Cancel Order';
+      fail.onclick=function(){window.maajFailUpiPayment()};
+      const box=document.getElementById('maajUpiPaymentBox');
+      if(box)box.appendChild(fail);
+    }
+    return fail;
+  }
+
+  window.maajFailUpiPayment=function(){
+    if(maajPaymentPollingTimer){clearInterval(maajPaymentPollingTimer);maajPaymentPollingTimer=null}
+    const fail=document.getElementById('maajUpiFailedBtn');if(fail)fail.style.display='none';
+    const countdown=document.getElementById('maajUpiCountdown');if(countdown)countdown.style.display='none';
+    const btn=document.getElementById('maajPlaceOrderButton');
+    if(btn){
+      btn.disabled=false;
+      btn.classList.remove('maaj-expert-busy');
+      btn.innerHTML='<i class="fa-solid fa-rotate-right mr-2"></i> Try UPI Payment Again';
+    }
+    maajActivePayment=null;
+    maajSetPaymentStatus('UPI payment marked failed/cancelled. Your cart has NOT been cleared. You can try again or choose COD.','error');
+  };
+
+  function maajStartFiveMinuteCountdown(){
+    const countdown=document.getElementById('maajUpiCountdown');
+    const fail=maajEnsureUpiFailButton();
+    if(countdown)countdown.style.display='block';
+    if(fail)fail.style.display='none';
+    const started=Date.now(), duration=5*60*1000;
+    if(window.maajUpiCountdownTimer)clearInterval(window.maajUpiCountdownTimer);
+    window.maajUpiCountdownTimer=setInterval(function(){
+      const left=Math.max(0,duration-(Date.now()-started));
+      const sec=Math.ceil(left/1000), min=Math.floor(sec/60), rem=sec%60;
+      if(countdown)countdown.textContent='Payment window: '+min+':'+String(rem).padStart(2,'0')+' remaining';
+      if(left<=0){
+        clearInterval(window.maajUpiCountdownTimer);window.maajUpiCountdownTimer=null;
+        if(countdown)countdown.style.display='none';
+        if(fail)fail.style.display='block';
+        maajSetPaymentStatus('5-minute payment window ended without verified payment. If money was debited, do NOT pay again; contact the pharmacy and provide the transaction reference.','error');
+      }
+    },1000);
+  }
+
+  function maajShowLocalUpiPayment(orderPayload){
+    const qrData=maajBuildUpiUri(orderPayload);
+    const paymentId='UPI-MANUAL-'+Date.now();
+    const qr=document.getElementById('maajUpiQr');
+    if(qr){
+      qr.innerHTML='';
+      if(window.QRCode){
+        new QRCode(qr,{text:qrData,width:194,height:194,correctLevel:QRCode.CorrectLevel.M});
+      }else{
+        qr.innerHTML='<a class="text-blue-700 underline text-xs" href="'+qrData+'">Open UPI payment</a>';
+      }
+    }
+    const open=document.getElementById('maajUpiOpenBtn');
+    if(open){
+      open.dataset.url=qrData;
+      open.style.display='block';
+      open.textContent='Open UPI App';
+    }
+    const cancel=document.getElementById('maajUpiCancelBtn');
+    if(cancel)cancel.style.display='block';
+    maajEnsureUpiFailButton().style.display='none';
+    maajStartFiveMinuteCountdown();
+    maajSetPaymentStatus('Scan the QR and pay the exact order amount to '+MAAJ_UPI_ID+'. The order will advance ONLY after payment is verified by the payment backend.','');
+    return {paymentId:paymentId,qrString:qrData,manual:true};
+  }
+
+  async function maajCreateUpiPayment(orderPayload){
+    try{
+      const res=await fetch(maajPaymentApiBase()+'/payments/create',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body:JSON.stringify({
+          provider:window.MAAJ_PAYMENT_PROVIDER||'phonepe',
+          order:orderPayload
+        })
+      });
+      let data=null;
+      try{data=await res.json()}catch(e){}
+      if(res.ok && data && (data.paymentId||data.payment_id)) return data;
+    }catch(e){}
+    /* If the PSP backend is not configured, use the merchant UPI ID directly. */
+    return maajShowLocalUpiPayment(orderPayload);
+  }
+
+  async function maajCheckUpiPayment(paymentId,orderId){
+    const url=maajPaymentApiBase()+'/payments/status/'+encodeURIComponent(paymentId)+'?orderId='+encodeURIComponent(orderId);
+    const res=await fetch(url,{method:'GET',headers:{'Accept':'application/json'},credentials:'include'});
+    let data=null;try{data=await res.json()}catch(e){}
+    if(!res.ok)throw new Error((data&&data.message)||'Unable to verify payment status.');
+    return data||{};
+  }
+
+  function maajStartUpiPolling(paymentId,orderId,payload){
+    if(maajPaymentPollingTimer)clearInterval(maajPaymentPollingTimer);
+    let checks=0;
+    maajPaymentPollingTimer=setInterval(async function(){
+      checks++;
+      try{
+        const st=await maajCheckUpiPayment(paymentId,orderId);
+        const status=String(st.status||st.paymentStatus||st.state||'PENDING').toUpperCase();
+        if(status==='SUCCESS'||status==='COMPLETED'||status==='PAID'){
+          clearInterval(maajPaymentPollingTimer);maajPaymentPollingTimer=null;
+          maajSetPaymentStatus('Payment verified successfully. Your order is confirmed.','success');
+          const btn=document.getElementById('maajPlaceOrderButton');if(btn){btn.disabled=true}
+          setCart([]);
+          try{if(typeof window.maajCreateCustomerNotification==='function')await window.maajCreateCustomerNotification(payload.user_id,orderId,'Payment Successful','UPI payment for order '+orderId+' was verified successfully.','payment_success')}catch(e){}
+          showSuccess(Object.assign({},payload,{payment_mode:'UPI',status:'Paid',payment_status:'SUCCESS',payment_id:paymentId}));
+          try{if(typeof window.renderCustomerOrders==='function')window.renderCustomerOrders()}catch(e){}
+          return;
+        }
+        if(status==='FAILED'||status==='FAILURE'||status==='CANCELLED'||status==='CANCELED'){
+          clearInterval(maajPaymentPollingTimer);maajPaymentPollingTimer=null;
+          maajSetPaymentStatus('Payment was '+status.toLowerCase()+'. No order was marked as paid.','error');
+          const btn=document.getElementById('maajPlaceOrderButton');if(btn)btn.disabled=false;
+          return;
+        }
+        maajSetPaymentStatus('Waiting for payment confirmation… Check '+checks+'/60. Please complete the payment in your UPI app.','');
+        if(checks>=60){
+          clearInterval(maajPaymentPollingTimer);maajPaymentPollingTimer=null;
+          maajSetPaymentStatus('Verification timed out. Do not pay again blindly. Check your UPI app and contact support if money was debited.','error');
+          const btn=document.getElementById('maajPlaceOrderButton');if(btn)btn.disabled=false;
+        }
+      }catch(e){
+        if(checks>=60){
+          clearInterval(maajPaymentPollingTimer);maajPaymentPollingTimer=null;
+          maajSetPaymentStatus('Could not verify payment. Please contact support before making another payment.','error');
+          const btn=document.getElementById('maajPlaceOrderButton');if(btn)btn.disabled=false;
+        }
+      }
+    },5000);
+  }
+
   async function placeOrder(){
-    const sb=window.maajSupabaseClient,u=currentCustomer();if(!sb){alert('Online order service is unavailable.');return false}
+    const sb=window.maajSupabaseClient,u=currentCustomer();
+    if(!sb){alert('Online order service is unavailable.');return false}
     if(!u){try{openCustomerAuth('login')}catch(e){alert('Please login to your customer account first.')}return false}
     const a=getCart();if(!a.length){alert('Your cart is empty.');return false}
-    const t=totals(a);if(t.subtotal<MIN_ORDER){alert('Minimum order value is ₹299. Please add '+money(MIN_ORDER-t.subtotal)+' more.');return false}
+    const t=totals(a);if(t.subtotal<MIN_ORDER){alert('Minimum order value is ?299. Please add '+money(MIN_ORDER-t.subtotal)+' more.');return false}
     const name=(document.getElementById('checkoutName')?.value||u.name||u.user_metadata?.name||'').trim();
     const phone=clean(document.getElementById('checkoutPhone')?.value||u.mobile||u.phone||'');
     const pin=clean(document.getElementById('checkoutPincode')?.value||u.pincode||'');
     const address=(document.getElementById('checkoutAddress')?.value||u.address||'').trim();
     if(!name||!/^\d{10}$/.test(phone)||!/^\d{6}$/.test(pin)||!address){alert('Please enter valid customer name, 10-digit mobile number, 6-digit PIN code and complete delivery address.');return false}
     const rx=a.some(i=>i.rx===true||i.rxRequired===true||String(i.prescriptionRequired).toLowerCase()==='true');
-    if(rx){const f=document.getElementById('checkoutPrescription');if(!f?.files?.length){alert('A valid prescription is required for one or more medicines in your cart.');return false}}
+    if(rx){
+      const cartRx=document.getElementById('cartPrescription');
+      const checkoutRx=document.getElementById('checkoutPrescription');
+      const hasCheckout=!!(checkoutRx&&checkoutRx.files&&checkoutRx.files.length);
+      const hasCart=!!(cartRx&&cartRx.files&&cartRx.files.length);
+      const hasSaved=!!window.maajPrescriptionFile;
+      if(!hasCheckout&&!hasCart&&!hasSaved){alert('A valid prescription is required for one or more medicines in your cart. Please upload it in the Cart or Checkout before placing the order.');return false}
+    }
     const id='ORD-'+Date.now().toString().slice(-8)+'-'+Math.floor(100+Math.random()*900);
     const localInfo=(pin==='767022'||pin==='767061'||pin==='767021');
-    const payload={id,user_id:u.id,customer_name:name,customer_phone:phone,pincode:pin,address,items:a,subtotal:t.subtotal,discount:t.discount,tax:t.tax,delivery:t.delivery,total:t.total,payment_mode:'COD',status:'Pending',delivery_estimate:localInfo?'Up to 1 day':'3–7 days'};
-    const btn=document.querySelector('#page-checkout button[onclick*="finalPlaceCODOrder"],#page-checkout button[onclick*="maajPlaceOrder"]');if(btn){btn.classList.add('maaj-expert-busy');btn.disabled=true;btn.textContent='Submitting Order...'}
+    const method=maajPaymentMethod();
+    const payload={id,user_id:u.id,customer_name:name,customer_phone:phone,pincode:pin,address,items:a,subtotal:t.subtotal,discount:t.discount,tax:t.tax,delivery:t.delivery,total:t.total,payment_mode:method,status:method==='UPI'?'Payment Pending':'Pending',delivery_estimate:localInfo?'Up to 1 day':'3–7 days'};
+    const btn=document.getElementById('maajPlaceOrderButton');
+    if(btn){btn.classList.add('maaj-expert-busy');btn.disabled=true;btn.innerHTML=method==='UPI'?'<i class="fa-solid fa-spinner fa-spin mr-2"></i> Creating UPI Payment...':'<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting Order...'}
     try{
+      if(method==='UPI'){
+        maajActivePayment=null;
+        const data=await maajCreateUpiPayment(payload);
+        const paymentId=data.paymentId||data.payment_id;
+        maajActivePayment={paymentId:paymentId,orderId:id,payload:payload};
+        const qrData=data.qrString||data.qrData||data.qr_code||data.upiUri||data.upi_url||'';
+        const checkoutUrl=data.checkoutUrl||data.checkout_url||data.redirectUrl||'';
+        const qr=document.getElementById('maajUpiQr');if(qr)qr.innerHTML='';
+        if(qrData&&window.QRCode&&qr){
+          new QRCode(qr,{text:String(qrData),width:194,height:194,correctLevel:QRCode.CorrectLevel.M});
+        }else if(qrData&&qr){
+          qr.textContent='Use the UPI payment link below.';
+        }
+        const open=document.getElementById('maajUpiOpenBtn');
+        if(open&&checkoutUrl){open.dataset.url=checkoutUrl;open.style.display='block';open.textContent='Open Secure UPI Payment'}
+        const cancel=document.getElementById('maajUpiCancelBtn');if(cancel)cancel.style.display='block';
+        if(data.manual){
+          if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-clock mr-2"></i> Waiting for Payment Verification...'}
+          maajSetPaymentStatus('Payment window started. Complete the UPI payment. Automatic confirmation requires the payment backend to report SUCCESS.','');
+          return true;
+        }
+        maajSetPaymentStatus('Payment created. Scan the QR or open the secure payment page, then wait for server verification.','');
+        maajStartUpiPolling(paymentId,id,payload);
+        if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-clock mr-2"></i> Waiting for UPI Payment...'}
+        return true;
+      }
+
       const {data,error}=await sb.from('orders').insert(payload).select('*').single();if(error)throw error;
       setCart([]);
       try{if(typeof window.maajCreateCustomerNotification==='function')await window.maajCreateCustomerNotification(u.id,id,'Order Placed','Your order '+id+' has been received successfully. We will notify you when it is confirmed.','order_placed')}catch(e){console.warn('Notification insert failed',e)}
       showSuccess(payload);
       try{if(typeof window.renderCustomerOrders==='function')window.renderCustomerOrders()}catch(e){}
       return true;
-    }catch(e){alert('Order could not be submitted to Supabase.\n\n'+(e.message||e)+'\n\nYour cart has not been cleared.');return false}
-    finally{if(btn){btn.classList.remove('maaj-expert-busy');btn.disabled=false}}
+    }catch(e){
+      alert((method==='UPI'?'UPI payment could not be started.':'Order could not be submitted to Supabase.')+'\\n\\n'+(e.message||e)+'\\n\\nYour cart has not been cleared.');
+      return false
+    }finally{
+      if(btn&&method==='COD'){btn.classList.remove('maaj-expert-busy');btn.disabled=false;maajSelectPaymentMethod('COD')}
+      else if(btn&&method==='UPI'&&!maajActivePayment){btn.classList.remove('maaj-expert-busy');btn.disabled=false;maajSelectPaymentMethod('UPI')}
+    }
   }
   function showSuccess(o){
     const page=document.getElementById('page-checkout');if(!page)return;
@@ -5818,14 +6320,34 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
       '<div class="maaj-expert-success-icon"><i class="fa-solid fa-check"></i></div>'+ 
       '<div class="text-[10px] font-black tracking-[.2em] text-emerald-600">ORDER SUCCESSFULLY PLACED</div>'+ 
       '<h2 class="text-2xl font-black text-slate-900 mt-2">Thank you! Your order has been received.</h2>'+ 
-      '<p class="text-sm text-slate-500 mt-2">Your COD order is now waiting for pharmacy confirmation.</p>'+ 
-      '<div class="maaj-expert-order-id"><span class="text-[10px] font-black text-slate-500">ORDER ID</span><strong>'+esc(o.id)+'</strong><button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+esc(o.id)+'\').then(function(){this.textContent=\'Copied ✓\'}.bind(this))">Copy</button></div>'+ 
-      '<div class="maaj-expert-success-grid"><div><span>Status</span><b>Pending Confirmation</b></div><div><span>Payment</span><b>Cash on Delivery</b></div><div><span>Total</span><b>'+money(o.total)+'</b></div><div><span>Delivery</span><b>'+esc(o.delivery_estimate)+'</b></div></div>'+ 
+      '<p class="text-sm text-slate-500 mt-2">Your '+(o.payment_mode==='UPI'?'UPI payment has been verified and your order is confirmed.':'COD order is now waiting for pharmacy confirmation.')+'</p>'+ 
+      '<div class="maaj-expert-order-id"><span class="text-[10px] font-black text-slate-500">ORDER ID</span><strong>'+esc(o.id)+'</strong><button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+esc(o.id)+'\').then(function(){this.textContent=\'Copied ?\'}.bind(this))">Copy</button></div>'+ 
+      '<div class="maaj-expert-success-grid"><div><span>Status</span><b>'+(o.payment_mode==='UPI'?'Paid / Confirmed':'Pending Confirmation')+'</b></div><div><span>Payment</span><b>'+(o.payment_mode==='UPI'?'UPI — Verified':'Cash on Delivery')+'</b></div><div><span>Total</span><b>'+money(o.total)+'</b></div><div><span>Delivery</span><b>'+esc(o.delivery_estimate)+'</b></div></div>'+ 
       '<div class="mt-4 p-4 rounded-xl bg-emerald-50 text-left text-xs text-emerald-800"><b><i class="fa-solid fa-bell mr-1"></i> Notifications enabled</b><p class="mt-1">When admin confirms, processes, ships, delivers or cancels your order, the update will appear in Notifications.</p></div>'+ 
       '<div class="maaj-expert-actions"><button class="maaj-expert-secondary" onclick="navigateTo(\'orders\')">View My Orders</button><button class="maaj-expert-primary" onclick="navigateTo(\'home\')">Continue Shopping <i class="fa-solid fa-arrow-right ml-1"></i></button></div>'+ 
       '</div>';
   }
-  window.maajCanonicalPlaceOrder=placeOrder;window.finalPlaceCODOrder=placeOrder;window.processOrderCheckout=placeOrder;window.maajPlaceOrder=placeOrder;
+  window.maajCanonicalPlaceOrder=placeOrder;window.finalPlaceCODOrder=placeOrder;window.processOrderCheckout=placeOrder;window.maajPlaceOrder=placeOrder;window.maajSubmitCheckout=placeOrder;
+  window.maajRepairPaymentUI=function(){
+    var methods=document.getElementById('maaj-payment-methods');
+    var cod=document.getElementById('maajPayCodOption');
+    var upi=document.getElementById('maajPayUpiOption');
+    if(methods){
+      methods.style.display='grid';
+      methods.style.visibility='visible';
+      methods.style.opacity='1';
+    }
+    [cod,upi].forEach(function(el){
+      if(el){el.style.display='block';el.style.visibility='visible';el.style.opacity='1'}
+    });
+    var checked=document.querySelector('input[name="maajPaymentMethod"]:checked');
+    window.maajSelectPaymentMethod(checked?checked.value:'COD');
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(window.maajRepairPaymentUI,200);
+    setTimeout(window.maajRepairPaymentUI,800);
+  });
+
 
   /* Keep navigation single-source: cart and checkout are the main pages. */
   const baseNav=window.navigateTo;
@@ -5881,7 +6403,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
       <input id="maajProfilePhone" class="maaj-profile-input" type="text" disabled aria-readonly="true">
       <div style="font-size:10px;color:#64748b;margin:-9px 0 14px">Mobile number cannot be changed.</div>
       <label class="maaj-profile-label">Delivery Address</label>
-      <div class="maaj-location-options"><button type="button" id="maajAwayLocationBtn" class="maaj-location-option active" onclick="maajSelectAddressMode('away')">📍 <span><b>Away from my location</b><small>Enter a different delivery location manually</small></span></button><button type="button" id="maajCurrentLocationBtn" class="maaj-location-option" onclick="maajUseCurrentLocation()">🧭 <span><b>Use current location</b><small>Use your phone GPS location</small></span></button></div>
+      <div class="maaj-location-options"><button type="button" id="maajAwayLocationBtn" class="maaj-location-option active" onclick="maajSelectAddressMode('away')">?? <span><b>Away from my location</b><small>Enter a different delivery location manually</small></span></button><button type="button" id="maajCurrentLocationBtn" class="maaj-location-option" onclick="maajUseCurrentLocation()">?? <span><b>Use current location</b><small>Use your phone GPS location</small></span></button></div>
       <div id="maajGpsStatus" class="maaj-gps-status"></div>
       <label class="maaj-profile-label">Area / Sector / Locality</label><input id="maajProfileLocality" class="maaj-profile-input" type="text" maxlength="120" placeholder="Area / Sector / Locality">
       <label class="maaj-profile-label">Flat / House / Building Name</label><input id="maajProfileHouse" class="maaj-profile-input" type="text" maxlength="160" placeholder="Flat / House / Building Name">
@@ -5915,7 +6437,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   window.maajAddressMode='away';window.maajSelectAddressMode=function(m){window.maajAddressMode=m==='current'?'current':'away';var a=document.getElementById('maajAwayLocationBtn'),b=document.getElementById('maajCurrentLocationBtn');if(a)a.classList.toggle('active',window.maajAddressMode==='away');if(b)b.classList.toggle('active',window.maajAddressMode==='current');if(window.maajAddressMode==='away'){var s=document.getElementById('maajGpsStatus');if(s)s.textContent='';}};
   window.maajReverseGeocode=function(lat,lng){
     var s=document.getElementById('maajGpsStatus');
-    if(s)s.textContent='✓ GPS found. Reading your address…';
+    if(s)s.textContent='? GPS found. Reading your address…';
     var url='https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lng)+'&zoom=18&addressdetails=1&accept-language=en';
     return fetch(url,{headers:{'Accept':'application/json'}}).then(function(r){if(!r.ok)throw new Error('Address lookup failed');return r.json();}).then(function(data){
       var a=data&&data.address||{};
@@ -5933,11 +6455,11 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
       el=document.getElementById('maajProfileLandmark');if(el&&landmark)el.value=landmark;
       el=document.getElementById('maajProfileAddress');if(el&&details)el.value=details;
       window.maajGpsAddress=data.display_name||details||'';
-      if(s)s.textContent='✓ Address filled automatically from your current GPS location.';
+      if(s)s.textContent='? Address filled automatically from your current GPS location.';
       return data;
     });
   };
-  window.maajUseCurrentLocation=function(){var s=document.getElementById('maajGpsStatus');if(!navigator.geolocation){if(s)s.textContent='GPS is not supported on this device/browser.';return;}if(s)s.textContent='Getting your current location…';var b=document.getElementById('maajCurrentLocationBtn');if(b){b.disabled=true;b.style.opacity='.65';}navigator.geolocation.getCurrentPosition(function(pos){window.maajGpsCoords={lat:pos.coords.latitude,lng:pos.coords.longitude};maajSelectAddressMode('current');window.maajReverseGeocode(pos.coords.latitude,pos.coords.longitude).catch(function(){if(s)s.textContent='✓ GPS selected, but automatic address lookup failed. Please check the address fields.';}).finally(function(){if(b){b.disabled=false;b.style.opacity='';}});},function(err){var text='Location permission denied or GPS unavailable.';if(err&&err.code===1)text='Please allow location permission to fill your address automatically.';else if(err&&err.code===3)text='GPS took too long. Please try again.';if(s)s.textContent=text;maajSelectAddressMode('away');if(b){b.disabled=false;b.style.opacity='';}},{enableHighAccuracy:true,timeout:20000,maximumAge:0});};window.saveCustomerProfile=async function(){
+  window.maajUseCurrentLocation=function(){var s=document.getElementById('maajGpsStatus');if(!navigator.geolocation){if(s)s.textContent='GPS is not supported on this device/browser.';return;}if(s)s.textContent='Getting your current location…';var b=document.getElementById('maajCurrentLocationBtn');if(b){b.disabled=true;b.style.opacity='.65';}navigator.geolocation.getCurrentPosition(function(pos){window.maajGpsCoords={lat:pos.coords.latitude,lng:pos.coords.longitude};maajSelectAddressMode('current');window.maajReverseGeocode(pos.coords.latitude,pos.coords.longitude).catch(function(){if(s)s.textContent='? GPS selected, but automatic address lookup failed. Please check the address fields.';}).finally(function(){if(b){b.disabled=false;b.style.opacity='';}});},function(err){var text='Location permission denied or GPS unavailable.';if(err&&err.code===1)text='Please allow location permission to fill your address automatically.';else if(err&&err.code===3)text='GPS took too long. Please try again.';if(s)s.textContent=text;maajSelectAddressMode('away');if(b){b.disabled=false;b.style.opacity='';}},{enableHighAccuracy:true,timeout:20000,maximumAge:0});};window.saveCustomerProfile=async function(){
     var c=window.currentCustomer,sb=window.maajSupabaseClient;
     if(!c||!sb){msg('Please login again.');return;}
     var name=(document.getElementById('maajProfileName').value||'').trim();
@@ -6069,9 +6591,9 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
     if(!c)return;
     var vals={checkoutLocality:c.locality||'',checkoutHouse:c.house||'',checkoutLandmark:c.landmark||'',checkoutPincode:c.pincode||'',checkoutAddress:c.address||''};
     Object.keys(vals).forEach(function(id){var e=document.getElementById(id);if(e)e.value=vals[id]||'';});
-    var note=document.getElementById('maajCheckoutSavedNote');if(note)note.textContent=fullAddress(c)?'✓ Saved address loaded automatically. You can edit it for this order.':'No saved address found. Enter delivery details below.';
+    var note=document.getElementById('maajCheckoutSavedNote');if(note)note.textContent=fullAddress(c)?'? Saved address loaded automatically. You can edit it for this order.':'No saved address found. Enter delivery details below.';
   }
-  window.maajCheckoutUseSavedAddress=function(){var c=customer();if(!c){alert('Please login to your customer account first.');return;}ensureCheckoutAddressUI();fillCheckout(c);var s=document.getElementById('maajCheckoutGpsStatus');if(s)s.textContent='✓ Saved address applied. You can change it before placing the order.';};
+  window.maajCheckoutUseSavedAddress=function(){var c=customer();if(!c){alert('Please login to your customer account first.');return;}ensureCheckoutAddressUI();fillCheckout(c);var s=document.getElementById('maajCheckoutGpsStatus');if(s)s.textContent='? Saved address applied. You can change it before placing the order.';};
   window.maajCheckoutUseCurrentLocation=function(){
     ensureCheckoutAddressUI();var s=document.getElementById('maajCheckoutGpsStatus');
     if(!navigator.geolocation){if(s)s.textContent='GPS is not supported on this browser.';return;}
@@ -6083,7 +6605,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
         var parts=[];if(road)parts.push(road);if(a.village&&a.village!==locality)parts.push(a.village);if(a.town&&a.town!==locality)parts.push(a.town);if(a.city&&a.city!==locality)parts.push(a.city);if(a.district)parts.push(a.district);if(a.state)parts.push(a.state);
         var vals={checkoutLocality:locality,checkoutHouse:house,checkoutLandmark:landmark,checkoutPincode:pin,checkoutAddress:parts.join(', ')};
         Object.keys(vals).forEach(function(id){var e=document.getElementById(id);if(e)e.value=vals[id]||'';});
-        if(s)s.textContent='✓ Current GPS address filled. You can edit it before placing the order.';
+        if(s)s.textContent='? Current GPS address filled. You can edit it before placing the order.';
       }).catch(function(){if(s)s.textContent='GPS found, but address lookup failed. Please enter/edit the address manually.';});
     },function(err){if(s)s.textContent=err&&err.code===1?'Please allow location permission to use GPS.':'Unable to get current location. You can enter the address manually.';},{enableHighAccuracy:true,timeout:20000,maximumAge:0});
   };
@@ -6097,7 +6619,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
   if(typeof oldNavigate==='function'){
     window.navigateTo=function(pageId){
       var r=oldNavigate.apply(this,arguments);
-      if(pageId==='checkout')setTimeout(function(){ensureCheckoutAddressUI();var c=customer();if(c){var addr=document.getElementById('checkoutAddress');var loc=document.getElementById('checkoutLocality');if(addr&&!addr.value&&!loc?.value)fillCheckout(c);else{var note=document.getElementById('maajCheckoutSavedNote');if(note&&fullAddress(c))note.textContent='✓ Saved address is available. You can edit this order address.';}}},80);
+      if(pageId==='checkout')setTimeout(function(){ensureCheckoutAddressUI();var c=customer();if(c){var addr=document.getElementById('checkoutAddress');var loc=document.getElementById('checkoutLocality');if(addr&&!addr.value&&!loc?.value)fillCheckout(c);else{var note=document.getElementById('maajCheckoutSavedNote');if(note&&fullAddress(c))note.textContent='? Saved address is available. You can edit this order address.';}}},80);
       return r;
     };
   }
@@ -6164,7 +6686,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
  window.maajNormalOpenCategory=oldOpen;
  function addCardToSection(row){const section=String(row.section||'health').toLowerCase()==='personal'?'personal':'health';const root=document.getElementById('maajHomeVisualCategories');if(!root)return;const sections=[...root.querySelectorAll('.maaj-ai-category-section')];const target=section==='personal'?sections[1]:sections[0];const scroller=target&&target.querySelector('.maaj-ai-cat-scroller');if(!scroller)return;let card=[...scroller.querySelectorAll('.maaj-ai-cat-card')].find(x=>(x.getAttribute('aria-label')||'').replace(/^Open\s+/i,'').trim().toLowerCase()===String(row.name||'').trim().toLowerCase());if(card){const img=card.querySelector('img');if(img&&row.image_url)img.src=row.image_url;const d=card.querySelector('.maaj-ai-cat-desc');if(d&&row.description)d.textContent=row.description;return}card=document.createElement('button');card.type='button';card.className='maaj-ai-cat-card';card.setAttribute('aria-label','Open '+row.name);card.innerHTML='<span class="maaj-ai-cat-img"><img loading="lazy" alt="'+esc(row.name)+'" src="'+esc(row.image_url||'')+'"></span><span class="maaj-ai-cat-name">'+esc(row.name)+'</span><span class="maaj-ai-cat-desc">'+esc(row.description||'')+'</span>';card.onclick=function(){window.openHealthCategory(row.name)};scroller.appendChild(card)}
  async function loadPublic(){if(!sb)return;try{const loader=async()=>{const {data,error}=await sb.from('home_categories').select('id,name,section,description,image_url,sort_order,is_active').eq('is_active',true).order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;return data||[]};const data=window.maajApiCache?await window.maajApiCache.remember('home_categories_public',600000,loader):await loader();(data||[]).forEach(addCardToSection);window.MAAJ_HOME_CATEGORIES=data||[]}catch(e){console.warn('Home category table unavailable:',e.message)}}
- async function adminRows(){if(!sb)return;const box=document.getElementById('maajHomeCategoryAdminList');if(!box)return;try{const {data,error}=await sb.from('home_categories').select('id,name,section,description,image_url,sort_order,is_active').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="maaj-home-db-card maaj-home-db-card-v2"><img src="${esc(r.image_url||'')}" alt="${esc(r.name)}"><div class="db-info"><div class="db-name">${esc(r.name)}</div><div class="db-meta">${esc(r.section==='personal'?'Personal care':'Shop by health concerns')} • order ${esc(r.sort_order)}</div><div class="db-meta">${esc(r.description||'')}</div><div class="db-meta">${r.is_active?'Active':'Hidden'}</div></div><div class="maaj-home-db-actions"><button type="button" class="maaj-edit-home-btn" onclick="maajEditHomeCategory('${String(r.id).replace(/'/g,"\\'")}')">✏️ Edit Name & Crop Photo</button><button type="button" class="maaj-delete-home-btn" onclick="maajDeleteHomeCategory('${String(r.id).replace(/'/g,"\\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No Supabase home categories yet.</div>'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}}
+ async function adminRows(){if(!sb)return;const box=document.getElementById('maajHomeCategoryAdminList');if(!box)return;try{const {data,error}=await sb.from('home_categories').select('id,name,section,description,image_url,sort_order,is_active').order('sort_order',{ascending:true}).order('created_at',{ascending:true});if(error)throw error;box.innerHTML=(data||[]).map(r=>`<div class="maaj-home-db-card maaj-home-db-card-v2"><img src="${esc(r.image_url||'')}" alt="${esc(r.name)}"><div class="db-info"><div class="db-name">${esc(r.name)}</div><div class="db-meta">${esc(r.section==='personal'?'Personal care':'Shop by health concerns')} • order ${esc(r.sort_order)}</div><div class="db-meta">${esc(r.description||'')}</div><div class="db-meta">${r.is_active?'Active':'Hidden'}</div></div><div class="maaj-home-db-actions"><button type="button" class="maaj-edit-home-btn" onclick="maajEditHomeCategory('${String(r.id).replace(/'/g,"\\'")}')">?? Edit Name & Crop Photo</button><button type="button" class="maaj-delete-home-btn" onclick="maajDeleteHomeCategory('${String(r.id).replace(/'/g,"\\'")}')">Delete</button></div></div>`).join('')||'<div class="text-xs text-slate-400">No Supabase home categories yet.</div>'}catch(e){box.innerHTML='<div class="text-xs text-red-600 font-bold">'+esc(e.message)+'</div>'}}
  window.maajLoadHomeCategories=async function(showStatus){await loadPublic();await adminRows();if(showStatus){const e=document.getElementById('maajHomeCategoryStatus');if(e)e.textContent='Refreshed from Supabase.'}};
  window.maajAddHomeCategory=async function(){const status=document.getElementById('maajHomeCategoryStatus');const set=t=>{if(status){status.textContent=t;status.style.color=t.startsWith('Saved')?'#047857':'#b91c1c'}};if(!sb)return set('Supabase is not available.');if(typeof window.isAdminAuthenticated==='function'&&!window.isAdminAuthenticated())return set('Admin login required.');const name=(document.getElementById('maajHomeCatName')?.value||'').trim();const section=(document.getElementById('maajHomeCatSection')?.value||'health').trim();const description=(document.getElementById('maajHomeCatDesc')?.value||'').trim();const order=Number(document.getElementById('maajHomeCatOrder')?.value||99);const file=document.getElementById('maajHomeCatImage')?.files?.[0];const uploadFile=window.maajHomeCatCroppedBlob?new File([window.maajHomeCatCroppedBlob], 'category-cropped.jpg',{type:'image/jpeg'}):file;if(!name||!uploadFile)return set('Category name and photo are required.');set('Uploading photo...');try{const path='home-categories/'+Date.now()+'_'+Math.random().toString(36).slice(2)+'.jpg';const up=await sb.storage.from('medicine-images').upload(path,uploadFile,{upsert:false,contentType:uploadFile.type||'image/jpeg'});if(up.error)throw up.error;const publicUrl=sb.storage.from('medicine-images').getPublicUrl(path).data.publicUrl;const ins=await sb.from('home_categories').insert({name,section,description,image_url:publicUrl,sort_order:order,is_active:true}).select('*').single();if(ins.error)throw ins.error;window.maajHomeCatCroppedBlob=null;set('Saved online in Supabase.');document.getElementById('maajHomeCatName').value='';document.getElementById('maajHomeCatDesc').value='';document.getElementById('maajHomeCatImage').value='';const prev=document.getElementById('maajHomeCatCropPreview');if(prev){prev.src='';prev.classList.add('hidden')}if(window.maajApiCache)window.maajApiCache.clear('home_categories_public');await window.maajLoadHomeCategories(false)}catch(e){set('Save Error: '+(e.message||e))}};
  window.maajDeleteHomeCategory=async function(id){if(!sb)return;if(!confirm('Delete this home category?'))return;try{const {error}=await sb.from('home_categories').delete().eq('id',id);if(error)throw error;if(window.maajApiCache)window.maajApiCache.clear('home_categories_public');await window.maajLoadHomeCategories(false)}catch(e){alert('Delete failed: '+e.message)}};
@@ -6180,7 +6702,7 @@ Object.assign(window,{mmShowManager,mmSignIn,mmSignOut,mmLoadMedicines,mmAddOne,
 .maaj-home-db-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.maaj-edit-home-btn,.maaj-delete-home-btn,.maaj-crop-new-btn{border:0;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer}.maaj-edit-home-btn,.maaj-crop-new-btn{background:#ecfdf5;color:#047857}.maaj-delete-home-btn{background:#fee2e2;color:#b91c1c}.maaj-home-new-preview{width:58px;height:58px;object-fit:cover;border-radius:10px;border:1px solid #d1d5db}
 #maajHomeCategoryEditor{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.72);display:none;align-items:center;justify-content:center;padding:16px}#maajHomeCategoryEditor.active{display:flex}.maaj-hce-card{width:min(760px,96vw);max-height:94vh;overflow:auto;background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.3)}.maaj-hce-head{padding:16px 18px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between}.maaj-hce-head h3{font-size:17px;font-weight:900;margin:0}.maaj-hce-close{border:1px solid #dbe5e2;background:#fff;border-radius:10px;width:36px;height:36px;font-size:20px;cursor:pointer}.maaj-hce-body{padding:18px}.maaj-hce-preview{width:min(460px,100%);height:300px;margin:auto;background:#0f172a;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden}.maaj-hce-preview img{max-width:100%;max-height:100%;object-fit:contain}.maaj-hce-cropbox{width:280px;height:280px;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.38);position:absolute;pointer-events:none}.maaj-hce-stage{position:relative;width:min(460px,100%);height:300px;margin:auto;display:flex;align-items:center;justify-content:center}.maaj-hce-stage .maaj-hce-preview{position:absolute;inset:0;width:100%;height:100%}.maaj-hce-stage .maaj-hce-cropbox{z-index:3}.maaj-hce-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.maaj-hce-controls label{font-size:11px;font-weight:800;color:#475569}.maaj-hce-controls input{width:100%}.maaj-hce-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.maaj-hce-actions button{border:0;border-radius:11px;padding:10px 15px;font-size:12px;font-weight:900;cursor:pointer}.maaj-hce-cancel{background:#f1f5f9;color:#334155}.maaj-hce-save{background:#059669;color:#fff}.maaj-hce-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.maaj-hce-fields label{font-size:11px;font-weight:900;color:#475569}.maaj-hce-fields input,.maaj-hce-fields select{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:9px;margin-top:4px;font-size:12px}@media(max-width:600px){.maaj-home-db-card-v2{grid-template-columns:58px 1fr}.maaj-home-db-card-v2>img{width:58px;height:58px}.maaj-home-db-actions{grid-column:1/-1;justify-content:flex-start}.maaj-hce-fields{grid-template-columns:1fr}.maaj-hce-cropbox{width:230px;height:230px}}
 </style>
-<div id="maajHomeCategoryEditor" aria-hidden="true"><div class="maaj-hce-card"><div class="maaj-hce-head"><h3>✏️ Edit Home Category Name & Photo</h3><button class="maaj-hce-close" type="button" onclick="maajCloseHomeCategoryEditor()">×</button></div><div class="maaj-hce-body"><div class="maaj-hce-fields"><label>Home Category Name *<input id="maajHceName" placeholder="Enter category name"></label><label>Section<select id="maajHceSection"><option value="health">Shop by health concerns</option><option value="personal">Personal care</option></select></label><label>Short Description<input id="maajHceDesc"></label><label>Sort Order<input id="maajHceOrder" type="number"></label></div><div class="maaj-hce-stage"><div class="maaj-hce-preview"><img id="maajHceImg" alt="Category photo"></div><div class="maaj-hce-cropbox"></div></div><div class="maaj-hce-controls"><label>Zoom <input id="maajHceZoom" type="range" min="1" max="3" step="0.01" value="1"></label><label>Photo position <input id="maajHcePos" type="range" min="0" max="100" step="1" value="50"></label></div><div style="margin-top:12px"><label style="font-size:11px;font-weight:900;color:#475569">Replace / Edit Photo (optional)<input id="maajHceFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;width:100%;margin-top:5px;border:1px solid #cbd5e1;border-radius:10px;padding:8px"></label></div><div id="maajHceStatus" style="font-size:11px;font-weight:800;margin-top:9px"></div><div class="maaj-hce-actions"><button type="button" class="maaj-hce-cancel" onclick="maajCloseHomeCategoryEditor()">Cancel</button><button type="button" class="maaj-hce-save" onclick="maajSaveHomeCategoryEdit()">💾 Save Changes</button></div></div></div></div>
+<div id="maajHomeCategoryEditor" aria-hidden="true"><div class="maaj-hce-card"><div class="maaj-hce-head"><h3>?? Edit Home Category Name & Photo</h3><button class="maaj-hce-close" type="button" onclick="maajCloseHomeCategoryEditor()">×</button></div><div class="maaj-hce-body"><div class="maaj-hce-fields"><label>Home Category Name *<input id="maajHceName" placeholder="Enter category name"></label><label>Section<select id="maajHceSection"><option value="health">Shop by health concerns</option><option value="personal">Personal care</option></select></label><label>Short Description<input id="maajHceDesc"></label><label>Sort Order<input id="maajHceOrder" type="number"></label></div><div class="maaj-hce-stage"><div class="maaj-hce-preview"><img id="maajHceImg" alt="Category photo"></div><div class="maaj-hce-cropbox"></div></div><div class="maaj-hce-controls"><label>Zoom <input id="maajHceZoom" type="range" min="1" max="3" step="0.01" value="1"></label><label>Photo position <input id="maajHcePos" type="range" min="0" max="100" step="1" value="50"></label></div><div style="margin-top:12px"><label style="font-size:11px;font-weight:900;color:#475569">Replace / Edit Photo (optional)<input id="maajHceFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;width:100%;margin-top:5px;border:1px solid #cbd5e1;border-radius:10px;padding:8px"></label></div><div id="maajHceStatus" style="font-size:11px;font-weight:800;margin-top:9px"></div><div class="maaj-hce-actions"><button type="button" class="maaj-hce-cancel" onclick="maajCloseHomeCategoryEditor()">Cancel</button><button type="button" class="maaj-hce-save" onclick="maajSaveHomeCategoryEdit()">?? Save Changes</button></div></div></div></div>
 <script id="maaj-home-category-editor-script">
 (function(){
 var editing=null,imgObj=null,objectUrl=null;
@@ -6246,6 +6768,196 @@ window.maajSaveHomeCategoryEdit=async function(){if(!editing){alert('No category
   window.addEventListener('hashchange',function(){setTimeout(closeOrdersPopup,20);});
 })();
 </script>
+
+<style id="maaj-upi-final-visibility-fix">
+#maaj-payment-methods,#maaj-payment-methods *{visibility:visible}
+#maaj-payment-methods{display:grid!important}
+#maajUpiPaymentBox{visibility:visible}
+</style>
+
+
+<script>
+/* ============================================================
+   MAAJ PHARMACY — ONLINE RX PRESCRIPTION MODULE
+   Prescription files + review records live in Supabase only.
+   No prescription PDF/base64 is written to localStorage.
+   ============================================================ */
+(function(){
+  const sb=window.maajSupabaseClient;
+  const RX_BUCKET='prescriptions';
+  const escRx=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const currentUser=async()=>{
+    if(!sb) throw new Error('Supabase is not available.');
+    const {data,error}=await sb.auth.getUser();
+    if(error||!data?.user) throw new Error('Please login first.');
+    return data.user;
+  };
+  const extOf=f=>{
+    const ext=(f?.name||'pdf').split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'');
+    return ext||'pdf';
+  };
+  const mimeOk=f=>f && ['application/pdf','image/jpeg','image/png','image/webp'].includes((f.type||'').toLowerCase());
+  const safePathPart=v=>String(v||'').replace(/[^a-zA-Z0-9_-]/g,'_');
+
+  async function uploadRxRecord(file, notes, orderId){
+    const u=await currentUser();
+    if(!file) throw new Error('Please select a prescription PDF or image.');
+    if(!mimeOk(file)) throw new Error('Only PDF, JPG, PNG or WEBP prescription files are allowed.');
+    if(file.size>10*1024*1024) throw new Error('Prescription file must be 10 MB or smaller.');
+    const ext=extOf(file);
+    const stamp=Date.now()+'_'+Math.random().toString(36).slice(2,10);
+    const path=safePathPart(u.id)+'/'+stamp+'.'+ext;
+    const up=await sb.storage.from(RX_BUCKET).upload(path,file,{upsert:false,contentType:file.type||'application/pdf',cacheControl:'3600'});
+    if(up.error) throw up.error;
+    const profile=window.currentCustomer||{};
+    const row={
+      user_id:u.id,
+      customer_name:profile.name||u.user_metadata?.name||document.getElementById('rxCustName')?.value?.trim()||'Customer',
+      customer_phone:profile.phone||profile.mobile||u.phone||document.getElementById('rxCustPhone')?.value?.trim()||'',
+      address:profile.address||document.getElementById('rxCustAddress')?.value?.trim()||'',
+      file_name:file.name,
+      storage_path:path,
+      notes:String(notes||'').trim()||'No special notes',
+      status:'Pending Verification',
+      order_id:orderId||null
+    };
+    const ins=await sb.from('prescriptions').insert(row).select('*').single();
+    if(ins.error){try{await sb.storage.from(RX_BUCKET).remove([path])}catch(e){};throw ins.error;}
+    return ins.data;
+  }
+
+  window.maajUploadPrescriptionOnline=uploadRxRecord;
+
+  window.submitPrescriptionUpload=async function(){
+    try{
+      const name=(document.getElementById('rxCustName')?.value||'').trim();
+      const phone=(document.getElementById('rxCustPhone')?.value||'').replace(/\D/g,'');
+      const address=(document.getElementById('rxCustAddress')?.value||'').trim();
+      const notes=(document.getElementById('rxNotes')?.value||'').trim();
+      const file=document.getElementById('rxFileInput')?.files?.[0];
+      if(!name||!/^[0-9]{10}$/.test(phone)||!address){alert('Please enter customer name, valid 10-digit mobile number and delivery address.');return false;}
+      if(!file){alert('Please select a prescription PDF or image.');return false;}
+      const u=await currentUser();
+      const row=await uploadRxRecord(file,notes,null);
+      alert('Prescription uploaded successfully to Supabase. It is now waiting for pharmacist verification.');
+      document.getElementById('rxPdfPreviewContainer')?.classList.add('hidden');
+      const fi=document.getElementById('rxFileInput');if(fi)fi.value='';
+      const fn=document.getElementById('rxFileNameText');if(fn)fn.textContent='';
+      const rn=document.getElementById('rxNotes');if(rn)rn.value='';
+      window.uploadedFileBase64='';window.uploadedFileName='';
+      window.maajRxLastUpload=row;
+      await window.renderCustomerPrescriptions();
+      navigateTo('prescription-history');
+      return true;
+    }catch(e){console.error(e);alert('Prescription upload failed.\n\n'+(e.message||e));return false;}
+  };
+
+  window.renderCustomerPrescriptions=async function(){
+    const list=document.getElementById('customerRxList');if(!list)return;
+    list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-500">Loading prescriptions from Supabase...</div>';
+    try{
+      const u=await currentUser();
+      const q=await sb.from('prescriptions').select('*').eq('user_id',u.id).order('created_at',{ascending:false});
+      if(q.error)throw q.error;
+      const rows=q.data||[];
+      if(!rows.length){list.innerHTML='<div class="bg-white p-6 rounded-xl border text-center text-xs text-slate-400">No prescriptions uploaded yet.</div>';return;}
+      list.innerHTML=rows.map(r=>{
+        const date=r.created_at?new Date(r.created_at).toLocaleString():'N/A';
+        const status=String(r.status||'Pending Verification');
+        return `<div class="bg-white p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs shadow-sm gap-3">
+          <div><div class="flex items-center gap-2"><i class="fa-solid fa-file-prescription text-red-500 text-lg"></i><h4 class="font-bold text-slate-800">${escRx(r.id||'RX')} — ${escRx(r.file_name||'Prescription')}</h4></div>
+          <p class="text-slate-400 text-[11px] mt-1">Uploaded: ${escRx(date)}</p><p class="text-slate-500">Notes: ${escRx(r.notes||'No special notes')}</p>${r.order_id?`<p class="text-slate-500">Order: <b>${escRx(r.order_id)}</b></p>`:''}</div>
+          <div class="flex items-center gap-2"><span class="bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded-full text-[11px]">${escRx(status)}</span>
+          <button type="button" onclick="viewRxPdf('${escRx(r.id)}')" class="bg-slate-900 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-slate-800"><i class="fa-solid fa-eye mr-1"></i> View</button></div></div>`;
+      }).join('');
+    }catch(e){list.innerHTML='<div class="bg-red-50 p-5 rounded-xl border border-red-200 text-center text-xs text-red-700">Could not load prescriptions from Supabase: '+escRx(e.message||e)+'</div>';}
+  };
+
+  async function signedUrl(path){
+    const r=await sb.storage.from(RX_BUCKET).createSignedUrl(path,3600);
+    if(r.error)throw r.error;
+    return r.data?.signedUrl||'';
+  }
+
+  window.viewRxPdf=async function(rxId){
+    try{
+      const u=await currentUser();
+      const q=await sb.from('prescriptions').select('*').eq('id',rxId).maybeSingle();
+      if(q.error)throw q.error;
+      const r=q.data;if(!r)throw new Error('Prescription not found.');
+      if(r.user_id!==u.id){
+        const admin=await sb.from('admin_users').select('user_id').eq('user_id',u.id).maybeSingle();
+        if(admin.error||!admin.data)throw new Error('You are not allowed to view this prescription.');
+      }
+      const url=await signedUrl(r.storage_path);
+      if(!url)throw new Error('Could not create secure PDF viewing link.');
+      window.openPdfModal(r.file_name||'Prescription',url,String(r.id));
+    }catch(e){alert('Could not open prescription.\n\n'+(e.message||e));}
+  };
+
+  window.openPdfModal=function(fileName,fileUrl,rxId){
+    const title=document.getElementById('pdfViewerTitle');if(title)title.innerText=fileName||'Doctor Prescription Document';
+    const meta=document.getElementById('pdfViewerMeta');if(meta)meta.innerText='Document Ref: '+(rxId||'RX-DOC');
+    const body=document.getElementById('pdfViewerBody');if(!body)return;
+    window.activePdfToView=fileUrl;
+    const lower=String(fileName||'').toLowerCase();
+    if(/\.(jpg|jpeg|png|webp)$/i.test(lower)) body.innerHTML='<img src="'+escRx(fileUrl)+'" class="max-h-[500px] max-w-full mx-auto rounded-lg shadow border object-contain" />';
+    else body.innerHTML='<iframe src="'+escRx(fileUrl)+'" title="Prescription PDF" class="w-full h-[560px] rounded-lg border bg-white"></iframe>';
+    document.getElementById('pdfViewerModal')?.classList.add('active');
+  };
+
+  window.downloadActivePdf=function(){
+    const url=window.activePdfToView;if(!url)return alert('No prescription document is open.');
+    const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.download='MAAJ_Pharmacy_Prescription';document.body.appendChild(a);a.click();a.remove();
+  };
+
+  window.renderAdminPrescriptions=async function(){
+    const tbody=document.getElementById('adminRxTable');if(!tbody)return;
+    tbody.innerHTML='<tr><td colspan="5" class="p-6 text-center text-slate-500">Loading Rx records from Supabase...</td></tr>';
+    try{
+      const u=await currentUser();
+      const admin=await sb.from('admin_users').select('user_id,role').eq('user_id',u.id).maybeSingle();
+      if(admin.error||!admin.data)throw new Error('Admin authorization required.');
+      const q=await sb.from('prescriptions').select('*').order('created_at',{ascending:false});
+      if(q.error)throw q.error;
+      const rows=q.data||[];
+      if(!rows.length){tbody.innerHTML='<tr><td colspan="5" class="p-6 text-center text-slate-400">No online prescriptions found.</td></tr>';return;}
+      tbody.innerHTML=rows.map(r=>`<tr>
+        <td class="p-3 font-bold">${escRx(r.id)}</td><td class="p-3">${escRx(r.customer_name||'Customer')}<div class="text-[10px] text-slate-400">${escRx(r.customer_phone||'')}</div></td>
+        <td class="p-3"><button type="button" onclick="viewRxPdf('${escRx(r.id)}')" class="text-blue-600 font-bold underline"><i class="fa-solid fa-file-pdf mr-1"></i>${escRx(r.file_name||'Prescription')}</button>${r.order_id?`<div class="text-[10px] text-slate-400">Order: ${escRx(r.order_id)}</div>`:''}</td>
+        <td class="p-3 font-bold text-purple-600">${escRx(r.status||'Pending Verification')}</td>
+        <td class="p-3 text-right"><button type="button" onclick="verifyRx('${escRx(r.id)}','Approved')" class="bg-emerald-600 text-white px-2 py-1 rounded font-bold mr-1">Approve</button><button type="button" onclick="verifyRx('${escRx(r.id)}','Rejected')" class="bg-red-600 text-white px-2 py-1 rounded font-bold">Reject</button></td>
+      </tr>`).join('');
+      const stat=document.getElementById('statPendingRx');if(stat)stat.textContent=rows.filter(r=>String(r.status||'').toLowerCase().includes('pending')).length;
+    }catch(e){tbody.innerHTML='<tr><td colspan="5" class="p-6 text-center text-red-600">Could not load online prescriptions: '+escRx(e.message||e)+'</td></tr>';}
+  };
+
+  window.verifyRx=async function(id,status){
+    try{
+      const u=await currentUser();
+      const admin=await sb.from('admin_users').select('user_id,role').eq('user_id',u.id).maybeSingle();
+      if(admin.error||!admin.data)throw new Error('Admin authorization required.');
+      const upd=await sb.from('prescriptions').update({status,reviewed_at:new Date().toISOString(),reviewer_id:u.id}).eq('id',id).select('*').single();
+      if(upd.error)throw upd.error;
+      await window.renderAdminPrescriptions();
+    }catch(e){alert('Prescription verification failed.\n\n'+(e.message||e));}
+  };
+
+  // Replace the old admin tab handler so Rx Review always reads Supabase.
+  const oldSwitch=window.switchAdminTab;
+  if(typeof oldSwitch==='function'){
+    window.switchAdminTab=function(tab){
+      const r=oldSwitch.apply(this,arguments);
+      if(tab==='prescriptions')setTimeout(()=>window.renderAdminPrescriptions(),50);
+      return r;
+    };
+  }
+
+  // Ensure the old local prescription array cannot be persisted by the legacy functions.
+  window.maajPrescriptionStorageMode='SUPABASE_ONLY';
+})();
+</script>
+
 </body>
 </html>
 
@@ -6373,3 +7085,67 @@ window.maajSaveHomeCategoryEdit=async function(){if(!editing){alert('No category
 })();
 </script>
 \n\n
+
+<script id="maaj-rx-order-link-fix">
+/* MAAJ PHARMACY — LINK CHECKOUT RX TO THE ACTUAL SUPABASE ORDER
+   Cart/Checkout prescription files are uploaded to Supabase Storage only
+   AFTER a successful COD order is created, then linked by order_id.
+   No prescription PDF/base64 is stored in localStorage. */
+(function(){
+  'use strict';
+  const sb=window.maajSupabaseClient;
+  const RX_BUCKET='prescriptions';
+
+  function getRxFile(){
+    const c=document.getElementById('cartPrescription');
+    const x=document.getElementById('checkoutPrescription');
+    if(x&&x.files&&x.files.length)return x.files[0];
+    if(c&&c.files&&c.files.length)return c.files[0];
+    if(window.maajPrescriptionFile instanceof File)return window.maajPrescriptionFile;
+    return null;
+  }
+
+  async function uploadOrderRx(orderId){
+    const file=getRxFile();
+    if(!file||!sb||!window.maajUploadPrescriptionOnline)return null;
+    const notes=(document.getElementById('checkoutRxNotes')?.value||document.getElementById('rxNotes')?.value||'').trim();
+    return await window.maajUploadPrescriptionOnline(file,notes,orderId);
+  }
+
+  const oldPlace=window.maajCanonicalPlaceOrder;
+  if(typeof oldPlace!=='function')return;
+
+  window.maajCanonicalPlaceOrder=async function(){
+    const rxFile=getRxFile();
+    const result=await oldPlace.apply(this,arguments);
+    if(result!==true || !rxFile || !sb)return result;
+
+    /* The COD order has now been inserted in Supabase. Find the just-created
+       order for this logged-in customer and attach the uploaded RX to it. */
+    try{
+      const u=await sb.auth.getUser();
+      const uid=u?.data?.user?.id;
+      if(!uid)return result;
+      const q=await sb.from('orders').select('id,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(1).maybeSingle();
+      if(q.error)throw q.error;
+      if(!q.data?.id)throw new Error('The new Supabase order could not be located.');
+
+      const rx=await uploadOrderRx(String(q.data.id));
+      if(rx){
+        window.maajRxLastUpload=rx;
+        console.log('Prescription linked to Supabase order:',q.data.id,rx.id);
+      }
+    }catch(e){
+      console.error('RX order-link upload failed:',e);
+      alert('Order was placed successfully, but the prescription could not be uploaded to Supabase. Please upload the prescription again from Upload Prescription.');
+    }
+    return result;
+  };
+
+  /* Keep every public checkout alias pointed at the corrected function. */
+  window.finalPlaceCODOrder=window.maajCanonicalPlaceOrder;
+  window.processOrderCheckout=window.maajCanonicalPlaceOrder;
+  window.maajPlaceOrder=window.maajCanonicalPlaceOrder;
+  window.maajSubmitCheckout=window.maajCanonicalPlaceOrder;
+})();
+</script>s
