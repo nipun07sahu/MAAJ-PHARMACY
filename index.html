@@ -4032,7 +4032,7 @@ function maajWishlistButton(id,name,price){
   }
  };
  window.maajSaveRx=function(){var f=document.getElementById('maajRxFile'),m=document.getElementById('maajRxMsg');if(!f.files.length){m.textContent='Please select a prescription file.';m.style.color='#be123c';return}var a=A('maaj_prescriptions');a.push({name:f.files[0].name,date:new Date().toISOString(),status:'Pending Verification'});S('maaj_prescriptions',a);m.textContent='Prescription submitted for verification.';m.style.color='#047857'};
- window.maajSaveReview=function(){var n=document.getElementById('maajReviewName').value.trim(),s=document.getElementById('maajReviewStars').value,t=document.getElementById('maajReviewText').value.trim();var meds=(typeof products!=='undefined'&&Array.isArray(products))?products:[];var found=meds.some(function(x){return String(x.name||'').trim().toLowerCase()===n.toLowerCase()});if(!found)return alert('Please select a medicine from the list.');if(!t)return alert('Write your review.');var a=A('maaj_reviews');a.push({medicine:n,stars:s,text:t,date:new Date().toISOString()});S('maaj_reviews',a);alert('Review submitted.');maajClosePro()};
+ window.maajSaveReview=function(){var n=document.getElementById('maajReviewName').value.trim(),s=document.getElementById('maajReviewStars').value,t=document.getElementById('maajReviewText').value.trim();var meds=(typeof products!=='undefined'&&Array.isArray(products))?products:[];var found=meds.some(function(x){return String(x.name||'').trim().toLowerCase()===n.toLowerCase()});if(!found)return alert('Please select a medicine from the list.');if(!t)return alert('Write your review.');alert('Review submitted.');maajClosePro()};
  window.maajCheckPin=function(){var p=(document.getElementById('maajPin').value||'').replace(/\D/g,'');var m=document.getElementById('maajPinMsg');if(p.length!==6){m.textContent='Enter a valid 6-digit pincode.';m.style.color='#be123c';return}m.textContent='Please confirm availability with MAAJ PHARMACY before placing the order.';m.style.color='#047857'};
 })();
 </script>
@@ -7238,7 +7238,7 @@ window.maajSaveHomeCategoryEdit=async function(){if(!editing){alert('No category
 <script id="maaj-new-14-features">
 (function(){
 'use strict';
-var KEY={reviews:'maaj_reviews_v2',stock:'maaj_stock_alerts_v1',activity:'maaj_activity_log_v1',loyalty:'maaj_loyalty_v1',docs:'maaj_medicine_docs_v1',pickup:'maaj_pickup_v1',partial:'maaj_partial_orders_v1',notifications:'maaj_notifications_v1'};
+var KEY={stock:'maaj_stock_alerts_v1',activity:'maaj_activity_log_v1',loyalty:'maaj_loyalty_v1',docs:'maaj_medicine_docs_v1',pickup:'maaj_pickup_v1',partial:'maaj_partial_orders_v1',notifications:'maaj_notifications_v1'};
 function A(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}}
 function S(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function E(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
@@ -7550,7 +7550,7 @@ async function submitReview(p){
   try{
     var q=await sb.from('medicine_reviews').upsert(payload,{onConflict:'user_id,medicine_id'}).select('id,medicine_id,medicine_name,user_id,rating,review,created_at').single();
     if(q.error)throw q.error;
-    try{var a=JSON.parse(localStorage.getItem('maaj_reviews_v2')||'[]');a=a.filter(function(x){return !(String(x.user||'')===String(user.id)&&String(x.medicineId||x.medicine||'').toLowerCase()===String(p.id||p.name||'').toLowerCase())});a.push({medicine:p.name,medicineId:p.id,stars:rating,text:review,date:new Date().toISOString(),user:user.id});localStorage.setItem('maaj_reviews_v2',JSON.stringify(a));}catch(e){}
+
     if(status)status.textContent='Saved online. Your review is now visible to all customers.';
     await loadReviews(p);
     try{if(typeof renderRatingBadges==='function')renderRatingBadges();}catch(e){}
@@ -7608,6 +7608,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 setTimeout(patchOpen,100);setTimeout(patchOpen,500);setTimeout(patchOpen,1200);
 })();
 </script>
+<!-- REVIEWS_SOURCE: SUPABASE_ONLY -->
 </body>
 </html>
 <style id="maaj-final-account-navigation-fix">
